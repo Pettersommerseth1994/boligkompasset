@@ -1,0 +1,823 @@
+/* ──────────────────────────────────────────────────────────────────
+   Husbanken, komponentlag for prototypen
+   Bygger utelukkende på tokens fra ds/colors_and_type.css.
+   Mobile first. Brytpunkt 640px (nettbrett) og 1024px (desktop).
+   ────────────────────────────────────────────────────────────────── */
+
+/* ─── Grunnoppsett ───────────────────────────────────────────────── */
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+body {
+  background: var(--bg-default);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Målgruppen er 62+. Vi setter et gulv på tekststørrelse og trykkflater. */
+:root {
+  --tap-min: 48px;
+  --shell-max: 760px;      /* lesebredde i søknad og artikkel */
+  --shell-wide: 1140px;    /* forside og seksjoner med kort */
+}
+
+img { max-width: 100%; height: auto; }
+
+/* Flere komponenter setter display i klassen. Uten dette vinner
+   klassen over nettleserens [hidden]-regel, og skjulte bokser vises. */
+[hidden] { display: none !important; }
+
+/* Synlig fokus overalt. Kritisk for tastatur og for svaksynte. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--hb-blue-800);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.hb-visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.hb-skiplink {
+  position: absolute; left: var(--space-3); top: -100px;
+  z-index: 100; background: var(--hb-blue-800); color: #fff;
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm);
+  font-weight: 600; text-decoration: none;
+  transition: top var(--duration-fast) var(--ease-out);
+}
+.hb-skiplink:focus { top: var(--space-3); }
+
+/* ─── Layout ─────────────────────────────────────────────────────── */
+
+.hb-shell {
+  width: 100%;
+  max-width: var(--shell-max);
+  margin-inline: auto;
+  padding-inline: var(--space-3);
+}
+.hb-shell--wide { max-width: var(--shell-wide); }
+
+@media (min-width: 640px) {
+  .hb-shell { padding-inline: var(--space-4); }
+}
+
+main { flex: 1 0 auto; }
+
+.hb-section { padding-block: var(--space-6); }
+@media (min-width: 640px) { .hb-section { padding-block: var(--space-7); } }
+
+.hb-stack > * + * { margin-top: var(--space-3); }
+.hb-stack-lg > * + * { margin-top: var(--space-5); }
+
+/* ─── Toppmeny ───────────────────────────────────────────────────── */
+
+.hb-topbar {
+  background: var(--bg-default);
+  border-bottom: 1px solid var(--hb-slate-200);
+}
+.hb-topbar__row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 72px;
+  padding-block: var(--space-2);
+}
+.hb-logo { display: inline-flex; align-items: center; gap: var(--space-2); text-decoration: none; }
+.hb-logo img { height: 44px; width: auto; display: block; }
+
+.hb-userchip {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  background: var(--hb-green-100);
+  color: var(--fg-default);
+  border: 1px solid var(--hb-green-200);
+  border-radius: var(--radius-pill);
+  padding: 10px var(--space-3);
+  font: 500 var(--text-sm)/1.2 var(--font-sans);
+  text-decoration: none;
+  min-height: var(--tap-min);
+}
+.hb-userchip:hover { background: var(--hb-green-200); }
+
+/* Kontekstbånd, «Lån og tilskudd fra Husbanken» */
+.hb-contextbar {
+  border-bottom: 1px solid var(--hb-slate-200);
+  background: var(--bg-default);
+}
+.hb-contextbar__row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-3); min-height: 56px;
+  border-left: 5px solid var(--hb-green-700);
+  padding-left: var(--space-3);
+  margin-left: calc(var(--space-3) * -1);
+}
+@media (min-width: 640px) {
+  .hb-contextbar__row { margin-left: calc(var(--space-4) * -1); padding-left: var(--space-4); }
+}
+.hb-contextbar__title { font: 600 var(--text-sm)/1.3 var(--font-sans); color: var(--fg-default); }
+
+.hb-menubar { border-bottom: 1px solid var(--hb-slate-200); }
+.hb-menubar__row { display: flex; align-items: center; gap: var(--space-4); min-height: 56px; }
+
+.hb-menu-toggle,
+.hb-lang-toggle {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  background: none; border: 0; cursor: pointer;
+  font: 400 var(--text-sm)/1.2 var(--font-sans); color: var(--fg-default);
+  padding: 12px 4px; min-height: var(--tap-min);
+}
+.hb-menu-toggle .hb-chevron,
+.hb-lang-toggle .hb-chevron { transition: transform var(--duration-fast) var(--ease-out); }
+.hb-menu-toggle[aria-expanded="true"] .hb-chevron { transform: rotate(180deg); }
+
+.hb-mainnav { display: none; padding-block: var(--space-2) var(--space-4); }
+.hb-mainnav[data-open="true"] { display: block; }
+.hb-mainnav ul { list-style: none; margin: 0; padding: 0; }
+.hb-mainnav a {
+  display: block; padding: 14px 0; min-height: var(--tap-min);
+  color: var(--fg-link); text-decoration: underline; text-underline-offset: 3px;
+  font-size: var(--text-base);
+  border-bottom: 1px solid var(--hb-slate-100);
+}
+
+/* ─── Brødsmuler ─────────────────────────────────────────────────── */
+
+.hb-crumbs { padding-block: var(--space-3); font-size: var(--text-sm); }
+.hb-crumbs ol { list-style: none; display: flex; flex-wrap: wrap; gap: 6px var(--space-2); margin: 0; padding: 0; }
+.hb-crumbs li { display: flex; align-items: center; gap: var(--space-2); color: var(--fg-subtle); }
+.hb-crumbs li + li::before { content: "/"; color: var(--hb-slate-300); }
+.hb-crumbs a { color: var(--fg-link); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ─── Typografi-hjelpere ─────────────────────────────────────────── */
+
+/* Norske sammensatte ord kan bli bredere enn en smal mobilskjerm.
+   Automatisk orddeling deler også ord som hadde plass, så i stedet
+   settes mykt bindestrek (&shy;) manuelt i de få lange ordene. */
+h1, h2, h3, h4 { overflow-wrap: break-word; }
+
+h1 { font: 600 var(--text-3xl)/var(--lh-3xl) var(--font-display); letter-spacing: -.02em; margin: 0 0 var(--space-3); }
+h2 { font: 600 var(--text-2xl)/var(--lh-2xl) var(--font-display); letter-spacing: -.01em; margin: 0 0 var(--space-3); }
+h3 { font: 600 var(--text-xl)/var(--lh-xl) var(--font-heading); margin: 0 0 var(--space-2); }
+h4 { font: 600 var(--text-lg)/var(--lh-lg) var(--font-heading); margin: 0 0 var(--space-2); }
+p  { margin: 0 0 var(--space-3); }
+p:last-child { margin-bottom: 0; }
+
+@media (min-width: 640px) {
+  h1 { font-size: var(--text-4xl); line-height: var(--lh-4xl); }
+}
+
+.hb-lead { font: 400 var(--text-lg)/var(--lh-lg) var(--font-heading); color: var(--fg-default); }
+.hb-muted { color: var(--fg-subtle); }
+.hb-small { font-size: var(--text-sm); line-height: var(--lh-sm); }
+.hb-num { font-variant-numeric: tabular-nums; }
+
+a { color: var(--fg-link); text-underline-offset: 3px; }
+
+.hb-prose ul, .hb-prose ol { margin: 0 0 var(--space-3); padding-left: 1.4em; }
+.hb-prose li { margin-bottom: var(--space-2); }
+.hb-prose li:last-child { margin-bottom: 0; }
+
+/* ─── Knapper ────────────────────────────────────────────────────── */
+
+.hb-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: var(--space-2);
+  min-height: 56px;                     /* romslig for 62+ */
+  padding: 14px var(--space-4);
+  border-radius: var(--radius-sm);
+  font: 600 var(--text-base)/1.3 var(--font-sans);
+  text-decoration: none; cursor: pointer;
+  border: 2px solid transparent;
+  transition: background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out);
+}
+.hb-btn--primary { background: var(--action-primary); color: #fff; }
+.hb-btn--primary:hover { background: var(--action-primary-hover); color: #fff; }
+
+.hb-btn--secondary { background: #fff; color: var(--hb-blue-700); border-color: var(--hb-blue-800); }
+.hb-btn--secondary:hover { background: var(--hb-blue-100); }
+
+.hb-btn--tertiary { background: none; color: var(--fg-link); border-color: transparent; text-decoration: underline; }
+.hb-btn--tertiary:hover { background: var(--hb-slate-50); }
+
+.hb-btn--block { width: 100%; }
+.hb-btn[aria-disabled="true"], .hb-btn:disabled {
+  background: var(--bg-disabled); color: var(--fg-disabled);
+  border-color: transparent; cursor: not-allowed;
+}
+
+/* ─── Kort ───────────────────────────────────────────────────────── */
+
+.hb-card {
+  background: #fff;
+  border: 1px solid var(--hb-slate-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+.hb-card--link { display: block; text-decoration: none; color: inherit; transition: box-shadow var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out); }
+.hb-card--link:hover { border-color: var(--hb-green-600); box-shadow: var(--shadow-2); }
+.hb-card--link h3 { color: var(--fg-link); text-decoration: underline; text-underline-offset: 3px; }
+
+.hb-cardgrid { display: grid; gap: var(--space-3); }
+@media (min-width: 640px) { .hb-cardgrid--3 { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .hb-cardgrid--3 { grid-template-columns: repeat(3, 1fr); } }
+
+/* ─── Panel / callout ────────────────────────────────────────────── */
+
+.hb-panel {
+  border: 2px solid var(--hb-green-700);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  background: #fff;
+}
+.hb-panel--filled { background: var(--hb-green-100); border-color: var(--hb-green-400); }
+
+.hb-note {
+  background: var(--hb-blue-100);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex; gap: var(--space-3); align-items: flex-start;
+}
+.hb-note--warn { background: rgb(255, 244, 224); }
+.hb-note--stop { background: var(--hb-red-100); }
+.hb-note__icon { flex: 0 0 auto; margin-top: 3px; }
+
+/* Veileder-boksen fra skjermbildene: grønn ramme + avatar */
+.hb-guide {
+  border: 2px solid var(--hb-green-700);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  background: #fff;
+  position: relative;
+  margin-top: 44px;
+}
+.hb-guide__avatar {
+  position: absolute; top: -42px; left: 50%; transform: translateX(-50%);
+  width: 84px; height: 84px;
+}
+@media (min-width: 640px) {
+  .hb-guide { margin-top: 0; padding-left: 116px; min-height: 108px; }
+  .hb-guide__avatar { position: absolute; top: var(--space-4); left: var(--space-4); transform: none; }
+}
+.hb-guide__name { font: 600 var(--text-sm)/1.3 var(--font-sans); color: var(--hb-green-800); margin-bottom: 4px; }
+
+/* ─── Kriterieliste ──────────────────────────────────────────────── */
+
+.hb-criteria {
+  background: var(--hb-green-100);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+.hb-criteria h3 { font-size: var(--text-base); font-family: var(--font-sans); margin-bottom: var(--space-3); }
+.hb-criteria ul { list-style: none; margin: 0; padding: 0; }
+.hb-criteria li {
+  position: relative; padding-left: 34px; margin-bottom: var(--space-3);
+  line-height: var(--lh-base);
+}
+.hb-criteria li:last-child { margin-bottom: 0; }
+.hb-criteria li::before {
+  content: ""; position: absolute; left: 0; top: 5px;
+  width: 22px; height: 22px;
+  background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%234A7729'/%3E%3Cpath d='M6.8 12.4l3.4 3.4L17.2 8.8' stroke='%23ffffff' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+
+/* ─── Faktaboks søknadsfrist ─────────────────────────────────────── */
+
+.hb-deadline {
+  background: var(--hb-blue-100);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex; gap: var(--space-3);
+}
+.hb-deadline__label { font: 600 var(--text-base)/var(--lh-base) var(--font-sans); }
+
+/* ─── Trekkspill ─────────────────────────────────────────────────────
+   Brukertest: 4 av 8 så ikke at innholdet kunne åpnes. Derfor:
+   tydelig ramme, «Vis»/«Skjul»-tekst, stor pil, aldri grønt på grønt.
+   ──────────────────────────────────────────────────────────────────── */
+
+.hb-accordion { border-top: 1px solid var(--hb-slate-200); }
+.hb-accordion:last-of-type { border-bottom: 1px solid var(--hb-slate-200); }
+
+.hb-accordion__btn {
+  width: 100%; display: flex; align-items: center; gap: var(--space-3);
+  background: var(--hb-slate-50);
+  border: 0; border-left: 4px solid var(--hb-blue-800);
+  padding: var(--space-3);
+  min-height: 64px; cursor: pointer; text-align: left;
+  font: 600 var(--text-base)/var(--lh-base) var(--font-sans);
+  color: var(--fg-link);
+  transition: background var(--duration-fast) var(--ease-out);
+}
+.hb-accordion + .hb-accordion .hb-accordion__btn { margin-top: 0; }
+.hb-accordion__btn:hover { background: var(--hb-blue-100); }
+.hb-accordion__title { flex: 1; }
+.hb-accordion__state {
+  font: 400 var(--text-sm)/1.2 var(--font-sans);
+  color: var(--fg-link); white-space: nowrap;
+}
+.hb-accordion__icon {
+  flex: 0 0 auto; width: 28px; height: 28px;
+  border-radius: 50%; background: var(--hb-blue-800);
+  display: grid; place-items: center;
+  transition: transform var(--duration-base) var(--ease-out);
+}
+.hb-accordion__btn[aria-expanded="true"] .hb-accordion__icon { transform: rotate(180deg); }
+.hb-accordion__btn[aria-expanded="true"] { background: var(--hb-blue-100); }
+.hb-accordion__panel { padding: var(--space-4) var(--space-3) var(--space-4); }
+.hb-accordion__panel[hidden] { display: none; }
+
+/* ─── Skjemafelt ─────────────────────────────────────────────────── */
+
+.hb-field { margin-bottom: var(--space-4); }
+.hb-field__label { display: block; font: 600 var(--text-base)/var(--lh-base) var(--font-sans); margin-bottom: 4px; }
+.hb-field__help { display: block; color: var(--fg-subtle); font-size: var(--text-sm); line-height: var(--lh-sm); margin-bottom: var(--space-2); }
+
+.hb-input {
+  width: 100%; min-height: 56px;
+  padding: 12px var(--space-3);
+  font: 400 var(--text-base)/var(--lh-base) var(--font-sans);
+  color: var(--fg-default);
+  background: #fff;
+  border: 2px solid var(--hb-slate-700);
+  border-radius: var(--radius-sm);
+}
+.hb-input::placeholder { color: var(--hb-slate-400); }
+.hb-input[aria-invalid="true"] { border-color: var(--fg-destructive); }
+
+.hb-input-group { display: flex; align-items: center; gap: var(--space-3); }
+.hb-input-group .hb-input { flex: 1 1 auto; }
+.hb-input-suffix { font: 400 var(--text-base)/1.2 var(--font-sans); color: var(--fg-default); white-space: nowrap; }
+
+.hb-error {
+  display: flex; gap: var(--space-2); align-items: flex-start;
+  color: var(--fg-destructive); font: 600 var(--text-sm)/var(--lh-sm) var(--font-sans);
+  margin-top: var(--space-2);
+}
+
+/* Radio og checkbox, store trykkflater */
+.hb-choice {
+  display: flex; align-items: flex-start; gap: var(--space-3);
+  padding: var(--space-3);
+  border: 2px solid var(--hb-slate-200);
+  border-radius: var(--radius-sm);
+  cursor: pointer; margin-bottom: var(--space-2);
+  min-height: var(--tap-min);
+  background: #fff;
+  transition: border-color var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
+}
+.hb-choice:hover { border-color: var(--hb-blue-800); background: var(--hb-slate-50); }
+.hb-choice input { width: 26px; height: 26px; margin: 1px 0 0; flex: 0 0 auto; accent-color: var(--hb-blue-800); }
+.hb-choice:has(input:checked) { border-color: var(--hb-blue-800); background: var(--hb-blue-100); }
+.hb-choice__text { flex: 1; }
+.hb-choice__title { font-weight: 600; display: block; }
+.hb-choice__desc { display: block; color: var(--fg-subtle); font-size: var(--text-sm); line-height: var(--lh-sm); margin-top: 2px; }
+
+.hb-choice--plain { border: 0; padding: var(--space-2) 0; background: none; }
+.hb-choice--plain:hover { border: 0; background: none; }
+.hb-choice--plain:has(input:checked) { background: none; border: 0; }
+
+/* ─── Kalkulator ─────────────────────────────────────────────────────
+   Brukertest: Tom og Magne trodde 80 000 var beløpet de kunne få.
+   Tom oppdaget aldri 300 000-taket. Ingunn ba om alt i én visning.
+   Derfor: ett panel med tall, søylediagram og alle fire grensene.
+   ──────────────────────────────────────────────────────────────────── */
+
+.hb-calc {
+  border: 2px solid var(--hb-green-700);
+  border-radius: var(--radius-lg);
+  background: #fff;
+  overflow: hidden;
+}
+.hb-calc__head { background: var(--hb-green-100); padding: var(--space-4); border-bottom: 1px solid var(--hb-green-400); }
+.hb-calc__body { padding: var(--space-4); }
+
+.hb-calc__amount .hb-input-group { max-width: 320px; }
+.hb-calc__amount .hb-input {
+  font: 600 var(--text-xl)/1.2 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  min-height: 64px;
+}
+
+/* Slider */
+.hb-slider { margin-top: var(--space-4); }
+.hb-slider input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 44px; background: transparent; cursor: pointer; margin: 0;
+  display: block;
+}
+.hb-slider input[type="range"]::-webkit-slider-runnable-track {
+  height: 14px; border-radius: var(--radius-pill);
+  background: var(--track-bg, var(--hb-slate-200));
+}
+.hb-slider input[type="range"]::-moz-range-track {
+  height: 14px; border-radius: var(--radius-pill);
+  background: var(--track-bg, var(--hb-slate-200));
+}
+.hb-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--hb-blue-800); border: 4px solid #fff;
+  box-shadow: 0 0 0 2px var(--hb-blue-800), var(--shadow-2);
+  margin-top: -13px;
+}
+.hb-slider input[type="range"]::-moz-range-thumb {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--hb-blue-800); border: 4px solid #fff;
+  box-shadow: 0 0 0 2px var(--hb-blue-800), var(--shadow-2);
+}
+.hb-slider__scale {
+  display: flex; justify-content: space-between;
+  font-size: var(--text-xs); color: var(--fg-subtle);
+  margin-top: var(--space-1);
+}
+
+/* Søylevisualisering med de to grensene markert */
+.hb-bar { margin-top: var(--space-5); }
+.hb-bar__track {
+  position: relative; height: 56px;
+  background: var(--hb-slate-100);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  display: flex;
+}
+.hb-bar__seg { height: 100%; transition: width var(--duration-base) var(--ease-out); }
+.hb-bar__seg--under  { background: var(--hb-slate-300); }
+.hb-bar__seg--paid   { background: var(--hb-green-600); }
+.hb-bar__seg--over   { background: repeating-linear-gradient(135deg, var(--hb-slate-200) 0 8px, var(--hb-slate-100) 8px 16px); }
+.hb-bar__marks { position: relative; height: 56px; margin-top: 4px; }
+.hb-bar__mark {
+  position: absolute; top: 0; transform: translateX(-50%);
+  font-size: var(--text-xs); line-height: 1.25; color: var(--fg-default);
+  text-align: center; width: 86px;
+}
+.hb-bar__mark::before {
+  content: ""; display: block; width: 2px; height: 10px;
+  background: var(--hb-slate-700); margin: -4px auto 3px;
+}
+.hb-bar__mark b { display: block; font-weight: 600; }
+
+.hb-legend { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin-top: var(--space-4); font-size: var(--text-sm); }
+.hb-legend span { display: inline-flex; align-items: center; gap: var(--space-2); }
+.hb-legend i { width: 18px; height: 18px; border-radius: 3px; flex: 0 0 auto; }
+
+/* Resultatlinjer */
+.hb-result { margin-top: var(--space-5); border-top: 1px solid var(--hb-slate-200); padding-top: var(--space-4); }
+.hb-result__row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: var(--space-3); padding-block: var(--space-2);
+  border-bottom: 1px solid var(--hb-slate-100);
+}
+.hb-result__row:last-child { border-bottom: 0; }
+.hb-result__key { font-size: var(--text-sm); line-height: var(--lh-sm); }
+.hb-result__val { font: 600 var(--text-lg)/1.2 var(--font-sans); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.hb-result__hero {
+  background: var(--hb-green-100);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-top: var(--space-4);
+}
+.hb-result__hero--zero { background: var(--hb-slate-100); }
+.hb-result__hero .hb-result__key { display: block; }
+.hb-result__hero .hb-result__val { font-size: var(--text-3xl); line-height: var(--lh-3xl); display: block; color: var(--hb-green-800); }
+.hb-result__hero--zero .hb-result__val { color: var(--hb-slate-700); }
+
+/* ─── Eksempelcase ───────────────────────────────────────────────────
+   Tre kort som viser samme regnestykke med ulikt utfall. Fargen på
+   båndet følger hvor mye man får: grå gir null, mellomgrønn gir noe,
+   mørk grønn er taket. Miniatyrsøylen bruker samme fargespråk som
+   kalkulatoren, slik at koblingen er synlig uten forklaring.
+   ──────────────────────────────────────────────────────────────────── */
+
+.hb-case {
+  display: flex; flex-direction: column;
+  background: #fff;
+  border: 1px solid var(--hb-slate-200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+  transition: box-shadow var(--duration-base) var(--ease-out);
+}
+.hb-case:hover { box-shadow: var(--shadow-2); }
+
+/* Farget bånd øverst */
+.hb-case__band {
+  display: flex; align-items: center; gap: var(--space-2);
+  background: var(--case-band, var(--hb-green-700));
+  color: #fff;
+  padding: 12px var(--space-4);
+  font: 600 var(--text-sm)/1.35 var(--font-sans);
+}
+.hb-case__band svg { flex: 0 0 auto; }
+
+.hb-case__inner {
+  display: flex; flex-direction: column; flex: 1 1 auto;
+  padding: var(--space-4);
+  gap: var(--space-3);
+}
+
+.hb-case__cost {
+  margin: 0;
+  font: 400 var(--text-base)/var(--lh-base) var(--font-sans);
+  color: var(--fg-subtle);
+}
+.hb-case__cost b {
+  display: block;
+  font: 600 var(--text-lg)/1.25 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-default);
+}
+
+/* Miniatyrsøyle, samme skala og farger som i kalkulatoren */
+.hb-case__bar {
+  position: relative;
+  display: flex; height: 12px; border-radius: var(--radius-pill);
+  background: var(--hb-slate-100); overflow: hidden;
+}
+.hb-case__bar .b-tick {
+  position: absolute; top: 0; bottom: 0; width: 2px;
+  background: rgba(255, 255, 255, .85);
+  box-shadow: 0 0 0 1px rgba(44, 70, 86, .25);
+  transform: translateX(-1px);
+}
+.hb-case__scale {
+  position: relative; display: block; height: 18px;
+  font: 400 var(--text-xs)/1.3 var(--font-sans); color: var(--fg-subtle);
+  margin-top: -4px;
+}
+.hb-case__scale span {
+  position: absolute; top: 0; transform: translateX(-50%);
+  white-space: nowrap;
+}
+.hb-case__bar i { display: block; height: 100%; }
+.hb-case__bar .b-under { background: var(--hb-slate-300); }
+.hb-case__bar .b-paid  { background: var(--case-band, var(--hb-green-700)); }
+.hb-case__bar .b-over  {
+  background: repeating-linear-gradient(135deg,
+    var(--hb-slate-200) 0 5px, var(--hb-slate-100) 5px 10px);
+}
+
+/* Hovedsvaret */
+.hb-case__result {
+  background: var(--case-tint, var(--hb-green-100));
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+.hb-case__result-label {
+  display: block;
+  font: 400 var(--text-sm)/var(--lh-sm) var(--font-sans);
+  color: var(--fg-default);
+}
+.hb-case__get {
+  display: block;
+  font: 600 var(--text-3xl)/1.1 var(--font-display);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+  color: var(--case-ink, var(--hb-green-800));
+  margin-top: 2px;
+}
+
+.hb-case__body {
+  flex: 1 1 auto;
+  font-size: var(--text-sm); line-height: var(--lh-sm);
+}
+.hb-case__body p { margin-bottom: var(--space-2); }
+.hb-case__body p:last-child { margin-bottom: 0; }
+
+/* Egenandel, som en avsluttende kvitteringslinje */
+.hb-case__own {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: var(--space-3);
+  border-top: 1px solid var(--hb-slate-200);
+  padding-top: var(--space-3);
+  font-size: var(--text-sm);
+}
+.hb-case__own b {
+  font: 600 var(--text-base)/1.2 var(--font-sans);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+
+/* Fargevarianter */
+.hb-case--zero {
+  --case-band: var(--hb-slate-600);
+  --case-tint: var(--hb-slate-100);
+  --case-ink:  var(--hb-slate-700);
+}
+.hb-case--mid {
+  --case-band: var(--hb-green-600);
+  --case-tint: var(--hb-green-100);
+  --case-ink:  var(--hb-green-800);
+}
+.hb-case--capped {
+  --case-band: var(--hb-green-800);
+  --case-tint: var(--hb-green-200);
+  --case-ink:  var(--hb-green-900);
+}
+
+/* ─── Trinn / «slik søker du» ────────────────────────────────────── */
+
+.hb-steps { list-style: none; margin: 0; padding: 0; counter-reset: hbstep; }
+.hb-steps > li {
+  position: relative; counter-increment: hbstep;
+  padding: 0 0 var(--space-5) 56px;
+  border-left: 2px solid var(--hb-green-400);
+  margin-left: 19px;
+}
+.hb-steps > li:last-child { border-left-color: transparent; padding-bottom: 0; }
+.hb-steps > li::before {
+  content: counter(hbstep);
+  position: absolute; left: -21px; top: 0;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--hb-green-700); color: #fff;
+  display: grid; place-items: center;
+  font: 600 var(--text-base)/1 var(--font-sans);
+}
+.hb-steps h3 { font-size: var(--text-lg); line-height: var(--lh-lg); margin-bottom: var(--space-2); padding-top: 6px; }
+
+/* ─── Framdrift i søknaden ───────────────────────────────────────── */
+
+.hb-progress { padding-block: var(--space-3); }
+.hb-progress__meta { display: flex; justify-content: space-between; font-size: var(--text-sm); margin-bottom: var(--space-2); }
+.hb-progress__track { height: 10px; background: var(--hb-slate-200); border-radius: var(--radius-pill); overflow: hidden; }
+.hb-progress__fill { height: 100%; background: var(--hb-green-700); border-radius: var(--radius-pill); transition: width var(--duration-base) var(--ease-out); }
+
+/* ─── Opplasting ─────────────────────────────────────────────────────
+   Brukertest: 5 av 8 slet. Problemet ligger i kjeden e-post → lagre →
+   finne igjen. Derfor: flere veier inn, og tydelig kvittering.
+   ──────────────────────────────────────────────────────────────────── */
+
+.hb-upload { border: 2px dashed var(--hb-slate-300); border-radius: var(--radius-lg); padding: var(--space-4); background: var(--hb-slate-50); }
+.hb-upload__actions { display: grid; gap: var(--space-2); }
+@media (min-width: 640px) { .hb-upload__actions { grid-template-columns: 1fr 1fr; } }
+
+.hb-filelist { list-style: none; margin: var(--space-3) 0 0; padding: 0; }
+.hb-file {
+  display: flex; align-items: center; gap: var(--space-3);
+  background: var(--hb-green-100);
+  border: 2px solid var(--hb-green-600);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+.hb-file__check { flex: 0 0 auto; width: 32px; height: 32px; border-radius: 50%; background: var(--hb-green-700); display: grid; place-items: center; }
+.hb-file__meta { flex: 1 1 auto; min-width: 0; }
+.hb-file__name { font-weight: 600; word-break: break-word; }
+.hb-file__status { font-size: var(--text-sm); color: var(--hb-green-800); font-weight: 600; }
+.hb-file__remove { background: none; border: 0; color: var(--fg-link); text-decoration: underline; cursor: pointer; padding: 12px; min-height: var(--tap-min); font-size: var(--text-sm); }
+
+/* ─── Oppsummering ───────────────────────────────────────────────── */
+
+.hb-summary { border: 1px solid var(--hb-slate-200); border-radius: var(--radius-lg); overflow: hidden; }
+.hb-summary__group + .hb-summary__group { border-top: 1px solid var(--hb-slate-200); }
+.hb-summary__head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); background: var(--hb-slate-50); padding: var(--space-3); }
+.hb-summary__head h3 { margin: 0; font-size: var(--text-base); font-family: var(--font-sans); }
+.hb-summary__edit { color: var(--fg-link); text-decoration: underline; font-size: var(--text-sm); background: none; border: 0; cursor: pointer; padding: 12px; min-height: var(--tap-min); }
+.hb-summary dl { margin: 0; padding: var(--space-3); }
+.hb-summary dt { font-size: var(--text-sm); color: var(--fg-subtle); }
+.hb-summary dd { margin: 0 0 var(--space-3); font-weight: 500; }
+.hb-summary dd:last-child { margin-bottom: 0; }
+
+/* ─── Handlingsrad nederst i søknaden ────────────────────────────── */
+
+.hb-actions { margin-top: var(--space-6); }
+.hb-actions__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.hb-actions__later { text-align: center; margin-top: var(--space-3); }
+.hb-actions__later a { display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--tap-min); padding: 12px; }
+
+/* ─── Hjelpeblokk ────────────────────────────────────────────────────
+   Brukertest: 6 av 8 ville ringt. Nummeret skal ikke måtte googles.
+   ──────────────────────────────────────────────────────────────────── */
+
+.hb-help {
+  background: var(--hb-slate-800); color: #fff;
+  border-radius: var(--radius-lg); padding: var(--space-4);
+}
+.hb-help h3 { color: #fff; }
+.hb-help a { color: var(--hb-blue-300); }
+.hb-help__phone {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  font: 600 var(--text-xl)/1.2 var(--font-sans);
+  color: #fff !important; text-decoration: none;
+  background: rgba(255,255,255,.12); border: 2px solid rgba(255,255,255,.45);
+  border-radius: var(--radius-sm); padding: 14px var(--space-4);
+  min-height: 56px; margin-top: var(--space-2);
+}
+.hb-help__phone:hover { background: rgba(255,255,255,.22); }
+
+/* ─── BankID ─────────────────────────────────────────────────────── */
+
+.hb-bankid { max-width: 480px; margin-inline: auto; }
+.hb-bankid__box { border: 1px solid var(--hb-slate-200); border-radius: var(--radius-lg); box-shadow: var(--shadow-2); overflow: hidden; }
+.hb-bankid__head { background: var(--hb-slate-800); color: #fff; padding: var(--space-3) var(--space-4); display: flex; align-items: center; justify-content: space-between; }
+.hb-bankid__logo { font: 700 var(--text-lg)/1 var(--font-sans); letter-spacing: -.02em; }
+.hb-bankid__body { padding: var(--space-4); }
+.hb-bankid__demo { background: var(--hb-blue-100); border-radius: var(--radius-sm); padding: var(--space-3); font-size: var(--text-sm); }
+
+/* ─── Kvittering ─────────────────────────────────────────────────── */
+
+.hb-receipt { border: 2px solid var(--hb-green-700); border-radius: var(--radius-lg); overflow: hidden; }
+.hb-receipt__head { background: var(--hb-green-100); padding: var(--space-5) var(--space-4); text-align: center; }
+.hb-receipt__ref { font: 600 var(--text-xl)/1.2 var(--font-mono); letter-spacing: .06em; margin-top: var(--space-2); }
+.hb-receipt__body { padding: var(--space-4); }
+
+/* ─── Merkelapper ────────────────────────────────────────────────── */
+
+.hb-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: var(--radius-pill); padding: 6px var(--space-3);
+  font: 600 var(--text-xs)/1.3 var(--font-sans);
+}
+.hb-tag--new { background: var(--hb-purple-100); color: var(--hb-purple-500); }
+.hb-tag--free { background: var(--hb-green-100); color: var(--hb-green-800); }
+
+/* ─── Footer ─────────────────────────────────────────────────────── */
+
+.hb-footer { background: var(--bg-dark); color: #fff; margin-top: var(--space-8); padding-block: var(--space-6); flex: 0 0 auto; }
+.hb-footer a { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+.hb-footer h3 { color: #fff; font-size: var(--text-base); font-family: var(--font-sans); }
+.hb-footer ul { list-style: none; margin: 0; padding: 0; }
+.hb-footer li { margin-bottom: var(--space-2); }
+.hb-footer__cols { display: grid; gap: var(--space-5); }
+@media (min-width: 640px) { .hb-footer__cols { grid-template-columns: repeat(3, 1fr); } }
+.hb-footer__note { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid rgba(255,255,255,.25); font-size: var(--text-sm); }
+
+/* ─── Prototypebanner ────────────────────────────────────────────── */
+
+.hb-protobar {
+  background: var(--hb-purple-500); color: #fff;
+  font-size: var(--text-xs); line-height: 1.4;
+  padding: 8px var(--space-3); text-align: center;
+}
+.hb-protobar a { color: #fff; }
+
+/* ─── Tilbake til toppen ─────────────────────────────────────────── */
+
+.hb-totop {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  margin-top: var(--space-5); min-height: var(--tap-min); padding: 12px 0;
+}
+
+/* ─── Skriv ut ───────────────────────────────────────────────────── */
+
+@media print {
+  .hb-topbar, .hb-contextbar, .hb-menubar, .hb-footer,
+  .hb-protobar, .hb-actions, .hb-skiplink, .hb-totop { display: none !important; }
+  body { font-size: 12pt; }
+  .hb-accordion__panel[hidden] { display: block !important; }
+}
+
+/* ─── Nøkkeltall i hero ──────────────────────────────────────────────
+   Fire tall som svarer på det folk lurer på først. Den fjerde boksen
+   svarer på tilbakebetaling, som var det klart sterkeste funnet i
+   brukertestene: fem av åtte var usikre på om pengene måtte betales
+   tilbake.
+   ──────────────────────────────────────────────────────────────────── */
+
+.hb-keyfigures {
+  display: grid; grid-template-columns: 1fr;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+@media (min-width: 380px) { .hb-keyfigures { grid-template-columns: 1fr 1fr; } }
+
+.hb-key {
+  background: #fff;
+  border: 1px solid var(--hb-slate-200);
+  border-left: 5px solid var(--hb-green-600);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.hb-key__label {
+  font: 400 var(--text-sm)/var(--lh-sm) var(--font-sans);
+  color: var(--fg-subtle);
+}
+.hb-key__val {
+  font: 600 var(--text-xl)/1.15 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-default);
+  margin-top: 2px;
+}
+.hb-key__note {
+  font: 400 var(--text-sm)/var(--lh-sm) var(--font-sans);
+  color: var(--fg-subtle);
+  margin-top: 2px;
+}
+.hb-key--free {
+  background: var(--hb-green-100);
+  border-color: var(--hb-green-200);
+  border-left-color: var(--hb-green-800);
+}
+.hb-key--free .hb-key__val { color: var(--hb-green-800); }

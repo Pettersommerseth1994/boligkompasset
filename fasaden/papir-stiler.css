@@ -1,0 +1,100 @@
+/* ──────────────────────────────────────────────────────────────────
+   Boligkompasset, papirutgaven
+
+   Skriften og fargene er Fasadens. Selve arket er laget for A4 og for
+   penn: store ruter å krysse i, god luft, og ingen spørsmål som deles
+   mellom to sider.
+   ────────────────────────────────────────────────────────────────── */
+
+@layer hb-grunnlag, fasaden, papir;
+
+@import url('../ds/colors_and_type.css') layer(hb-grunnlag);
+@import url('fasaden.css?v=20')          layer(fasaden);
+
+@layer papir {
+
+  @page { size: A4; margin: 16mm 16mm 18mm; }
+
+  body { background: var(--hb-slate-100); margin: 0; }
+
+  .pa-verktoy {
+    display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center;
+    max-width: 210mm; margin: 0 auto; padding: 20px 16px;
+  }
+
+  .pa-ark {
+    max-width: 210mm; margin: 0 auto 40px;
+    background: #fff; padding: 16mm;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+    font-size: 11pt; line-height: 1.45;
+  }
+
+  .pa-topp { border-bottom: 2pt solid var(--hb-slate-800); padding-bottom: 10pt; margin-bottom: 14pt; }
+  .pa-logo { height: 28px; width: auto; display: block; margin-bottom: 14pt; }
+  .pa-h1 { font-size: 24pt; line-height: 1.15; margin: 0 0 6pt; }
+  .pa-ingress { margin: 0; max-width: 60ch; }
+
+  .pa-slik { border: 1pt solid var(--hb-slate-300); border-radius: 4pt; padding: 10pt 12pt; margin-bottom: 18pt; break-inside: avoid; }
+  .pa-slik-tittel { font-size: 13pt; margin: 0 0 6pt; }
+  .pa-slik ul { margin: 0 0 10pt; padding-left: 16pt; }
+  .pa-slik li { margin-bottom: 3pt; }
+  .pa-felter { display: grid; gap: 8pt; }
+  .pa-felter p { display: flex; align-items: flex-end; gap: 8pt; margin: 0; }
+  .pa-felter p > span:first-child { white-space: nowrap; font-weight: 600; }
+  .pa-linje { flex: 1; border-bottom: 1pt solid var(--hb-slate-500); height: 16pt; }
+
+  .pa-steg { margin-top: 16pt; }
+  .pa-steg-tittel, .pa-steg-ingress { break-after: avoid; }
+  .pa-steg-tittel { font-size: 17pt; line-height: 1.2; margin: 0 0 6pt; }
+  .pa-steg-nr { display: block; font-size: 10pt; font-weight: 600; color: var(--hb-green-800); }
+  .pa-steg-ingress { max-width: 64ch; }
+  .pa-steg-ingress .pa-hjelp { color: var(--fg-default); font-size: 11pt; }
+
+  /* Ett spørsmål, med hjelpeteksten og alle svarene, står alltid samlet */
+  .pa-sporsmal {
+    break-inside: avoid; page-break-inside: avoid;
+    border-top: 1pt solid var(--hb-slate-300);
+    padding: 10pt 0 8pt;
+  }
+  .pa-gruppe-ingress { margin: 6pt 0 0; font-weight: 600; }
+  .pa-tittel { font-size: 12.5pt; line-height: 1.3; margin: 0 0 4pt; display: flex; gap: 8pt; }
+  .pa-nr {
+    flex: 0 0 auto; min-width: 26pt; text-align: center;
+    border: 1pt solid var(--hb-slate-800); border-radius: 3pt;
+    font-size: 10pt; line-height: 16pt; height: 16pt; margin-top: 1pt;
+  }
+  .pa-hjelp { margin: 0 0 5pt; font-size: 9.5pt; line-height: 1.4; color: var(--hb-slate-600); max-width: 72ch; }
+  .pa-instruks { margin: 4pt 0 6pt; font-size: 9.5pt; font-weight: 600; }
+  .pa-betingelse { font-size: 9.5pt; color: var(--hb-slate-600); font-style: italic; }
+  .pa-betingelse--blokk { margin: 0 0 5pt; font-style: normal; font-weight: 600; color: var(--fg-default); }
+
+  .pa-valg { list-style: none; margin: 0; padding: 0; display: grid; gap: 6pt 18pt; }
+  .pa-valg li { display: flex; align-items: flex-start; gap: 9pt; }
+  /* Mange korte svar settes i to spalter, så spørsmålet tar mindre plass */
+  .pa-valg:has(> li:nth-child(6)) { grid-template-columns: 1fr 1fr; }
+
+  .pa-rute {
+    flex: 0 0 auto; width: 14pt; height: 14pt; margin-top: 0.5pt;
+    border: 1.2pt solid var(--hb-slate-800); background: #fff;
+  }
+  .pa-valg--ett .pa-rute { border-radius: 50%; }
+  .pa-valg--flere .pa-rute { border-radius: 2pt; }
+
+  .pa-notat { break-inside: avoid; margin-top: 18pt; border-top: 1pt solid var(--hb-slate-300); padding-top: 10pt; }
+  .pa-notatlinjer { display: grid; gap: 0; }
+  .pa-notatlinjer span { height: 22pt; border-bottom: 0.75pt solid var(--hb-slate-400); }
+
+  .pa-bunn { margin-top: 16pt; font-size: 8.5pt; color: var(--hb-slate-600); border-top: 0.75pt solid var(--hb-slate-300); padding-top: 6pt; }
+
+  @media print {
+    body { background: #fff; }
+    .pa-verktoy { display: none; }
+    .pa-ark { max-width: none; margin: 0; padding: 0; box-shadow: none; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  @media (max-width: 640px) {
+    .pa-ark { padding: 20px 16px; }
+    .pa-valg:has(> li:nth-child(6)) { grid-template-columns: 1fr; }
+  }
+}

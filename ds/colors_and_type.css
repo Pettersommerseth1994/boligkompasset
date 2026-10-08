@@ -1,0 +1,191 @@
+/* ──────────────────────────────────────────────────────────────────
+   Husbanken Design System — Foundations
+   Tokens extracted from the Designsystemet.fig file
+   See README.md for source notes and substitutions.
+   ────────────────────────────────────────────────────────────────── */
+
+/* Inter — locally hosted brand fonts (TTF). 18pt optical size for body/UI,
+   24pt for sub-headings, 28pt for display. Italic variants registered too. */
+
+@font-face { font-family: 'Inter'; src: url('fonts/Inter_18pt-Thin.ttf') format('truetype');         font-weight: 100; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter_18pt-ThinItalic.ttf') format('truetype');   font-weight: 100; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter_18pt-ExtraLight.ttf') format('truetype');       font-weight: 200; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter_18pt-ExtraLightItalic.ttf') format('truetype'); font-weight: 200; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter_18pt-Light.ttf') format('truetype');        font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter_18pt-LightItalic.ttf') format('truetype');  font-weight: 300; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter_18pt-Regular.ttf') format('truetype');      font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter_18pt-Italic.ttf') format('truetype');       font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter_18pt-Medium.ttf') format('truetype');       font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter_18pt-MediumItalic.ttf') format('truetype'); font-weight: 500; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter_18pt-SemiBold.ttf') format('truetype');     font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter_18pt-SemiBoldItalic.ttf') format('truetype'); font-weight: 600; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter_18pt-Bold.ttf') format('truetype');         font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter_18pt-BoldItalic.ttf') format('truetype');   font-weight: 700; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter_18pt-ExtraBold.ttf') format('truetype');        font-weight: 800; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter_18pt-ExtraBoldItalic.ttf') format('truetype'); font-weight: 800; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter_18pt-Black.ttf') format('truetype');        font-weight: 900; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('fonts/Inter_18pt-BlackItalic.ttf') format('truetype');  font-weight: 900; font-style: italic; font-display: swap; }
+
+/* 24pt optical — for sub-headings (16-26px) */
+@font-face { font-family: 'Inter 24'; src: url('fonts/Inter_24pt-Regular.ttf') format('truetype');   font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter 24'; src: url('fonts/Inter_24pt-Medium.ttf') format('truetype');    font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter 24'; src: url('fonts/Inter_24pt-SemiBold.ttf') format('truetype');  font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter 24'; src: url('fonts/Inter_24pt-Bold.ttf') format('truetype');      font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter 24'; src: url('fonts/Inter_24pt-Light.ttf') format('truetype');     font-weight: 300; font-style: normal; font-display: swap; }
+
+/* 28pt optical — for display (h1, hero) */
+@font-face { font-family: 'Inter 28'; src: url('fonts/Inter_28pt-Regular.ttf') format('truetype');   font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter 28'; src: url('fonts/Inter_28pt-Medium.ttf') format('truetype');    font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter 28'; src: url('fonts/Inter_28pt-SemiBold.ttf') format('truetype');  font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter 28'; src: url('fonts/Inter_28pt-Bold.ttf') format('truetype');      font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter 28'; src: url('fonts/Inter_28pt-Light.ttf') format('truetype');     font-weight: 300; font-style: normal; font-display: swap; }
+
+:root {
+  /* ─── Brand greens ───────────────────────────────────────────── */
+  --hb-green-900: rgb(29, 43, 17);
+  --hb-green-800: rgb(43, 71, 21);   /* Deep brand green */
+  --hb-green-700: rgb(74, 119, 41);
+  --hb-green-600: rgb(115, 165, 75); /* Mid brand green - logo */
+  --hb-green-500: rgb(150, 195, 110);
+  --hb-green-400: rgb(183, 216, 155); /* Soft accent */
+  --hb-green-200: rgb(217, 232, 197);
+  --hb-green-100: rgb(240, 247, 234); /* Surface green - callouts */
+  --hb-green-50:  rgb(247, 251, 244);
+
+  /* ─── Neutrals (warm slate) ──────────────────────────────────── */
+  --hb-slate-900: rgb(29, 41, 51);
+  --hb-slate-800: rgb(43, 69, 84);   /* Footer / dark surfaces */
+  --hb-slate-700: rgb(44, 70, 86);   /* Default text - most-used color */
+  --hb-slate-600: rgb(72, 88, 101);
+  --hb-slate-500: rgb(95, 109, 120); /* Secondary text */
+  --hb-slate-400: rgb(140, 151, 157); /* Disabled text / placeholder */
+  --hb-slate-300: rgb(182, 189, 192);
+  --hb-slate-200: rgb(217, 222, 226); /* Disabled bg / dividers */
+  --hb-slate-100: rgb(237, 240, 242);
+  --hb-slate-50:  rgb(243, 245, 246); /* Page bg alt */
+
+  /* ─── Interactive (navy) ─────────────────────────────────────── */
+  --hb-blue-900: rgb(29, 56, 106);
+  --hb-blue-800: rgb(44, 85, 148);   /* Prominent button fill */
+  --hb-blue-700: rgb(47, 88, 155);   /* Subtle button text */
+  --hb-blue-600: rgb(0, 83, 184);    /* Link */
+  --hb-blue-500: rgb(56, 107, 189);  /* Prominent hover */
+  --hb-blue-300: rgb(172, 209, 255);
+  --hb-blue-100: rgb(222, 232, 247);
+
+  /* ─── Destructive (red) ──────────────────────────────────────── */
+  --hb-red-800:  rgb(163, 24, 0);    /* Destructive hover */
+  --hb-red-700:  rgb(171, 37, 14);   /* Destructive default */
+  --hb-red-600:  rgb(164, 40, 18);
+  --hb-red-100:  rgb(252, 230, 226);
+
+  /* ─── Accent purple (used in callouts / decorative) ──────────── */
+  --hb-purple-700: rgb(123, 97, 255);
+  --hb-purple-500: rgb(147, 66, 208);
+  --hb-purple-300: rgb(202, 137, 255);
+  --hb-purple-100: rgb(237, 215, 255);
+
+  /* ─── Semantic mappings ──────────────────────────────────────── */
+  --fg-default:      var(--hb-slate-700);
+  --fg-subtle:       var(--hb-slate-500);
+  --fg-disabled:     var(--hb-slate-400);
+  --fg-on-dark:      #ffffff;
+  --fg-link:         var(--hb-blue-600);
+  --fg-destructive:  var(--hb-red-700);
+
+  --bg-default:      #ffffff;
+  --bg-subtle:       var(--hb-slate-50);
+  --bg-callout:      var(--hb-green-100);
+  --bg-dark:         var(--hb-slate-800);
+  --bg-disabled:     var(--hb-slate-200);
+
+  --border-default:  rgba(0, 0, 0, 0.10);
+  --border-strong:   var(--hb-slate-500);
+  --border-focus:    var(--hb-blue-800);
+
+  --action-primary:        var(--hb-blue-800);
+  --action-primary-hover:  var(--hb-blue-500);
+  --action-destructive:    var(--hb-red-700);
+
+  /* ─── Type families ──────────────────────────────────────────── */
+  --font-sans:    'Inter', system-ui, -apple-system, sans-serif;     /* Primary, 18pt optical */
+  --font-display: 'Inter 28', 'Inter', system-ui, sans-serif;        /* Display / hero (h1, h2) */
+  --font-heading: 'Inter 24', 'Inter', system-ui, sans-serif;        /* Sub-heading (h3, h4, ingress) */
+  --font-light:   'Inter', system-ui, sans-serif;
+  --font-mono:    ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* ─── Type scale (size / line-height) ────────────────────────── */
+  --text-xs:    14px; --lh-xs:   20px;
+  --text-sm:    16px; --lh-sm:   24px;
+  --text-base:  18px; --lh-base: 28px;  /* DEFAULT */
+  --text-lg:    22px; --lh-lg:   32px;
+  --text-xl:    26px; --lh-xl:   36px;
+  --text-2xl:   31px; --lh-2xl:  40px;
+  --text-3xl:   37px; --lh-3xl:  44px;
+  --text-4xl:   44px; --lh-4xl:  48px;
+  --text-5xl:   56px; --lh-5xl:  60px;
+  --text-6xl:   68px; --lh-6xl:  72px;
+
+  /* ─── Spacing (8px base) ─────────────────────────────────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 40px;
+  --space-7: 56px;
+  --space-8: 80px;
+  --space-9: 120px;
+
+  /* ─── Radii ──────────────────────────────────────────────────── */
+  --radius-sm:   4px;   /* Buttons, inputs, tags */
+  --radius-md:   5px;   /* Panels */
+  --radius-lg:   12px;  /* Cards */
+  --radius-xl:   20px;  /* Hero / feature panels */
+  --radius-pill: 9999px;
+
+  /* ─── Elevation ──────────────────────────────────────────────── */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.12);
+  --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.14);
+  --shadow-3: 0 8px 24px rgba(0, 0, 0, 0.20);
+
+  /* ─── Motion ─────────────────────────────────────────────────── */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+}
+
+/* ─── Base reset (lightweight) ──────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { font-size: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--lh-base);
+  color: var(--fg-default);
+  background: var(--bg-default);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ─── Semantic type styles ──────────────────────────────────────── */
+.hb-h1, h1.hb { font: 600 var(--text-4xl)/var(--lh-4xl) var(--font-display); color: var(--fg-default); margin: 0 0 var(--space-4); letter-spacing: -0.02em; }
+.hb-h2, h2.hb { font: 600 var(--text-2xl)/var(--lh-2xl) var(--font-display); color: var(--fg-default); margin: 0 0 var(--space-3); letter-spacing: -0.01em; }
+.hb-h3, h3.hb { font: 600 var(--text-xl)/var(--lh-xl) var(--font-heading); color: var(--fg-default); margin: 0 0 var(--space-3); }
+.hb-h4, h4.hb { font: 600 var(--text-lg)/var(--lh-lg) var(--font-heading); color: var(--fg-default); margin: 0 0 var(--space-2); }
+.hb-h5, h5.hb { font: 600 var(--text-sm)/var(--lh-sm) var(--font-sans); color: var(--fg-default); margin: 0 0 var(--space-2); }
+.hb-h6, h6.hb { font: 600 var(--text-xs)/var(--lh-xs) var(--font-sans); color: var(--fg-default); margin: 0 0 var(--space-2); text-transform: uppercase; letter-spacing: 0.04em; }
+
+.hb-ingress { font: 400 var(--text-lg)/var(--lh-lg) var(--font-heading); color: var(--fg-default); }
+.hb-body    { font: 400 var(--text-base)/var(--lh-base) var(--font-sans); color: var(--fg-default); }
+.hb-small   { font: 400 var(--text-sm)/var(--lh-sm) var(--font-sans); color: var(--fg-default); }
+.hb-label   { font: 600 var(--text-base)/var(--lh-base) var(--font-sans); color: var(--fg-default); }
+.hb-link    { color: var(--fg-link); text-decoration: underline; text-underline-offset: 2px; }
+.hb-link-discreet { color: var(--fg-default); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--hb-slate-300); }
+.hb-abbr    { font: 400 var(--text-sm)/var(--lh-sm) var(--font-sans); text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg-subtle); }
+
+a.hb-link:hover, .hb-link:hover { color: var(--hb-blue-800); }
+a.hb-link:focus-visible, .hb-link:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; border-radius: 2px; }

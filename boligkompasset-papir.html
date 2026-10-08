@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boligkompasset, papirutgave | Husbanken</title>
+<meta name="description" content="Alle spørsmålene i Boligkompasset på et skjema du skriver ut og fyller ut med penn.">
+<!-- Papirutgaven av Boligkompasset. Spørsmålene tegnes fra den samme
+     innholdsfila som skjermutgaven, så de to aldri kommer i utakt.
+     PDF-en i assets/pdf lages av verktoy/lag-papirutgave.sh fra denne sida. -->
+<link rel="stylesheet" href="fasaden/papir-stiler.css?v=20">
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon-boligkompasset.svg">
+</head>
+<body class="fasaden">
+
+<div class="pa-verktoy">
+  <button type="button" class="hb-button hb-button--prominent hb-button--l" onclick="window.print()">
+    <span class="hb-button-text">Skriv ut eller lagre som PDF</span>
+  </button>
+  <a class="hb-button hb-button--link" href="boligkompasset.html"><span class="hb-button-text">Tilbake til Boligkompasset</span></a>
+</div>
+
+<main class="pa-ark" id="papir"></main>
+
+<script src="assets/js/hb-kompass-data.js?v=20"></script>
+<script src="assets/js/hb-kompass-papir.js?v=20"></script>
+</body>
+</html>

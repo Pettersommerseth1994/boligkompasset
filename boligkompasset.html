@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boligkompasset | Husbanken</title>
+<meta name="description" content="Svar på 12 spørsmål om boligen din, og få vite hvor godt den passer deg i dag, hva som skal til for at den fortsatt passer om ti år, og hvem som kan være med og betale.">
+<!-- Ett stilark for hele sida. Det importerer Husbankens felles filer og
+     Fasaden, Husbankens designsystem, i en uttalt lagrekkefølge. -->
+<link rel="stylesheet" href="fasaden/boligkompasset-stiler.css?v=22">
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon-boligkompasset.svg">
+<link rel="icon" type="image/png" sizes="64x64" href="assets/img/favicon-boligkompasset.png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-boligkompasset.png">
+<!-- GitHub Pages serverer filene med ti minutters cache. Uten ?v= ville
+     den som nettopp så på siden, fortsatt få den gamle utgaven etter en
+     ny publisering. Tallet økes når skript eller stilark endres. -->
+</head>
+<body>
+
+<div id="hb-topp"></div>
+<div id="kp-framdrift-plass" class="fasaden"></div>
+
+<main id="hovedinnhold" class="fasaden">
+  <div id="kompasset">
+    <noscript>
+      <section class="hb-section">
+        <div class="hb-shell">
+          <h1>Boligkompasset</h1>
+          <p class="hb-lead">
+            Boligkompasset trenger JavaScript for å regne ut kursen din.
+            Slå det på, eller ring oss på 22 96 16 00, så går vi gjennom
+            spørsmålene sammen med deg over telefon.
+          </p>
+        </div>
+      </section>
+    </noscript>
+  </div>
+</main>
+
+<div class="kp-snarvei fasaden" id="kp-bunn-verktoy"></div>
+
+<div id="hb-bunn"></div>
+
+<script src="assets/js/hb.js"></script>
+<script src="assets/js/hb-kompass-data.js?v=22"></script>
+<script src="assets/js/hb-kompass.js?v=22"></script>
+<script>
+  hbMonter({ kontekst: 'Boligkompasset' });
+  kompassStart();
+</script>
+</body>
+</html>
