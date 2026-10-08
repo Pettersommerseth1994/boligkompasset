@@ -1,20 +1,17 @@
 /* ──────────────────────────────────────────────────────────────────
    Lagrekkefølgen for Boligkompasset
 
-     hb-grunnlag   Husbankens tokens, skrifter og skallet rundt sida,
-                   det samme som de andre prosjektene bruker
      fasaden       Fasaden, Husbankens designsystem, bygget av
-                   verktoy/bygg-fasaden.py. Gjelder bare inne i .fasaden
-     hb-kompass    det som bare finnes i Boligkompasset
+                   verktoy/bygg-fasaden.py. Gjelder inne i .fasaden,
+                   som står på <body>
+     hb-kompass    det Fasaden ikke har: kompasset, stolpene og
+                   limet mellom komponentene. Bare Fasadens tokens.
 
-   Fasaden står etter grunnlaget, så de nakne h1- og p-reglene i
-   hb-app.css ikke slår Fasadens typografi inne i innholdet. Toppen og
-   bunnen ligger utenfor .fasaden og ser ut som før.
+   Prototypens eget grunnlag (ds/colors_and_type.css og hb-app.css)
+   lastes ikke her. Topp, bunn og innhold er Fasaden hele veien.
    ────────────────────────────────────────────────────────────────── */
 
-@layer hb-grunnlag, fasaden, hb-kompass;
+@layer fasaden, hb-kompass;
 
-@import url('../ds/colors_and_type.css')      layer(hb-grunnlag);
-@import url('../assets/css/hb-app.css')       layer(hb-grunnlag);
-@import url('fasaden.css?v=20')               layer(fasaden);
-@import url('../assets/css/hb-kompass.css?v=22') layer(hb-kompass);
+@import url('fasaden.css?v=21')                  layer(fasaden);
+@import url('../assets/css/hb-kompass.css?v=23') layer(hb-kompass);
