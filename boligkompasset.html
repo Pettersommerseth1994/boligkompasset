@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Boligkompasset | Husbanken</title>
 <meta name="description" content="Svar på 12 spørsmål om boligen din, og få vite hvor godt den passer deg i dag, hva som skal til for at den fortsatt passer om ti år, og hvem som kan være med og betale.">
-<!-- Ett stilark for hele sida: Fasaden, og det lille som bare finnes i
-     Boligkompasset, i en uttalt lagrekkefølge. -->
-<link rel="stylesheet" href="fasaden/boligkompasset-stiler.css?v=23">
+<!-- Ett stilark for hele sida. Det importerer Husbankens felles filer og
+     Fasaden, Husbankens designsystem, i en uttalt lagrekkefølge. -->
+<link rel="stylesheet" href="fasaden/boligkompasset-stiler.css?v=22">
 <link rel="icon" type="image/svg+xml" href="assets/img/favicon-boligkompasset.svg">
 <link rel="icon" type="image/png" sizes="64x64" href="assets/img/favicon-boligkompasset.png">
 <link rel="apple-touch-icon" href="assets/img/apple-touch-boligkompasset.png">
@@ -15,115 +15,37 @@
      den som nettopp så på siden, fortsatt få den gamle utgaven etter en
      ny publisering. Tallet økes når skript eller stilark endres. -->
 </head>
-<body class="fasaden">
-<!-- Fasadens regler gjelder det som står inni .fasaden, så sidas
-     hb-page står på en egen blokk innenfor body. -->
-<div class="hb-page">
+<body>
 
-<!-- Toppen er Fasadens hb-header: logolinja og linja med tjenestenavn
-     og meny. Prototypen sier fra om seg selv med en gul hb-tag. -->
-<ul class="hb-skiplinks-list">
-  <li><a class="hb-skiplinks-link" href="#hovedinnhold">Hopp til hovedinnhold</a></li>
-</ul>
+<div id="hb-topp"></div>
+<div id="kp-framdrift-plass" class="fasaden"></div>
 
-<header class="hb-page-header hb-header">
-  <div class="hb-header-line-top">
-    <div class="hb-header-line-top-container">
-      <a class="hb-header-husbanken-logo" href="https://pettersommerseth1994.github.io/husbanken/index.html">
-        <picture>
-          <source media="(max-width: 47.99em)" srcset="fasaden/grafikk/husbanken-logo-compact.svg">
-          <img src="fasaden/grafikk/husbanken-logo.svg" alt="Husbanken, til forsiden">
-        </picture>
-      </a>
-      <div class="hb-header-user-wrapper">
-        <span class="hb-tag hb-tag--warning hb-header-hide-on-mobile">Klikkbar prototype</span>
-        <a class="hb-header-button" href="https://pettersommerseth1994.github.io/husbanken/logg-inn.html" aria-label="Logg inn">
-          <span class="hb-icon hb-header-button-icon" data-fa-ikon="hb-login"></span>
-          <span class="hb-header-button-text-nowrap hb-header-hide-on-mobile">Logg inn</span>
-        </a>
-      </div>
-    </div>
-  </div>
-  <div class="hb-header-menuline">
-    <div class="hb-header-container">
-      <div class="hb-header-servicename kp-hode-navn">
-        <a class="hb-header-menu-list-link" href="boligkompasset.html">
-          <span class="hb-header-menu-list-link-text">Boligkompasset</span>
-        </a>
-      </div>
-      <button type="button" class="hb-header-menu-button" aria-expanded="false" aria-controls="kp-meny">
-        Meny <span class="hb-icon" data-fa-ikon="arrow-down-1"></span>
-      </button>
-      <nav class="hb-header-menu kp-meny" id="kp-meny" aria-label="Hovedmeny">
-        <ul class="hb-header-menu-list">
-          <li><a class="hb-header-menu-list-link hb-header-menu-list-link-border" href="https://pettersommerseth1994.github.io/husbanken/index.html"><span class="hb-header-menu-list-link-text">Forside for privatpersoner</span></a></li>
-          <li><a class="hb-header-menu-list-link hb-header-menu-list-link-border" href="https://pettersommerseth1994.github.io/husbanken/tilskudd.html"><span class="hb-header-menu-list-link-text">Tilskudd til aldersvennlig oppgradering</span></a></li>
-          <li><a class="hb-header-menu-list-link hb-header-menu-list-link-border" href="boligkompasset.html" aria-current="page"><span class="hb-header-menu-list-link-text active">Boligkompasset</span></a></li>
-        </ul>
-      </nav>
-    </div>
-  </div>
-</header>
-
-<main id="hovedinnhold" class="hb-page-main">
-  <div id="kp-framdrift-plass"></div>
+<main id="hovedinnhold" class="fasaden">
   <div id="kompasset">
     <noscript>
-      <div class="hb-container hb-container--width-sm">
-        <h1 class="hb-h1 hb-mb--md">Boligkompasset</h1>
-        <p class="hb-text--ingress">
-          Boligkompasset trenger JavaScript for å regne ut kursen din.
-          Slå det på, eller ring oss på 22 96 16 00, så går vi gjennom
-          spørsmålene sammen med deg over telefon.
-        </p>
-      </div>
+      <section class="hb-section">
+        <div class="hb-shell">
+          <h1>Boligkompasset</h1>
+          <p class="hb-lead">
+            Boligkompasset trenger JavaScript for å regne ut kursen din.
+            Slå det på, eller ring oss på 22 96 16 00, så går vi gjennom
+            spørsmålene sammen med deg over telefon.
+          </p>
+        </div>
+      </section>
     </noscript>
   </div>
 </main>
 
-<div class="kp-utskrift-skjul" id="kp-bunn-verktoy"></div>
+<div class="kp-snarvei fasaden" id="kp-bunn-verktoy"></div>
 
-<!-- Bunnen er Fasadens hb-footer, med Fasadens rutenett inni -->
-<footer class="hb-page-footer hb-footer">
-  <div class="hb-container hb-container--width-lg">
-    <div class="hb-grid">
-      <div class="hb-cell hb-cell--12of12 hb-cell--4of12@md">
-        <h2 class="hb-footer-tittel">Kontakt oss</h2>
-        <ul class="kp-fotliste">
-          <li><a class="hb-footer-lenke" href="tel:+4722961600"><span class="hb-icon" data-fa-ikon="phone"></span>Telefon 22 96 16 00</a><br>
-              <span class="hb-text--sm">Hverdager 09.00–15.00</span></li>
-          <li><a class="hb-footer-lenke" href="mailto:post@husbanken.no">post@husbanken.no</a></li>
-          <li>Postboks 1404, 8002 Bodø</li>
-        </ul>
-      </div>
-      <div class="hb-cell hb-cell--12of12 hb-cell--4of12@md">
-        <h2 class="hb-footer-tittel">Snarveier</h2>
-        <ul class="kp-fotliste">
-          <li><a class="hb-footer-lenke" href="https://pettersommerseth1994.github.io/husbanken/tilskudd.html">Tilskudd til aldersvennlig oppgradering</a></li>
-          <li><a class="hb-footer-lenke" href="https://husbanken.no/person/startlaan/">Startlån fra kommunen</a></li>
-          <li><a class="hb-footer-lenke" href="https://husbanken.no/person/laan-fra-husbanken/">Lån fra Husbanken</a></li>
-        </ul>
-      </div>
-      <div class="hb-cell hb-cell--12of12 hb-cell--4of12@md">
-        <h2 class="hb-footer-tittel">Om nettstedet</h2>
-        <ul class="kp-fotliste">
-          <li><a class="hb-footer-lenke" href="https://pettersommerseth1994.github.io/husbanken/designbeslutninger.html">Designbeslutninger i denne prototypen</a></li>
-        </ul>
-      </div>
-    </div>
-    <p class="hb-text--sm hb-mt--xl hb-mb--none">
-      Dette er en klikkbar prototype laget for designarbeid. Innhold, beløp og
-      saksbehandling er ikke bindende. Ingen data sendes til Husbanken.
-    </p>
-  </div>
-</footer>
+<div id="hb-bunn"></div>
 
-</div>
-
-<script src="fasaden/fasaden-ikoner.js?v=1"></script>
-<script src="assets/js/hb-kompass-data.js?v=23"></script>
-<script src="assets/js/hb-kompass.js?v=23"></script>
+<script src="assets/js/hb.js"></script>
+<script src="assets/js/hb-kompass-data.js?v=22"></script>
+<script src="assets/js/hb-kompass.js?v=22"></script>
 <script>
+  hbMonter({ kontekst: 'Boligkompasset' });
   kompassStart();
 </script>
 </body>

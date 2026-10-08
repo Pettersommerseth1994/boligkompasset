@@ -16,19 +16,9 @@ designbeslutninger) peker dit.
 - `boligkompasset-papir.html` – papirutgaven
 - `assets/js/hb-kompass-data.js` – spørsmål, svaralternativer og tekster
 - `assets/js/hb-kompass.js` – logikken
-- `assets/css/hb-kompass.css` – det Fasaden ikke har: kompasset, stolpene og
-  utskriften. Bare Fasadens tokens.
-- `fasaden/` – Fasaden, Husbankens designsystem: `fasaden.css` med tokens og
-  skrifter, `fasaden-ikoner.js` og logoen i `grafikk/`
-- `verktoy/bygg-fasaden.py` – bygger `fasaden/` fra Fasaden-repoet
-- `ds/` – prototypens gamle grunnlag. Brukes nå bare av papirutgaven.
-
-## Fasaden
-
-Skjermutgaven er bygget med Fasaden alene: topp, bunn, komponenter, ikoner,
-farger, avstander og brytpunkter. Det eneste som ikke er en Fasaden-komponent,
-er kompasset, stolpene i oppsummeringen og skyvekontrollen. Også de bruker
-bare Fasadens tokens.
+- `assets/css/hb-kompass.css` – stilene som bare finnes i kompasset
+- `fasaden/` – Fasaden, Husbankens designsystem
+- `ds/` – Husbankens tokens, skrifter og logo
 
 ## Kjøre lokalt
 

@@ -7,15 +7,11 @@
 
    Komponentene er Fasaden, Husbankens eget designsystem. Alt innhold
    som tegnes her, ligger inne i .fasaden, se fasaden/fasaden.css.
-   Ikonene er Fasadens, fra fasaden/fasaden-ikoner.js. Det eneste som
-   ikke er en Fasaden-komponent, er kompasset selv og stolpene.
    ────────────────────────────────────────────────────────────────── */
 
 /* Nytt navn da spørsmålene ble byttet ut. De gamle svarene passer
    ikke til de nye spørsmålene, og skal ikke dukke opp som «påbegynt». */
 const KP_LAGER = 'hb-boligkompasset-2';
-
-const KP_TELEFON = { tekst: '22 96 16 00', tel: '+4722961600' };
 
 let S = {};              // svarene
 let KP_FLYT = [];        // skjermene i kompassmodus
@@ -234,7 +230,7 @@ function kpKompassSvg(kurs, opt = {}) {
 
   const felt = (d, navn, aktiv) =>
     `<path class="kp-kompass__felt${aktiv ? ' kp-kompass__felt--aktiv' : ''}" data-kv="${navn}" d="${d}"
-           fill="${aktiv ? 'var(--color-green-65)' : 'var(--color-gray-65)'}"/>`;
+           fill="${aktiv ? 'var(--hb-green-600)' : 'var(--hb-slate-400)'}"/>`;
 
   /* Kvadranten nåla peker inn i, tonet litt sterkere */
   const kv = kurs.r > 0.24
@@ -282,7 +278,7 @@ function kpKompassSvg(kurs, opt = {}) {
     <path class="kp-kompass__naal-sor"  d="M${cx} ${cy + r - 18} L${cx + 9} ${cy - 5} L${cx} ${cy} L${cx - 9} ${cy - 5} Z"/>
   </g>
   <circle class="kp-kompass__nav" cx="${cx}" cy="${cy}" r="8.5"/>
-  <circle cx="${cx}" cy="${cy}" r="3.4" fill="var(--color-neutral-100)"/>
+  <circle cx="${cx}" cy="${cy}" r="3.4" fill="#fff"/>
   ${etiketter}
 </svg>`;
 }
@@ -298,31 +294,14 @@ const kpAvsnitt = (tekst, klasse = 'hb-felt-beskrivelse') => String(tekst || '')
   .split(/\n\s*\n/).filter(Boolean)
   .map(a => `<p class="${klasse}">${a.trim()}</p>`).join('');
 
-/* Fasadens ikon, slik hb-icon tegner det. Ikonet er pynt, teksten ved
-   siden av sier det samme. */
-const kpIkon = (navn, klasse = '', stil = '') =>
-  `<span class="hb-icon ${klasse}" aria-hidden="true"${stil ? ` style="${stil}"` : ''}>${FASADEN_IKON[navn] || ''}</span>`;
-
 /* Fasadens knapp. «prominent» er hovedknappen, «standard» er den
    sekundære og «subtle» den diskré. Alle i stor utgave, for målgruppa
-   er over 60 og trykkflata skal være romslig. Ikonet står etter
-   teksten, eller foran den med «venstre». */
-function kpKnapp(tekst, data, variant = 'prominent', ikon = '', venstre = false) {
-  const i = ikon ? kpIkon(ikon, 'hb-button-icon') : '';
+   er over 60 og trykkflata skal være romslig. */
+function kpKnapp(tekst, data, variant = 'prominent', ikon = '') {
   return `<button type="button" class="hb-button hb-button--${variant} hb-button--l" ${data}>
-    ${venstre ? i : ''}<span class="hb-button-text">${tekst}</span>${venstre ? '' : i}
+    <span class="hb-button-text">${tekst}</span>${ikon ? `<span class="hb-button-icon kp-ikon" data-ikon="${ikon}"></span>` : ''}
   </button>`;
 }
-
-/* Fasadens knapperad. Navigasjonen nederst på hver skjerm er
-   hb-knappesamling-gruppe--navigasjon, som i e-søknaden: hovedknappen
-   først i koden, og til høyre for «Forrige» på bred skjerm. */
-const kpKnapperad = (knapper, variant = 'horisontal') => `
-  <div class="hb-knappesamling">
-    <div class="hb-knappesamling-gruppe hb-knappesamling-gruppe--${variant}">
-      ${knapper.filter(Boolean).map(k => `<div class="hb-knappesamling-element">${k}</div>`).join('')}
-    </div>
-  </div>`;
 
 /* Svaralternativene er Fasadens radioknapp og avkryssingsboks, satt opp
    slik felt-radio og felt-checkboxgruppe gjør det: en liste i et
@@ -354,14 +333,9 @@ function kpValgHtml(navn, valg, type, gjeldende, legend) {
       </li>`;
   };
 
-  /* Med synlig ledetekst er den Fasadens hb-legend med hb-legend-tekst,
-     og hjelpeteksten står mellom ledeteksten og svarene. Uten, som når
-     spørsmålet selv er overskriften, er legend bare for skjermleser. */
   return `
-  <fieldset class="hb-fieldset hb-felt ${flertall ? 'hb-felt-checkboxgruppe' : 'hb-felt-radio'}">
-    ${legend.synlig
-      ? `<legend class="hb-legend"><span class="hb-legend-tekst">${legend.tekst}</span></legend>${kpAvsnitt(legend.hjelp)}`
-      : `<legend class="hb-screenreader-only">${legend.tekst}</legend>`}
+  <fieldset class="hb-felt ${flertall ? 'hb-felt-checkboxgruppe' : 'hb-felt-radio'}">
+    <legend class="hb-screenreader-only">${legend}</legend>
     <ul class="hb-feltliste">
       ${synlige.filter(v => !v.under).map(rad).join('')}
     </ul>
@@ -369,11 +343,15 @@ function kpValgHtml(navn, valg, type, gjeldende, legend) {
 }
 
 /* Et felt med egen ledetekst, slik delspørsmålene 1a og 1b og
-   oppfølgingen 5b står. */
+   oppfølgingen 5b står. Ledeteksten er Fasadens hb-legend. */
 function kpDelfeltHtml(navn, ledetekst, hjelp, valg, type, gjeldende) {
   return `
-  <div class="kp-felt" data-felt="${navn}">
-    ${kpValgHtml(navn, valg, type, gjeldende, { synlig: true, tekst: ledetekst, hjelp })}
+  <div class="hb-felt kp-felt" data-felt="${navn}">
+    <div class="hb-fieldset">
+      <div class="hb-legend"><span class="hb-legend-tekst" aria-hidden="true">${ledetekst}</span></div>
+      ${kpAvsnitt(hjelp)}
+      ${kpValgHtml(navn, valg, type, gjeldende, ledetekst)}
+    </div>
   </div>`;
 }
 
@@ -415,19 +393,31 @@ function kpStartHtml() {
   const paabegynt = Object.keys(S).some(k => !['modus', 'endret', 'svarerFor', 'startet', 'posisjon'].includes(k));
   const kurs = kpBeregnKurs();
 
-  /* De fire kursene er Fasadens knappegruppe med radioknapper, som et
-     segmentert valg: én kurs om gangen, og den valgte er markert. */
-  const kursValg = kode => `
-        <input class="hb-radiobutton" type="radio" name="kurs-forklaring" id="kurs-${kode}" value="${kode}" data-kurs="${kode}">
-        <label class="hb-button hb-button--standard" for="kurs-${kode}">${KOMPASS_RETNINGER[kode].navn}</label>`;
+  const kursKnapp = kode => {
+    const k = KOMPASS_RETNINGER[kode];
+    const piler = { N: 0, Ø: 90, S: 180, V: 270 };
+    return `
+    <button type="button" class="kp-kurs" data-kurs="${kode}" aria-pressed="false">
+      <svg class="kp-kurs__pil" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="18" fill="none" stroke="var(--hb-slate-200)" stroke-width="1.5"/>
+        <g style="transform:rotate(${piler[kode]}deg);transform-origin:20px 20px">
+          <path d="M20 5 L25 24 L20 20 L15 24 Z" fill="var(--hb-green-700)"/>
+        </g>
+      </svg>
+      <span>
+        <span class="kp-kurs__navn">${k.navn}</span>
+        <span class="kp-kurs__kort">${k.kort}</span>
+      </span>
+    </button>`;
+  };
 
   return `
-<div class="kp-hero">
-  <div class="hb-container hb-container--width-lg">
-    <div class="hb-grid hb-grid--align-items-center">
-      <div class="hb-cell hb-cell--12of12 hb-cell--7of12@md">
-        <h1 class="hb-h1 hb-mb--md kp-maal">Boligkompasset</h1>
-        <p class="hb-text--ingress hb-mb--md kp-maal">
+<section class="hb-section kp-hero">
+  <div class="hb-shell hb-shell--wide">
+    <div class="kp-hero__rad">
+      <div>
+        <h1 class="hb-h1 kp-h1">Boligkompasset</h1>
+        <p class="hb-text--ingress kp-ingress">
           Svar på ${kpAntallSporsmal()} spørsmål om boligen du bor i nå. Du får vite hvor godt den
           passer deg i dag, hva som skal til for at den fortsatt passer om ti år,
           og hvem som kan betale for det. Det tar 5–10 minutter.
@@ -436,36 +426,34 @@ function kpStartHtml() {
           Du trenger ikke logge inn. Ingenting sendes til Husbanken før du selv velger det.
         </p>
       </div>
-      <div class="hb-cell hb-cell--12of12 hb-cell--5of12@md">
-        <img class="kp-hero__ill" src="assets/img/boligkompasset.svg" alt="" width="260" height="200">
-      </div>
+      <img class="kp-hero__ill" src="assets/img/boligkompasset.svg" alt=""
+           width="260" height="200">
     </div>
   </div>
-</div>
+</section>
 
-<div class="hb-container hb-container--width-lg">
+<section class="hb-section">
+  <div class="hb-shell hb-shell--wide">
 
-  ${paabegynt ? `
-  <div class="hb-callout hb-callout--info hb-mb--xl">
-    <div class="hb-callout-body">
-      <h2 class="hb-callout-title">Du har begynt før</h2>
-      <div class="hb-callout-content">
-        <p>
-          Svarene dine ligger lagret fra ${S.endret ? kpKlokke(S.endret) : 'sist'}.
-          Du kan fortsette der du slapp, eller begynne på nytt.
-        </p>
-        ${kpKnapperad([
-          kpKnapp('Fortsett der jeg slapp', 'data-fortsett'),
-          kpKnapp('Begynn på nytt', 'data-nullstill', 'subtle')
-        ])}
+    ${paabegynt ? `
+    <div class="hb-callout hb-callout--info kp-callout">
+      <div class="hb-callout-body">
+        <h2 class="hb-callout-title">Du har begynt før</h2>
+        <div class="hb-callout-content">
+          <p>
+            Svarene dine ligger lagret fra ${S.endret ? kpKlokke(S.endret) : 'sist'}.
+            Du kan fortsette der du slapp, eller begynne på nytt.
+          </p>
+          <div class="kp-knapper">
+            ${kpKnapp('Fortsett der jeg slapp', 'data-fortsett')}
+            ${kpKnapp('Begynn på nytt', 'data-nullstill', 'subtle')}
+          </div>
+        </div>
       </div>
-    </div>
-  </div>` : ''}
+    </div>` : ''}
 
-  <div class="hb-grid hb-grid--align-items-stretch">
-    <div class="hb-cell hb-cell--12of12 hb-cell--6of12@md">
-      <div class="hb-card">
-        <div class="hb-tags hb-tags--top-right"><span class="hb-tag hb-tag--positive">Anbefalt</span></div>
+    <div class="kp-modus">
+      <div class="hb-card kp-modus__kort kp-modus__kort--anbefalt">
         <div class="hb-card-header"><h2 class="hb-card-tittel">På skjerm, med kompasset</h2></div>
         <div class="hb-card-body">
           <p>
@@ -473,15 +461,13 @@ function kpStartHtml() {
             hvor kompassnåla peker, og til slutt får du en oppsummering med
             tiltakene i prioritert rekkefølge.
           </p>
-          <p class="hb-text--semibold hb-mb--none">${KOMPASS_ETAPPER.length} steg · ${kpAntallSporsmal()} spørsmål · 5–10 minutter</p>
+          <p class="hb-text--semibold">${KOMPASS_ETAPPER.length} steg · ${kpAntallSporsmal()} spørsmål · 5–10 minutter</p>
         </div>
         <div class="hb-card-footer">
-          ${kpKnapp('Start kartleggingen', 'data-start="kompass"', 'prominent', 'arrow-right')}
+          ${kpKnapp('Start kartleggingen', 'data-start="kompass"', 'prominent', 'pil')}
         </div>
       </div>
-    </div>
-    <div class="hb-cell hb-cell--12of12 hb-cell--6of12@md">
-      <div class="hb-card">
+      <div class="hb-card kp-modus__kort">
         <div class="hb-card-header"><h2 class="hb-card-tittel">På papir</h2></div>
         <div class="hb-card-body">
           <p>
@@ -489,64 +475,66 @@ function kpStartHtml() {
             krysser av med penn. Fint hvis du vil gå gjennom boligen sammen med
             noen, for eksempel en ergoterapeut eller en pårørende.
           </p>
-          <p class="hb-text--semibold hb-mb--none">PDF · A4 · ${kpAntallSporsmal()} spørsmål</p>
+          <p class="hb-text--semibold">PDF · A4 · ${kpAntallSporsmal()} spørsmål</p>
         </div>
         <div class="hb-card-footer">
           <a class="hb-button hb-button--standard hb-button--l" href="${KP_PAPIR_PDF}" target="_blank" rel="noopener">
-            <span class="hb-button-text">Åpne papirutgaven (PDF)</span>${kpIkon('print-text', 'hb-button-icon')}
+            <span class="hb-button-text">Åpne papirutgaven (PDF)</span>
             <span class="hb-screenreader-only">, åpnes i nytt vindu</span>
           </a>
         </div>
       </div>
     </div>
-  </div>
 
-  <ul class="hb-grid hb-grid--align-items-stretch kp-liste-null hb-mt--2xl">
-    ${[
-      ['Hvem er det for?', `Deg som er rundt 60 år eller eldre og bor hjemme, og som vil vite hva
+    <ul class="kp-tre">
+      <li class="hb-card">
+        <h2 class="hb-h4">Hvem er det for?</h2>
+        <p class="hb-text--sm hb-mb--none">
+          Deg som er rundt 60 år eller eldre og bor hjemme, og som vil vite hva
           boligen din tåler av årene som kommer. Er du pårørende, kan du gå
-          gjennom spørsmålene sammen med den det gjelder.`],
-      ['Hvorfor gjøre det nå?', `De fleste venter til noe har skjedd. Da haster det, valgene er færre,
+          gjennom spørsmålene sammen med den det gjelder.
+        </p>
+      </li>
+      <li class="hb-card">
+        <h2 class="hb-h4">Hvorfor gjøre det nå?</h2>
+        <p class="hb-text--sm hb-mb--none">
+          De fleste venter til noe har skjedd. Da haster det, valgene er færre,
           og det blir dyrere. Gjør du det mens alt går greit, velger du selv
-          både løsning og tidspunkt.`],
-      ['Hva får du?', `En kurs som sier hvor du står, tiltakene dine i prioritert rekkefølge,
+          både løsning og tidspunkt.
+        </p>
+      </li>
+      <li class="hb-card">
+        <h2 class="hb-h4">Hva får du?</h2>
+        <p class="hb-text--sm hb-mb--none">
+          En kurs som sier hvor du står, tiltakene dine i prioritert rekkefølge,
           hvilke tilskudd og lån som kan dekke dem, og hvem du skal ringe.
-          Alt kan skrives ut.`]
-    ].map(([tittel, tekst]) => `
-    <li class="hb-cell hb-cell--12of12 hb-cell--4of12@md">
-      <div class="hb-card">
-        <div class="hb-card-header"><h2 class="hb-card-tittel">${tittel}</h2></div>
-        <div class="hb-card-body"><p class="hb-text--sm hb-mb--none">${tekst}</p></div>
-      </div>
-    </li>`).join('')}
-  </ul>
+          Alt kan skrives ut.
+        </p>
+      </li>
+    </ul>
 
-  <div class="hb-panel hb-panel--noytral hb-mt--2xl">
-    <div class="hb-grid hb-grid--align-items-center">
-      <div class="hb-cell hb-cell--12of12 hb-cell--7of12@lg">
+    <div class="hb-panel hb-panel--noytral kp-veier">
+      <div>
         <h2 class="hb-h2">Kartleggingen kan føre fire veier</h2>
         <p>
           Kompasset er ikke en karakter. Det er en peiling. Etter hvert steg ser du
           hvor nåla står, og til slutt peker den mot den kursen som passer
-          boligen din. Velg en retning for å se hva den betyr.
+          boligen din. Trykk på en retning for å se hva den betyr.
         </p>
-        <fieldset class="hb-fieldset">
-          <legend class="hb-screenreader-only">Velg en retning</legend>
-          <div class="hb-buttongroup">
-            ${['N', 'Ø', 'V', 'S'].map(kursValg).join('')}
-          </div>
-        </fieldset>
-        <p class="hb-text--sm hb-mt--md hb-mb--none kp-kursforklaring" id="kurs-forklaring" aria-live="polite">
-          Nåla står i ro til du begynner å svare.
+        <div class="kp-kurser">
+          ${['N', 'Ø', 'V', 'S'].map(kursKnapp).join('')}
+        </div>
+        <p class="hb-text--sm hb-text--secondary kp-kursforklaring" id="kurs-forklaring">
+          Nåla under står i ro til du begynner å svare.
         </p>
       </div>
-      <div class="hb-cell hb-cell--12of12 hb-cell--5of12@lg">
+      <div>
         <div class="kp-kompass-stort" id="start-kompass">${kpKompassSvg(kurs)}</div>
       </div>
     </div>
-  </div>
 
-</div>`;
+  </div>
+</section>`;
 }
 
 /* ═══ Framdriften ═════════════════════════════════════════════════
@@ -554,48 +542,30 @@ function kpStartHtml() {
    progressbar under viser hvor langt du er kommet i spørsmålene.
    Telleren teller spørsmål, ett hakk per spørsmål.
 
-   På smal skjerm viser Fasaden stegnavnet og en knapp som folder ut
-   stegene, i stedet for hele lista.
-
-   Fasaden animerer det aktive steget når stepperen tegnes. Den tegnes
-   derfor bare på nytt når du kommer til et annet steg. Mellom to
-   spørsmål i samme steg oppdateres bare progressbaren.
+   Linja tegnes på nytt for hver skjerm, og da spilte Fasadens animasjon
+   av det aktive steget hver gang, også mellom to spørsmål i samme steg.
+   Nå får den bare spille når du går videre til et nytt steg.
    ─────────────────────────────────────────────────────────────────── */
 
 let kpForrigeSteg = null;
 
-function kpFramdriftTall() {
+function kpFramdriftHtml() {
   const f = KP_FLYT[kpPos];
   const totalt = kpAntallSporsmal();
   const nr = kpSporsmalNr(kpPos);
   const etappeNr = f.t === 'slutt' ? KOMPASS_ETAPPER.length
     : KOMPASS_ETAPPER.findIndex(e => e.id === f.e.id) + 1;
-  return {
-    etappeNr,
-    pst: f.t === 'slutt' ? 100 : Math.round((nr / totalt) * 100),
-    teller: f.t === 'sp' ? `Spørsmål ${nr} av ${totalt}` : `${nr} av ${totalt} spørsmål besvart`
-  };
-}
-
-function kpFramdriftBarHtml({ pst, teller }) {
-  return `
-    <div class="hb-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"
-         aria-valuenow="${pst}" aria-label="${teller}" data-framdrift-bar>
-      <div class="hb-progress-bar-value" style="width:${pst}%"></div>
-    </div>
-    <p class="hb-text--sm hb-text--secondary hb-mt--xs hb-mb--none" data-framdrift-teller>${teller}</p>`;
-}
-
-function kpFramdriftHtml() {
-  const tall = kpFramdriftTall();
-  const { etappeNr } = tall;
-  const etappe = KOMPASS_ETAPPER[etappeNr - 1];
+  const pst = f.t === 'slutt' ? 100 : Math.round((nr / totalt) * 100);
+  const teller = f.t === 'sp' ? `Spørsmål ${nr} av ${totalt}`
+    : `${nr} av ${totalt} spørsmål besvart`;
+  const nyttSteg = kpForrigeSteg !== null && etappeNr > kpForrigeSteg;
+  kpForrigeSteg = etappeNr;
 
   return `
-<div class="kp-framdrift kp-utskrift-skjul">
-  <div class="hb-container hb-container--width-md">
+<div class="kp-framdrift kp-utskrift-skjul${nyttSteg ? '' : ' kp-framdrift--rolig'}">
+  <div class="hb-shell">
     <div class="hb-progress-stepper">
-      <nav class="hb-progress-stepper-nav" id="kp-steg" aria-label="Stegene i Boligkompasset">
+      <nav class="hb-progress-stepper-nav" aria-label="Stegene i Boligkompasset">
         <ol class="hb-progress-stepper-list">
           ${KOMPASS_ETAPPER.map((e, i) => {
             const ferdig = i + 1 < etappeNr, aktiv = i + 1 === etappeNr;
@@ -609,47 +579,29 @@ function kpFramdriftHtml() {
           }).join('')}
         </ol>
       </nav>
-      <div class="hb-progress-stepper-page-title">
-        <p class="hb-progress-stepper-page-title-description">
-          <span class="hb-text--semibold">Steg ${etappeNr} av ${KOMPASS_ETAPPER.length}:</span> ${etappe.navn}
-          <button type="button" class="hb-button hb-button--link hb-progress-stepper-trigger"
-                  aria-expanded="false" aria-controls="kp-steg" data-steg-vis>
-            <span class="hb-button-text">Vis stegene</span>${kpIkon('arrow-down-1', 'hb-progress-stepper-trigger-icon')}
-          </button>
-        </p>
-      </div>
+      <p class="kp-framdrift__steg">
+        <span class="hb-text--semibold">Steg ${etappeNr} av ${KOMPASS_ETAPPER.length}</span>
+        · ${f.t === 'slutt' ? 'Oppsummering' : f.e.navn}
+      </p>
     </div>
-    <div data-framdrift-bunn>${kpFramdriftBarHtml(tall)}</div>
+    <div class="kp-framdrift__bunn">
+      <div class="hb-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+           aria-valuenow="${pst}" aria-label="${teller}">
+        <div class="hb-progress-bar-value" style="width:${pst}%"></div>
+      </div>
+      <span class="kp-framdrift__teller">${teller}</span>
+    </div>
   </div>
 </div>`;
 }
 
-/* Tegner stepperen bare når steget er nytt. Ellers byttes bare
-   progressbaren og telleren. */
-function kpTegnFramdrift(frem) {
-  const tall = kpFramdriftTall();
-  const bunn = frem.querySelector('[data-framdrift-bunn]');
-  if (bunn && tall.etappeNr === kpForrigeSteg) {
-    const bar = bunn.querySelector('[data-framdrift-bar]');
-    bar.setAttribute('aria-valuenow', tall.pst);
-    bar.setAttribute('aria-label', tall.teller);
-    bar.firstElementChild.style.width = tall.pst + '%';
-    bunn.querySelector('[data-framdrift-teller]').textContent = tall.teller;
-    return;
-  }
-  kpForrigeSteg = tall.etappeNr;
-  frem.innerHTML = kpFramdriftHtml();
-}
-
 /* ═══ Etappeskjermen ══════════════════════════════════════════════ */
 
-/* Hvert steg har sitt Fasaden-ikon: huset, rommene inne, døra inn og
-   kartnåla for nærmiljøet. */
-const KP_ETAPPEIKON = {
-  hus: 'house-chimney-2',
-  rom: 'family-home',
-  dor: 'hb-login',
-  kart: 'style-two-pin-home'
+const KP_ETAPPEFIG = {
+  hus: '<path d="M8 40 L48 12 L88 40 M18 34 V84 H78 V34" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>',
+  kart: '<circle cx="48" cy="38" r="16" fill="none" stroke="currentColor" stroke-width="5"/><path d="M48 12a26 26 0 0 1 26 26c0 18-26 48-26 48S22 56 22 38A26 26 0 0 1 48 12Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>',
+  dor: '<rect x="24" y="12" width="48" height="76" rx="3" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="60" cy="52" r="4" fill="currentColor"/>',
+  rom: '<rect x="10" y="14" width="76" height="72" rx="4" fill="none" stroke="currentColor" stroke-width="5"/><path d="M48 14v72M10 52h38" fill="none" stroke="currentColor" stroke-width="5"/>'
 };
 
 /* Overtittel over H1, Fasadens hb-h1-overtittel. Den ligger inni
@@ -657,24 +609,25 @@ const KP_ETAPPEIKON = {
    samme rekkefølge som øyet ser dem. Spørsmålene er lange setninger,
    så de settes i h2-størrelse, selv om de er sidas h1. */
 const kpTittel = (over, tittel, storrelse = 'hb-h1') =>
-  `<h1 class="${storrelse} hb-mb--md kp-maal"><small class="hb-h1-overtittel">${over}</small> ${tittel}</h1>`;
+  `<h1 class="${storrelse} kp-tittel"><small class="hb-h1-overtittel">${over}</small> ${tittel}</h1>`;
 
 function kpNavHtml(neste, forrige = true) {
-  return `<div class="hb-mt--xl">${kpKnapperad([
-    kpKnapp(neste, 'data-neste', 'prominent', 'arrow-right'),
-    forrige ? kpKnapp('Forrige', 'data-forrige', 'standard', 'arrow-left', true) : ''
-  ], 'navigasjon')}</div>`;
+  return `
+  <div class="kp-nav">
+    ${forrige ? kpKnapp('Forrige', 'data-forrige', 'standard') : '<span></span>'}
+    ${kpKnapp(neste, 'data-neste', 'prominent', 'pil')}
+  </div>`;
 }
 
 function kpEtappeHtml(f) {
   return `
 <div class="kp-sporsmal">
-  <div class="hb-card">
-    <div class="hb-card-body hb-text--center">
-      ${kpIkon(KP_ETAPPEIKON[f.e.ikon] || 'house-chimney-2', 'hb-icon--size300 hb-text--positive hb-mb--md')}
-      ${kpTittel(`Steg ${f.nr} av ${KOMPASS_ETAPPER.length}`, f.e.navn)}
-      <div class="hb-text--left kp-maal kp-midtstilt">${kpAvsnitt(f.e.ingress, 'hb-text--ingress hb-mb--md')}</div>
-    </div>
+  <div class="hb-card kp-etappe-kort">
+    <svg class="kp-etappe-kort__fig" viewBox="0 0 96 96" aria-hidden="true">
+      ${KP_ETAPPEFIG[f.e.ikon] || ''}
+    </svg>
+    ${kpTittel(`Steg ${f.nr} av ${KOMPASS_ETAPPER.length}`, f.e.navn)}
+    <div class="kp-etappe-kort__ingress">${kpAvsnitt(f.e.ingress, 'hb-text--ingress')}</div>
   </div>
   ${kpNavHtml(f.nr === 1 ? 'Til første spørsmål' : 'Fortsett', kpPos > 0)}
 </div>`;
@@ -717,26 +670,22 @@ function kpEtappeSluttHtml(f) {
   return `
 <div class="kp-sporsmal">
   ${kpTittel('Slik ser det ut', f.e.navn)}
-  <p class="kp-maal">
+  <p class="kp-sporsmal__under">
     Her står nåla slik svarene i dette steget samlet sett peker.
     ${sisteEtappe ? 'Den samlede kursen får du på neste side.' : 'Neste steg begynner på null igjen.'}
   </p>
 
-  <div class="hb-card">
-    <div class="hb-card-body">
-      <div class="hb-grid hb-grid--align-items-center">
-        <div class="hb-cell hb-cell--12of12 hb-cell--5of12@sm">
-          <div class="kp-kompass-stort">${kpKompassSvg(kurs)}</div>
-        </div>
-        <div class="hb-cell hb-cell--12of12 hb-cell--7of12@sm">
-          <p class="hb-text--sm hb-text--secondary hb-mb--none">Dette steget peker mot</p>
-          <p class="hb-h3 hb-mb--sm">${kurs.tom ? 'Ikke besvart' : info.navn}</p>
-          ${kurs.tom ? '' : `<p class="hb-text--sm hb-text--secondary">${info.tekst}</p>`}
-          <p class="hb-text--sm hb-mb--none">${kpEtappeSetning(f.e, tall)}</p>
-        </div>
+  <div class="hb-card kp-peiling">
+    <div class="kp-peiling__hoved">
+      <div class="kp-peiling__rose">${kpKompassSvg(kurs)}</div>
+      <div>
+        <p class="hb-text--sm hb-text--secondary hb-mb--none">Dette steget peker mot</p>
+        <p class="kp-peiling__kurs">${kurs.tom ? 'Ikke besvart' : info.navn}</p>
+        <p class="kp-peiling__tekst">${kurs.tom ? '' : info.tekst}</p>
+        <p class="hb-text--sm hb-mb--none">${kpEtappeSetning(f.e, tall)}</p>
       </div>
-      ${kpNokkelHtml(kurs.retning)}
     </div>
+    ${kpNokkelHtml(kurs.retning)}
   </div>
 
   ${kpNavHtml(sisteEtappe ? 'Se hele oppsummeringen' : 'Videre til neste steg')}
@@ -745,8 +694,7 @@ function kpEtappeSluttHtml(f) {
 
 /* Nøkkelen til de fire retningene. Den står under kompasset hver
    eneste gang det vises, for man skal aldri måtte huske hva en kurs
-   betydde fra forsiden. Retningen nåla peker mot nå, står i et grønt
-   Fasaden-panel. Pila er Fasadens arrow-up, vridd mot retningen. */
+   betydde fra forsiden. */
 const KP_NOKKEL = [
   { kode: 'N', grader: 0   },
   { kode: 'Ø', grader: 90  },
@@ -756,18 +704,21 @@ const KP_NOKKEL = [
 
 function kpNokkelHtml(retning) {
   return `
-  <div class="kp-nokkel hb-mt--lg">
-    <h2 class="hb-h5 hb-mb--sm">Slik leser du kompasset</h2>
-    <ul class="hb-grid hb-grid--gap-xs kp-liste-null">
+  <div class="kp-nokkel">
+    <p class="kp-nokkel__tittel">Slik leser du kompasset</p>
+    <ul>
       ${KP_NOKKEL.map(p => {
         const k = KOMPASS_RETNINGER[p.kode];
         const naa = retning === p.kode;
         return `
-      <li class="hb-cell hb-cell--12of12 hb-cell--6of12@sm">
-        <div class="kp-nokkel__rad hb-text--xs${naa ? ' hb-panel hb-panel--positiv hb-panel--luft-lite hb-mb--none' : ' hb-text--secondary'}">
-          ${kpIkon('arrow-up', 'hb-icon--size125', `transform:rotate(${p.grader}deg)`)}
-          <span><strong class="hb-text--dark">${k.navn}.</strong> ${k.kort}.${naa ? ' <span class="hb-screenreader-only">Nåla peker hit.</span>' : ''}</span>
-        </div>
+      <li class="kp-nokkel__rad"${naa ? ' data-naa="true"' : ''}>
+        <svg class="kp-nokkel__pil" viewBox="0 0 24 24" aria-hidden="true">
+          <g style="transform:rotate(${p.grader}deg);transform-origin:12px 12px">
+            <path d="M12 20V5m0 0-5 5m5-5 5 5" fill="none" stroke="currentColor"
+                  stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+        </svg>
+        <span><strong>${k.navn}.</strong> ${k.kort}.</span>
       </li>`;
       }).join('')}
     </ul>
@@ -787,20 +738,19 @@ function kpFelterHtml(sp) {
       kpDelfeltHtml(felt.navn, felt.ledetekst, felt.hjelp, felt.valg, 'enkelt', S[felt.navn])).join('');
   }
   return `
-  <div class="kp-felt">
-    ${kpValgHtml(sp.id, sp.valg, sp.type === 'flervalg' ? 'flervalg' : 'enkelt', S[sp.id], { tekst: sp.tittel })}
+  <div class="hb-felt kp-felt">
+    ${kpValgHtml(sp.id, sp.valg, sp.type === 'flervalg' ? 'flervalg' : 'enkelt', S[sp.id], sp.tittel)}
   </div>
   ${kpBetingetHtml(sp)}`;
 }
 
 /* Oppfølgingen arket merker *BETINGET VIDERE, som 5b «Hvor ligger
-   toalettet?». Den står i et hvitt Fasaden-panel under svarene, så det
-   er tydelig at den hører til svaret over. */
+   toalettet?». Den står i en innrykket blokk under svarene. */
 function kpBetingetHtml(sp) {
   const b = sp.betinget;
   if (!b || !b.naar(S)) return '';
   return `
-  <div class="hb-panel hb-panel--hvit hb-mt--lg hb-mb--none" id="betinget-${sp.id}">
+  <div class="kp-oppfolging" id="betinget-${sp.id}">
     ${kpDelfeltHtml(b.navn, b.ledetekst, b.hjelp, b.valg, 'enkelt', S[b.navn])}
   </div>`;
 }
@@ -811,8 +761,8 @@ function kpSporsmalHtml(f) {
   return `
 <div class="kp-sporsmal">
   ${kpTittel(`Spørsmål ${nr} av ${kpAntallSporsmal()}`, sp.tittel, 'hb-h2')}
-  <div class="kp-maal">${kpAvsnitt(sp.hjelp)}</div>
-  ${sp.undertekst ? `<p class="hb-text--semibold kp-maal">${sp.undertekst}</p>` : ''}
+  <div class="kp-hjelp">${kpAvsnitt(sp.hjelp)}</div>
+  ${sp.undertekst ? `<p class="hb-text--semibold kp-sporsmal__under">${sp.undertekst}</p>` : ''}
 
   <form id="sporsmalsform" novalidate>
     ${kpFelterHtml(sp)}
@@ -866,31 +816,29 @@ function kpOversikt() {
 function kpOversiktHtml() {
   const rader = kpOversikt();
   return `
-  <h3 class="hb-h4 hb-mt--lg hb-mb--sm">Steg for steg</h3>
-  <ul class="hb-grid hb-grid--gap-sm hb-grid--align-items-stretch kp-liste-null">
+  <h3 class="hb-h4">Steg for steg</h3>
+  <ul class="kp-etappekort">
     ${rader.map(r => {
       const info = KOMPASS_RETNINGER[r.kurs.retning] || KOMPASS_RETNINGER.MIDT;
       return `
-    <li class="hb-cell hb-cell--6of12 hb-cell--3of12@md">
-      <div class="hb-panel hb-panel--hvit hb-panel--luft-lite hb-mb--none hb-text--center">
-        <div class="kp-etappekompass">${kpKompassSvg(r.kurs, { liten: true })}</div>
-        <p class="hb-text--xs hb-text--secondary hb-mb--none">${r.navn}</p>
-        <p class="hb-text--sm hb-text--semibold hb-mb--xs">${r.sum ? info.navn : 'Ikke besvart'}</p>
-        <span class="kp-stolpe" role="img"
-              aria-label="${r.navn}: ${r.god} svar som fungerer godt, ${r.midt} midt på treet, ${r.tung} som peker på en hindring.">
-          ${r.sum ? `
-          <span class="kp-stolpe__del kp-farge--god"  style="width:${(r.god / r.sum * 100).toFixed(1)}%"></span>
-          <span class="kp-stolpe__del kp-farge--midt" style="width:${(r.midt / r.sum * 100).toFixed(1)}%"></span>
-          <span class="kp-stolpe__del kp-farge--tung" style="width:${(r.tung / r.sum * 100).toFixed(1)}%"></span>` : ''}
-        </span>
-      </div>
+    <li class="kp-etappekort__kort">
+      <div class="kp-etappekort__rose">${kpKompassSvg(r.kurs, { liten: true })}</div>
+      <p class="kp-etappekort__navn">${r.navn}</p>
+      <p class="kp-etappekort__kurs">${r.sum ? info.navn : 'Ikke besvart'}</p>
+      <span class="kp-oversikt__spor" role="img"
+            aria-label="${r.navn}: ${r.god} svar som fungerer godt, ${r.midt} midt på treet, ${r.tung} som peker på en hindring.">
+        ${r.sum ? `
+        <span class="kp-oversikt__seg kp-oversikt__seg--god"  style="width:${(r.god / r.sum * 100).toFixed(1)}%"></span>
+        <span class="kp-oversikt__seg kp-oversikt__seg--midt" style="width:${(r.midt / r.sum * 100).toFixed(1)}%"></span>
+        <span class="kp-oversikt__seg kp-oversikt__seg--tung" style="width:${(r.tung / r.sum * 100).toFixed(1)}%"></span>` : ''}
+      </span>
     </li>`;
     }).join('')}
   </ul>
-  <p class="hb-text--sm hb-text--secondary hb-mt--md hb-mb--none kp-tegnforklaring">
-    <span><i class="kp-farge--god"></i>Fungerer godt</span>
-    <span><i class="kp-farge--midt"></i>Midt på treet</span>
-    <span><i class="kp-farge--tung"></i>Hindring</span>
+  <p class="kp-tegnforklaring">
+    <span><i style="background:var(--hb-green-600)"></i>Fungerer godt</span>
+    <span><i style="background:var(--hb-slate-300)"></i>Midt på treet</span>
+    <span><i style="background:#c0560a"></i>Hindring</span>
   </p>`;
 }
 
@@ -923,19 +871,6 @@ function kpHandlingsplan() {
   return { funker, funkerIkke };
 }
 
-/* Fasadens trekkspill med kantlinje. Hvert element åpnes på stedet, og
-   tilstanden står i hb-accordion-element--utvidet, slik Fasaden gjør. */
-const kpTrekkspill = elementer => `
-  <div class="hb-accordion hb-accordion--kantlinje">
-    ${elementer.map(({ id, tittel, innhold }) => `
-    <div class="hb-accordion-element">
-      <button type="button" class="hb-accordion-header" aria-expanded="false" aria-controls="${id}" data-trekk>
-        <span class="hb-accordion-tittel">${tittel}</span>${kpIkon('arrow-down-1', 'hb-accordion-toggle')}
-      </button>
-      <div class="hb-accordion-body" id="${id}">${innhold}</div>
-    </div>`).join('')}
-  </div>`;
-
 function kpOppsummeringHtml() {
   const kurs = kpBeregnKurs();
   const info = KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT;
@@ -948,140 +883,141 @@ function kpOppsummeringHtml() {
   /* Ordningene som er nevnt i tiltakene, uten gjentakelser */
   const ordninger = [...new Set([].concat(...anb.map(a => a.ordninger)))];
 
-  const tiltak = a => {
+  const tiltaksrad = a => {
     const hvorfor = typeof a.hvorfor === 'function' ? a.hvorfor(S) : a.hvorfor;
     const tekst = typeof a.tekst === 'function' ? a.tekst(S) : a.tekst;
-    return {
-      id: `t-${a.id}`,
-      tittel: a.tittel,
-      innhold: `
-        <p>${tekst}</p>
-        <p class="hb-text--sm"><strong>Derfor står det her:</strong> ${hvorfor}</p>
-        ${a.tiltak.length ? `<ul class="kp-liste-null">
-          ${a.tiltak.map(t => `<li class="hb-panel hb-panel--info hb-panel--luft-lite hb-mb--xs hb-text--sm">${t}. ${KOMPASS_TILTAK[t]}</li>`).join('')}
-        </ul>` : ''}`
-    };
+    return `
+    <li class="kp-plan__tiltak">
+      <button type="button" class="kp-mer" aria-expanded="false" data-mer="t-${a.id}">
+        <span data-ikon="chevron"></span>${a.tittel}
+      </button>
+      <div class="kp-mer-panel" id="t-${a.id}" hidden>
+        <p style="margin:0 0 var(--space-2)">${tekst}</p>
+        <p class="hb-text--sm hb-mb--none"><strong>Derfor står det her:</strong> ${hvorfor}</p>
+        ${a.tiltak.length ? `<ul class="kp-merkeliste">
+          ${a.tiltak.map(t => `<li class="kp-merke">${t}. ${KOMPASS_TILTAK[t]}</li>`).join('')}
+        </ul>` : ''}
+      </div>
+    </li>`;
   };
-
-  const anbefalinger = (tittel, liste, tom) => `
-      <div class="hb-cell hb-cell--12of12 hb-cell--6of12@md">
-        <h3 class="hb-h4 hb-mb--sm">${tittel}</h3>
-        ${liste.length ? kpTrekkspill(liste.map(tiltak))
-          : `<p class="hb-text--sm hb-text--secondary">${tom}</p>`}
-      </div>`;
-
-  const hindring = sp => `
-          <li class="kp-punkt">
-            ${kpIkon('remove', 'hb-text--negative')}
-            <span>${sp.stikkord}<span class="hb-text--sm hb-text--secondary kp-blokk">${sp.grep}</span></span>
-          </li>`;
 
   return `
 <div class="kp-utskrift-topp">
-  <h1 class="hb-h2 hb-mb--xs">Boligkompasset</h1>
-  <p class="hb-text--sm hb-text--secondary hb-mb--none">Oppsummering for boligen din.
+  <h1>Boligkompasset</h1>
+  <p>Oppsummering for boligen din.
      Skrevet ut ${new Date().toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })}.
-     Husbanken, telefon ${KP_TELEFON.tekst}.</p>
+     Husbanken, telefon ${HB_REGLER.telefon}.</p>
 </div>
 
-<div class="hb-container hb-container--width-md">
+<section class="hb-section" style="padding-top:var(--space-4)">
+  <div class="hb-shell">
 
-  <p class="kp-utskrift-skjul hb-mb--sm">
-    <button type="button" class="hb-button hb-button--link" data-tilbake-svar>
-      ${kpIkon('arrow-left', 'hb-button-icon')}<span class="hb-button-text">Gå tilbake og endre svar</span>
-    </button>
-  </p>
+    <p class="kp-utskrift-skjul" style="margin-bottom:var(--space-2)">
+      <button type="button" class="hb-button hb-button--link kp-tilbake" data-tilbake-svar>
+        <span class="hb-button-icon kp-ikon kp-ikon--venstre" data-ikon="pil"></span><span class="hb-button-text">Gå tilbake og endre svar</span>
+      </button>
+    </p>
 
-  <h1 class="hb-h1 hb-mb--xl kp-utskrift-skjul">Oppsummering</h1>
+    <h1 class="hb-h1 kp-h1 kp-utskrift-skjul">Oppsummering</h1>
 
-  <h2 class="hb-h2">1. Handlingsplan</h2>
-  <div class="hb-grid hb-grid--align-items-stretch">
-    <div class="hb-cell hb-cell--12of12 hb-cell--6of12@md">
-      <div class="hb-card">
-        <div class="hb-card-header">${kpIkon('hb-check-mark', 'hb-icon--size150')}<h3 class="hb-card-tittel">Hva funker i dag</h3></div>
-        <div class="hb-card-body">
-          ${plan.funker.length ? `<ul class="hb-list kp-liste-null">
-            ${plan.funker.map(sp => `<li class="kp-punkt">${kpIkon('hb-check-mark')}<span>${sp.stikkord}</span></li>`).join('')}
-          </ul>` : '<p class="hb-text--sm hb-text--secondary">Ingen av svarene dine peker denne veien ennå.</p>'}
-        </div>
+    <h2 class="hb-h2">1. Handlingsplan</h2>
+    <div class="kp-plan">
+      <div class="kp-plan__kol kp-plan__kol--ja">
+        <h3 class="hb-h4">Hva funker i dag</h3>
+        ${plan.funker.length ? `<ul>
+          ${plan.funker.map(sp => `<li><span class="kp-plan__merke" aria-hidden="true">✓</span>${sp.stikkord}</li>`).join('')}
+        </ul>` : '<p class="hb-text--sm hb-text--secondary">Ingen av svarene dine peker denne veien ennå.</p>'}
+      </div>
+      <div class="kp-plan__kol kp-plan__kol--nei">
+        <h3 class="hb-h4">Hva funker ikke</h3>
+        ${plan.funkerIkke.length ? `
+        <ul>
+          ${plan.funkerIkke.slice(0, 3).map(sp => `<li>
+            <span class="kp-plan__merke" aria-hidden="true">✕</span>
+            <span>${sp.stikkord}<span class="kp-plan__grep">${sp.grep}</span></span>
+          </li>`).join('')}
+        </ul>
+        ${plan.funkerIkke.length > 3 ? `
+        <button type="button" class="kp-mer" aria-expanded="false" data-mer="flere-hindringer">
+          <span data-ikon="chevron"></span>Se de ${plan.funkerIkke.length - 3} andre
+        </button>
+        <div class="kp-mer-panel" id="flere-hindringer" hidden>
+          <ul>
+            ${plan.funkerIkke.slice(3).map(sp => `<li>
+              <span class="kp-plan__merke" aria-hidden="true">✕</span>
+              <span>${sp.stikkord}<span class="kp-plan__grep">${sp.grep}</span></span>
+            </li>`).join('')}
+          </ul>
+        </div>` : ''}`
+        : '<p class="hb-text--sm hb-text--secondary">Ingenting av det du svarte peker på en hindring.</p>'}
       </div>
     </div>
-    <div class="hb-cell hb-cell--12of12 hb-cell--6of12@md">
-      <div class="hb-card">
-        <div class="hb-card-header">${kpIkon('hb-alert-circle', 'hb-icon--size150 hb-text--negative')}<h3 class="hb-card-tittel">Hva funker ikke</h3></div>
-        <div class="hb-card-body">
-          ${plan.funkerIkke.length ? `
-          <ul class="hb-list kp-liste-null">${plan.funkerIkke.slice(0, 3).map(hindring).join('')}</ul>
-          ${plan.funkerIkke.length > 3 ? `
-          <div id="flere-hindringer" class="hb-mt--md" hidden>
-            <ul class="hb-list kp-liste-null">${plan.funkerIkke.slice(3).map(hindring).join('')}</ul>
-          </div>
-          <button type="button" class="hb-button hb-button--link hb-mt--sm kp-utskrift-skjul" aria-expanded="false" aria-controls="flere-hindringer" data-mer="flere-hindringer">
-            <span class="hb-button-text">Se de ${plan.funkerIkke.length - 3} andre</span>${kpIkon('arrow-down-1', 'hb-button-icon')}
-          </button>` : ''}`
-          : '<p class="hb-text--sm hb-text--secondary">Ingenting av det du svarte peker på en hindring.</p>'}
-        </div>
+
+    <h2 class="hb-h2 kp-seksjon">2. Generelle anbefalinger</h2>
+    <div class="kp-plan">
+      <div class="kp-plan__kol">
+        <h3 class="hb-h4">Nå</h3>
+        ${naa.length
+          ? `<ul class="kp-plan__liste">${naa.map(tiltaksrad).join('')}</ul>`
+          : '<p class="hb-text--sm hb-text--secondary">Ingen enkle grep peker seg ut.</p>'}
+      </div>
+      <div class="kp-plan__kol">
+        <h3 class="hb-h4">Fremtiden, 5–10 år</h3>
+        ${frem.length
+          ? `<ul class="kp-plan__liste">${frem.map(tiltaksrad).join('')}</ul>`
+          : '<p class="hb-text--sm hb-text--secondary">Ingen større arbeider peker seg ut nå.</p>'}
       </div>
     </div>
-  </div>
 
-  <h2 class="hb-h2 hb-mt--2xl">2. Generelle anbefalinger</h2>
-  <div class="hb-grid">
-    ${anbefalinger('Nå', naa, 'Ingen enkle grep peker seg ut.')}
-    ${anbefalinger('Fremtiden, 5–10 år', frem, 'Ingen større arbeider peker seg ut nå.')}
-  </div>
+    <h2 class="hb-h2 kp-seksjon">3. Ressurser</h2>
+    <ul class="kp-ressurser">
+      ${ordninger.map(o => {
+        const ord = KOMPASS_ORDNINGER[o];
+        return `<li><a class="kp-ressurs" href="${ord.lenke}">
+          <span>${ord.navn}</span><span data-ikon="pil"></span>
+        </a></li>`;
+      }).join('')}
+      <li><a class="kp-ressurs" href="tel:${HB_REGLER.telefonRaw}">
+        <span>Ring Husbanken, ${HB_REGLER.telefon}</span><span data-ikon="pil"></span>
+      </a></li>
+    </ul>
 
-  <h2 class="hb-h2 hb-mt--2xl">3. Ressurser</h2>
-  ${kpKnapperad([
-    ...ordninger.map(o => {
-      const ord = KOMPASS_ORDNINGER[o];
-      return `<a class="hb-button hb-button--standard" href="${ord.lenke}">
-        <span class="hb-button-text">${ord.navn}</span>${kpIkon('arrow-right', 'hb-button-icon')}</a>`;
-    }),
-    `<a class="hb-button hb-button--standard" href="tel:${KP_TELEFON.tel}">
-      ${kpIkon('phone', 'hb-button-icon')}<span class="hb-button-text">Ring Husbanken, ${KP_TELEFON.tekst}</span></a>`
-  ])}
-
-  <h2 class="hb-h2 hb-mt--2xl">4. Kursen din</h2>
-  <div class="hb-card kp-resultat">
-    <div class="hb-panel hb-panel--positiv hb-mb--none">
-      <div class="hb-grid hb-grid--align-items-center">
-        <div class="hb-cell hb-cell--12of12 hb-cell--5of12@sm">
-          <div class="kp-kompass-stort">${kpKompassSvg(kurs)}</div>
-        </div>
-        <div class="hb-cell hb-cell--12of12 hb-cell--7of12@sm">
-          <p class="hb-text--sm hb-text--semibold hb-mb--xs">Kompasset peker mot</p>
-          <p class="hb-h2">${info.navn}</p>
-          <p class="kp-maal${ubesvart ? '' : ' hb-mb--none'}">${info.tekst}</p>
+    <h2 class="hb-h2 kp-seksjon">4. Kursen din</h2>
+    <div class="kp-resultat">
+      <div class="kp-resultat__topp">
+        <div class="kp-kompass-stort">${kpKompassSvg(kurs)}</div>
+        <div>
+          <p class="kp-resultat__kurs">Kompasset peker mot</p>
+          <p class="kp-resultat__navn">${info.navn}</p>
+          <p class="kp-resultat__tekst">${info.tekst}</p>
           ${ubesvart ? `<p class="hb-text--sm hb-text--secondary hb-mb--none">
             ${ubesvart} av ${kpAntallSporsmal()} spørsmål står ubesvart.</p>` : ''}
         </div>
       </div>
+      <div class="kp-resultat__bunn">
+        ${kpOversiktHtml()}
+      </div>
     </div>
-    <div class="hb-card-body">
-      ${kpOversiktHtml()}
+
+    ${kpEgenKursHtml()}
+
+    <div class="kp-utskrift-notat">
+      <strong>Plass til dine egne notater</strong>
     </div>
+
+    <div class="kp-knapper kp-seksjon kp-utskrift-skjul">
+      ${kpKnapp('Skriv ut eller lagre som PDF', 'data-skriv-ut')}
+      ${kpKnapp('Endre svarene mine', 'data-tilbake-svar', 'standard')}
+      ${kpKnapp('Start på nytt', 'data-nullstill', 'standard')}
+    </div>
+
+    <details class="kp-svardetaljer kp-utskrift-skjul">
+      <summary>Se alle svarene dine</summary>
+      <div class="hb-summary hb-summary--flat">${kpSvarlisteHtml()}</div>
+    </details>
+
   </div>
-
-  ${kpEgenKursHtml()}
-
-  <div class="kp-utskrift-notat">
-    <strong>Plass til dine egne notater</strong>
-  </div>
-
-  <div class="hb-mt--2xl kp-utskrift-skjul">
-    ${kpKnapperad([
-      kpKnapp('Skriv ut eller lagre som PDF', 'data-skriv-ut', 'prominent', 'print-text'),
-      kpKnapp('Endre svarene mine', 'data-tilbake-svar', 'standard', 'content-pen-3'),
-      kpKnapp('Start på nytt', 'data-nullstill', 'standard', 'rotate-back')
-    ])}
-  </div>
-
-  <div class="hb-mt--2xl kp-utskrift-skjul">
-    ${kpTrekkspill([{ id: 'alle-svar', tittel: 'Se alle svarene dine', innhold: kpSvarlisteHtml() }])}
-  </div>
-
-</div>`;
+</section>`;
 }
 
 /* ═══ Kompasset du vrir selv ══════════════════════════════════════
@@ -1100,38 +1036,32 @@ function kpEgenKursHtml() {
   const regnet = kpBeregnKurs();
 
   return `
-  <div class="kp-egen-blokk">
-  <h2 class="hb-h2 hb-mt--2xl">Vri kompasset selv</h2>
-  <p class="kp-maal">
+  <h2 class="hb-h2 kp-seksjon">Vri kompasset selv</h2>
+  <p style="max-width:58ch;margin-bottom:0">
     Kompasset over er regnet ut. Du vet noe det ikke vet. Vri nåla dit du selv
     føler at du står.
   </p>
 
-  <div class="hb-card" id="kp-egen">
-    <div class="hb-card-body">
-      <div class="hb-grid hb-grid--align-items-center">
-        <div class="hb-cell hb-cell--12of12 hb-cell--5of12@sm">
-          <div class="kp-kompass-stort kp-egen__rose" data-egen-rose>${kpKompassSvg(kurs)}</div>
-        </div>
-        <div class="hb-cell hb-cell--12of12 hb-cell--7of12@sm">
-          <p class="hb-text--sm hb-text--secondary hb-mb--none">Du peker mot</p>
-          <p class="hb-h3 hb-mb--sm" data-egen-navn>${kpKursnavn(kurs.retning)}</p>
-          <p class="hb-text--sm hb-text--secondary" data-egen-tekst>${(KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT).tekst}</p>
-
-          <label class="hb-legend hb-mb--xs" for="egen-kurs"><span class="hb-legend-tekst">Vri kompasset</span></label>
-          <input class="kp-skyv" id="egen-kurs" type="range"
-                 min="0" max="345" step="15" value="${grader}"
-                 aria-describedby="egen-avlest">
-          <p class="hb-text--sm hb-mt--sm" id="egen-avlest" aria-live="polite" data-egen-avlest>
-            ${kpEgenSammenlikning(kurs.retning, regnet.retning)}
-          </p>
-          <button type="button" class="hb-button hb-button--link" data-egen-nullstill>
-            ${kpIkon('rotate-back', 'hb-button-icon')}<span class="hb-button-text">Sett nåla tilbake til vår utregning</span>
-          </button>
-        </div>
-      </div>
+  <div class="kp-egen" id="kp-egen">
+    <div class="kp-egen__rose" data-egen-rose>
+      ${kpKompassSvg(kurs)}
     </div>
-  </div>
+    <div>
+      <p class="hb-text--sm hb-text--secondary hb-mb--none">Du peker mot</p>
+      <p class="kp-peiling__kurs" data-egen-navn>${kpKursnavn(kurs.retning)}</p>
+      <p class="kp-peiling__tekst" data-egen-tekst>${(KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT).tekst}</p>
+
+      <label class="kp-egen__merke" for="egen-kurs">Vri kompasset</label>
+      <input class="kp-egen__skyv" id="egen-kurs" type="range"
+             min="0" max="345" step="15" value="${grader}"
+             aria-describedby="egen-avlest">
+      <p class="hb-text--sm" id="egen-avlest" aria-live="polite" data-egen-avlest>
+        ${kpEgenSammenlikning(kurs.retning, regnet.retning)}
+      </p>
+      <p style="margin:var(--space-3) 0 0">
+        <button type="button" class="hb-button hb-button--link" data-egen-nullstill><span class="hb-button-text">Sett nåla tilbake til vår utregning</span></button>
+      </p>
+    </div>
   </div>`;
 }
 
@@ -1172,7 +1102,7 @@ function kpInitEgenKurs() {
     rose.querySelectorAll('[data-kv]').forEach(f => {
       const aktiv = f.dataset.kv === kv;
       f.classList.toggle('kp-kompass__felt--aktiv', aktiv);
-      f.setAttribute('fill', aktiv ? 'var(--color-green-65)' : 'var(--color-gray-65)');
+      f.setAttribute('fill', aktiv ? 'var(--hb-green-600)' : 'var(--hb-slate-400)');
     });
     kpLagre();
   };
@@ -1229,6 +1159,11 @@ function kpInitEgenKurs() {
    hver rad, og på mobil ble det en trapp av lenker uten sammenheng
    med teksten over. */
 
+const KP_BLYANT = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+  + '<path d="M4 20h4L19 9l-4-4L4 16v4Z" fill="none" stroke="currentColor" '
+  + 'stroke-width="1.8" stroke-linejoin="round"/>'
+  + '<path d="M14.5 5.5 18.5 9.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+
 function kpSvarRader(sp) {
   const tekstFor = (valg, v) => (valg.find(o => o.v === v) || {}).tittel || v;
   if (sp.type === 'flerfelt') {
@@ -1255,16 +1190,18 @@ function kpSvarlisteHtml() {
     if (!sporsmal.length) return '';
     const rader = [].concat(...sporsmal.map(kpSvarRader));
     return `
-    <div class="hb-mb--xl">
-      <h3 class="hb-h4">${e.navn}</h3>
-      <button type="button" class="hb-button hb-button--link hb-mb--md kp-utskrift-skjul" data-endre="${sporsmal[0].id}">
-        ${kpIkon('content-pen-3', 'hb-button-icon')}<span class="hb-button-text">Endre<span class="hb-screenreader-only"> svarene i ${e.navn.toLowerCase()}</span></span>
-      </button>
-      <dl class="hb-list--summary-compact">
+    <div class="hb-summary__group">
+      <div class="hb-summary__head">
+        <h3>${e.navn}</h3>
+        <button type="button" class="hb-summary__edit kp-utskrift-skjul" data-endre="${sporsmal[0].id}">
+          ${KP_BLYANT}Endre
+        </button>
+      </div>
+      <dl>
         ${rader.map(r => `
-        <div class="hb-list-element">
+        <div>
           <dt>${r.sp}</dt>
-          <dd${r.svar ? '' : ' class="hb-text--secondary"'}>${r.svar ? kpEsc(r.svar) : 'Ikke besvart'}</dd>
+          <dd${r.svar ? '' : ' class="hb-muted"'}>${r.svar ? kpEsc(r.svar) : 'Ikke besvart'}</dd>
         </div>`).join('')}
       </dl>
     </div>`;
@@ -1284,14 +1221,12 @@ function kpTegnBunn() {
   const el = document.getElementById('kp-bunn-verktoy');
   if (!el) return;
   el.innerHTML = `
-  <div class="hb-container hb-container--width-lg">
-    <div class="hb-panel hb-panel--advarsel hb-mb--none">
-      <p class="hb-text--sm kp-maal">
-        <strong>Snarvei for prototypen.</strong>
-        Fyller ut tilfeldige svar på alle ${kpAntallSporsmal()} spørsmålene og går rett til oppsummeringen.
-      </p>
-      ${kpKnapp('Fyll ut tilfeldig og vis oppsummeringen', 'data-tilfeldig', 'standard')}
-    </div>
+  <div class="hb-shell">
+    <p class="kp-snarvei__tekst">
+      <strong>Snarvei for prototypen.</strong>
+      Fyller ut tilfeldige svar på alle ${kpAntallSporsmal()} spørsmålene og går rett til oppsummeringen.
+    </p>
+    ${kpKnapp('Fyll ut tilfeldig og vis oppsummeringen', 'data-tilfeldig', 'standard')}
   </div>`;
 }
 
@@ -1346,21 +1281,32 @@ function kpTegn() {
        Da hører oppsummeringen hjemme her, ikke en tom skjerm. */
     if (KP_FLYT[kpPos] && KP_FLYT[kpPos].t === 'slutt') { kpModus = 'oppsummering'; return kpTegn(); }
     const f = KP_FLYT[kpPos];
-    kpTegnFramdrift(frem);
-    rot.innerHTML = `<div class="hb-container hb-container--width-sm">
+    frem.innerHTML = kpFramdriftHtml();
+    rot.innerHTML = `<section class="hb-section" style="padding-top:var(--space-5)">
+      <div class="hb-shell">
         ${f.t === 'etappe' ? kpEtappeHtml(f)
           : f.t === 'etappeslutt' ? kpEtappeSluttHtml(f)
           : kpSporsmalHtml(f)}
-    </div>`;
+      </div>
+    </section>`;
   }
 
+  kpIkoner(rot);
   kpTegnBunn();
+  hbInitTrekkspill(rot);
   if (kpModus === 'oppsummering') kpInitEgenKurs();
-  /* Overskriften i utskriftstoppen er skjult på skjerm og kan ikke få
-     fokus. Det er den synlige h1-en som skal ha det. */
-  const h = rot.querySelector('.hb-container h1');
+  const h = rot.querySelector('h1') || rot.querySelector('h2');
   if (h && kpModus !== 'start') { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
   window.scrollTo({ top: 0, behavior: 'auto' });
+}
+
+function kpIkoner(rot) {
+  rot.querySelectorAll('[data-ikon]').forEach(e => {
+    if (e.dataset.tegnet) return;
+    e.innerHTML = HB_IKON[e.dataset.ikon] || '';
+    e.dataset.tegnet = '1';
+  });
+  rot.querySelectorAll('[data-avatar]').forEach(e => { e.outerHTML = HB_AVATAR; });
 }
 
 /* ═══ Svar ════════════════════════════════════════════════════════ */
@@ -1447,9 +1393,7 @@ function kpNullstill() {
 /* ═══ Hendelser ═══════════════════════════════════════════════════ */
 
 function kpKlikk(ev) {
-  /* Kursvalget på forsiden er radioknapper. Både klikk og piltaster gir
-     et click på selve input-feltet. */
-  const t = ev.target.closest('button, a, input[data-kurs]');
+  const t = ev.target.closest('button, a');
   if (!t) return;
   const d = t.dataset;
 
@@ -1473,25 +1417,10 @@ function kpKlikk(ev) {
     const aapen = t.getAttribute('aria-expanded') === 'true';
     t.setAttribute('aria-expanded', String(!aapen));
     p.hidden = aapen;
-    t.querySelector('.hb-icon').innerHTML = FASADEN_IKON[aapen ? 'arrow-down-1' : 'arrow-up-1'];
-  }
-  /* Fasadens trekkspill: tilstanden står på elementet */
-  else if (d.trekk !== undefined) {
-    const el = t.closest('.hb-accordion-element');
-    const aapen = !el.classList.contains('hb-accordion-element--utvidet');
-    el.classList.toggle('hb-accordion-element--utvidet', aapen);
-    t.setAttribute('aria-expanded', String(aapen));
-  }
-  /* Stegene på smal skjerm, Fasadens stepper med hb-is-expanded */
-  else if (d.stegVis !== undefined) {
-    const nav = document.getElementById('kp-steg');
-    const aapen = !nav.classList.contains('hb-is-expanded');
-    nav.classList.toggle('hb-is-expanded', aapen);
-    t.setAttribute('aria-expanded', String(aapen));
-    t.querySelector('.hb-button-text').textContent = aapen ? 'Skjul stegene' : 'Vis stegene';
   }
   else if (d.kurs) {
     const k = KOMPASS_RETNINGER[d.kurs];
+    document.querySelectorAll('[data-kurs]').forEach(b => b.setAttribute('aria-pressed', String(b === t)));
     document.getElementById('kurs-forklaring').textContent = k.tekst;
     const piler = { N: 0, Ø: 90, S: 180, V: 270 };
     document.getElementById('start-kompass').innerHTML =
@@ -1513,24 +1442,5 @@ function kompassStart() {
   const rot = document.getElementById('kompasset');
   document.addEventListener('click', kpKlikk);
   kpLesSkjema(rot);
-  kpToppen();
   kpTegn();
-}
-
-/* Toppen og bunnen står i boligkompasset.html. Her fylles Fasadens
-   ikoner inn, og menyknappen på smal skjerm kobles til menyen. */
-function kpToppen() {
-  document.querySelectorAll('[data-fa-ikon]').forEach(e => {
-    e.innerHTML = FASADEN_IKON[e.dataset.faIkon] || '';
-    e.setAttribute('aria-hidden', 'true');
-  });
-  const knapp = document.querySelector('.hb-header-menu-button');
-  const meny = document.getElementById('kp-meny');
-  if (!knapp || !meny) return;
-  knapp.addEventListener('click', () => {
-    const aapen = knapp.getAttribute('aria-expanded') !== 'true';
-    knapp.setAttribute('aria-expanded', String(aapen));
-    meny.classList.toggle('kp-meny--aapen', aapen);
-    knapp.querySelector('.hb-icon').innerHTML = FASADEN_IKON[aapen ? 'arrow-up-1' : 'arrow-down-1'];
-  });
 }
