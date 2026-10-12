@@ -556,8 +556,8 @@ function kpStartHtml() {
 }
 
 /* ═══ Framdriften ═════════════════════════════════════════════════
-   Fasadens progress stepper viser de fire stegene, og Fasadens
-   progressbar under viser hvor langt du er kommet i spørsmålene.
+   Fasadens progress stepper viser de fire stegene, og en tynn grønn
+   linje under viser hvor langt du er kommet i spørsmålene.
    Telleren teller spørsmål, ett hakk per spørsmål.
 
    Linja tegnes på nytt for hver skjerm, og da spilte Fasadens animasjon
@@ -603,9 +603,9 @@ function kpFramdriftHtml() {
       </p>
     </div>
     <div class="kp-framdrift__bunn">
-      <div class="hb-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+      <div class="kp-framdrift__spor" role="progressbar" aria-valuemin="0" aria-valuemax="100"
            aria-valuenow="${pst}" aria-label="${teller}">
-        <div class="hb-progress-bar-value" style="width:${pst}%"></div>
+        <div class="kp-framdrift__fyll" style="width:${pst}%"></div>
       </div>
       <span class="kp-framdrift__teller">${teller}</span>
     </div>

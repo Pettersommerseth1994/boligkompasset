@@ -202,7 +202,22 @@
 .kp-framdrift__steg { margin: 0; font-size: var(--text-sm); }
 @media (min-width: 768px) { .kp-framdrift__steg { display: none; } }
 .kp-framdrift__bunn { display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-2); }
-.kp-framdrift__bunn .hb-progress-bar { flex: 1; }
+/* Linja under stegene er tynn og grønn, like tykk som strekene mellom
+   stegene, så den ikke konkurrerer med dem. Fasadens blå progressbar
+   ble for tung under stepperen. */
+.kp-framdrift__spor {
+  flex: 1; height: 4px;
+  background: var(--hb-slate-200);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.kp-framdrift__fyll {
+  height: 100%;
+  background: var(--hb-green-700);
+  border-radius: var(--radius-pill);
+  transition: width 400ms var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) { .kp-framdrift__fyll { transition: none; } }
 .kp-framdrift__teller {
   font-size: var(--text-sm); color: var(--fg-subtle);
   font-variant-numeric: tabular-nums; white-space: nowrap;
