@@ -287,7 +287,8 @@
   display: grid; gap: var(--space-2);
   grid-template-columns: repeat(2, 1fr);
 }
-@media (min-width: 620px) { .kp-etappekort { grid-template-columns: repeat(4, 1fr); } }
+/* Ett kort per steg med kompass. Steg 1 har ikke kompass, så det er tre. */
+@media (min-width: 620px) { .kp-etappekort { grid-template-columns: repeat(3, 1fr); } }
 .kp-etappekort__kort {
   border: 1px solid var(--hb-slate-200);
   border-radius: var(--radius-lg);
@@ -579,3 +580,16 @@
 }
 
 .kp-utskrift-topp, .kp-utskrift-notat { display: none; }
+
+/* ═══ Hjelpeteksten ═══════════════════════════════════════════════
+   Fasadens hb-hjelpetekst, for det masterfila kaller Popover. I
+   fasaden.css står reglene for utvidet tilstand som
+   «.hb-hjelpetekst--utvidet .fasaden .hb-hjelpetekst-innhold», med
+   .fasaden på feil plass, så de treffer aldri. Her står de slik Fasaden
+   mener dem, til fasaden.css bygges på nytt.
+   ─────────────────────────────────────────────────────────────────── */
+
+.fasaden .hb-hjelpetekst--utvidet .hb-hjelpetekst-innhold { display: block; }
+.fasaden .hb-hjelpetekst--utvidet .hb-hjelpetekst-knapp::before { opacity: 1; }
+/* Knappen og pila over tekstfeltet står i forhold til hverandre */
+.fasaden .hb-hjelpetekst-knapp { position: relative; }

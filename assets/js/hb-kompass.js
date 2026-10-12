@@ -135,7 +135,7 @@ function kpKursForSteg(etappeId) {
   /* To porter fra innsiktsarbeidet. Er adkomsten stengt, eller er
      nærmiljøet tomt og du kommer deg ingen steder, holder det ikke at
      resten er bra. */
-  if (etappeId === 'adkomst' && S['adkomst-inngang'] === 'sveert') {
+  if (etappeId === 'adkomst' && kpInngangStengt(S)) {
     ned = Math.max(ned, 135);
   }
   if (etappeId === 'naermiljo' && S.tjenester === 'sterkt' && S.hjelp === 'nei') {
@@ -290,9 +290,23 @@ const kpEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 /* Hjelpeteksten står framme, ikke bak Fasadens spørsmålstegn. Teksten
    er lang, og designkritikken var tydelig på at det som er gjemt bak
    et trykk, ikke blir lest. Avsnittene i masterfila holdes adskilt. */
-const kpAvsnitt = (tekst, klasse = 'hb-felt-beskrivelse') => String(tekst || '')
-  .split(/\n\s*\n/).filter(Boolean)
-  .map(a => `<p class="${klasse}">${a.trim()}</p>`).join('');
+const kpAvsnitt = (tekst, klasse = 'hb-felt-beskrivelse', popover = '') => {
+  const avsnitt = String(tekst || '').split(/\n\s*\n/).filter(Boolean).map(a => a.trim());
+  if (popover) {
+    if (!avsnitt.length) avsnitt.push('');
+    avsnitt[avsnitt.length - 1] += ' ' + kpHjelpetekst(popover);
+  }
+  return avsnitt.map(a => `<p class="${klasse}">${a}</p>`).join('');
+};
+
+/* Det masterfila kaller Popover, er Fasadens hjelpetekst: et
+   spørsmålstegn som folder ut teksten på stedet. Den står sist i
+   hjelpeteksten til spørsmålet, eller etter et svaralternativ. */
+let kpHjelpNr = 0;
+function kpHjelpetekst(tekst) {
+  const id = `hjelpetekst-${++kpHjelpNr}`;
+  return `<span class="hb-hjelpetekst"><button type="button" class="hb-hjelpetekst-knapp" aria-expanded="false" aria-controls="${id}" data-hjelpetekst><span aria-hidden="true">?</span><span class="hb-screenreader-only">Mer om dette</span></button><span class="hb-hjelpetekst-innhold" id="${id}"><span class="hb-hjelpetekst-tekstgruppe">${tekst}</span></span></span>`;
+}
 
 /* Fasadens knapp. «prominent» er hovedknappen, «standard» er den
    sekundære og «subtle» den diskré. Alle i stor utgave, for målgruppa
@@ -326,7 +340,7 @@ function kpValgHtml(navn, valg, type, gjeldende, legend) {
                type="${flertall ? 'checkbox' : 'radio'}" name="${navn}" value="${v.v}"
                ${av ? 'checked' : ''} ${v.alene ? 'data-alene="1"' : ''}>
         <div class="hb-label">
-          <label class="hb-label-tekst" for="${id}">${v.tittel}</label>
+          <label class="hb-label-tekst" for="${id}">${v.tittel}</label>${v.popover ? kpHjelpetekst(v.popover) : ''}
           ${v.desc ? `<p class="hb-felt-beskrivelse--alternativ">${v.desc}</p>` : ''}
         </div>
         ${barn.length ? `<ul class="hb-feltliste kp-underliste">${barn.map(rad).join('')}</ul>` : ''}
@@ -344,12 +358,12 @@ function kpValgHtml(navn, valg, type, gjeldende, legend) {
 
 /* Et felt med egen ledetekst, slik delspørsmålene 1a og 1b og
    oppfølgingen 5b står. Ledeteksten er Fasadens hb-legend. */
-function kpDelfeltHtml(navn, ledetekst, hjelp, valg, type, gjeldende) {
+function kpDelfeltHtml(navn, ledetekst, hjelp, valg, type, gjeldende, popover = '') {
   return `
   <div class="hb-felt kp-felt" data-felt="${navn}">
     <div class="hb-fieldset">
       <div class="hb-legend"><span class="hb-legend-tekst" aria-hidden="true">${ledetekst}</span></div>
-      ${kpAvsnitt(hjelp)}
+      ${kpAvsnitt(hjelp, 'hb-felt-beskrivelse', popover)}
       ${kpValgHtml(navn, valg, type, gjeldende, ledetekst)}
     </div>
   </div>`;
@@ -357,12 +371,16 @@ function kpDelfeltHtml(navn, ledetekst, hjelp, valg, type, gjeldende) {
 
 /* ═══ Flyten ══════════════════════════════════════════════════════ */
 
+/* Et steg der ingen svar flytter nåla, som steg 1, får ingen
+   oppsummering med kompass. Arket: «Kompasset skal ikke vises her». */
+const kpEtappeHarKompass = id => kpEnheter().some(u => u.sp.etappe === id);
+
 function kpByggFlyt() {
   KP_FLYT = [];
   KOMPASS_ETAPPER.forEach((e, i) => {
     KP_FLYT.push({ t: 'etappe', e, nr: i + 1 });
     KOMPASS_SPORSMAL.filter(s => s.etappe === e.id).forEach(sp => KP_FLYT.push({ t: 'sp', sp, e }));
-    KP_FLYT.push({ t: 'etappeslutt', e, nr: i + 1 });
+    if (kpEtappeHarKompass(e.id)) KP_FLYT.push({ t: 'etappeslutt', e, nr: i + 1 });
   });
   KP_FLYT.push({ t: 'slutt' });
 }
@@ -735,7 +753,7 @@ function kpNokkelHtml(retning) {
 function kpFelterHtml(sp) {
   if (sp.type === 'flerfelt') {
     return sp.felt.map(felt =>
-      kpDelfeltHtml(felt.navn, felt.ledetekst, felt.hjelp, felt.valg, 'enkelt', S[felt.navn])).join('');
+      kpDelfeltHtml(felt.navn, felt.ledetekst, felt.hjelp, felt.valg, 'enkelt', S[felt.navn], felt.popover)).join('');
   }
   return `
   <div class="hb-felt kp-felt">
@@ -751,7 +769,7 @@ function kpBetingetHtml(sp) {
   if (!b || !b.naar(S)) return '';
   return `
   <div class="kp-oppfolging" id="betinget-${sp.id}">
-    ${kpDelfeltHtml(b.navn, b.ledetekst, b.hjelp, b.valg, 'enkelt', S[b.navn])}
+    ${kpDelfeltHtml(b.navn, b.ledetekst, b.hjelp, b.valg, 'enkelt', S[b.navn], b.popover)}
   </div>`;
 }
 
@@ -761,7 +779,7 @@ function kpSporsmalHtml(f) {
   return `
 <div class="kp-sporsmal">
   ${kpTittel(`Spørsmål ${nr} av ${kpAntallSporsmal()}`, sp.tittel, 'hb-h2')}
-  <div class="kp-hjelp">${kpAvsnitt(sp.hjelp)}</div>
+  ${sp.hjelp || sp.popover ? `<div class="kp-hjelp">${kpAvsnitt(sp.hjelp, 'hb-felt-beskrivelse', sp.popover)}</div>` : ''}
   ${sp.undertekst ? `<p class="hb-text--semibold kp-sporsmal__under">${sp.undertekst}</p>` : ''}
 
   <form id="sporsmalsform" novalidate>
@@ -793,7 +811,7 @@ function kpAnbefalinger() {
 
 /* Oversikten per etappe, «den totaloversikten med bar» */
 function kpOversikt() {
-  return KOMPASS_ETAPPER.filter(e => !e.frivillig).map(e => {
+  return KOMPASS_ETAPPER.filter(e => !e.frivillig && kpEtappeHarKompass(e.id)).map(e => {
     let god = 0, midt = 0, tung = 0;
     kpEnheter().filter(u => u.sp.etappe === e.id).forEach(({ sp, felt }) => {
       const p = kpPoengFor(sp, felt);
@@ -1243,7 +1261,13 @@ function kpFyllTilfeldig() {
       if (alene.length && Math.random() < 0.2) { S[navn] = [trekk(alene).v]; return; }
       const vanlige = synlige.filter(v => !v.alene);
       const antall = 1 + Math.floor(Math.random() * Math.min(4, vanlige.length));
-      S[navn] = [...vanlige].sort(() => Math.random() - 0.5).slice(0, antall).map(v => v.v);
+      /* Hopper over svar som utelukkes av et som alt er trukket */
+      const trukket = [];
+      [...vanlige].sort(() => Math.random() - 0.5).forEach(v => {
+        if (trukket.length >= antall || trukket.some(t => (t.utelukker || []).includes(v.v))) return;
+        trukket.push(v);
+      });
+      S[navn] = trukket.map(v => v.v);
       return;
     }
     S[navn] = trekk(synlige).v;
@@ -1338,6 +1362,13 @@ function kpLesSkjema(rot) {
         const alene = [...rot.querySelectorAll(`input[name="${inp.name}"][data-alene]`)];
         alene.forEach(i => { i.checked = false; });
         verdier = verdier.filter(v => !alene.some(i => i.value === v));
+        /* Svar som ikke kan stå samtidig, som et bad som er både stort
+           nok og lite */
+        const valg = (sp.valg || []).find(v => v.v === inp.value);
+        if (valg && valg.utelukker) {
+          verdier = verdier.filter(v => !valg.utelukker.includes(v));
+          rot.querySelectorAll(`input[name="${inp.name}"]`).forEach(i => { if (valg.utelukker.includes(i.value)) i.checked = false; });
+        }
       }
       kpSettSvar(inp.name, verdier);
     } else {
@@ -1412,6 +1443,12 @@ function kpKlikk(ev) {
   else if (d.skrivUt !== undefined) window.print();
 
   else if (d.tilfeldig !== undefined) kpFyllTilfeldig();
+  else if (d.hjelpetekst !== undefined) {
+    const el = t.closest('.hb-hjelpetekst');
+    const aapen = !el.classList.contains('hb-hjelpetekst--utvidet');
+    el.classList.toggle('hb-hjelpetekst--utvidet', aapen);
+    t.setAttribute('aria-expanded', String(aapen));
+  }
   else if (d.mer) {
     const p = document.getElementById(d.mer);
     const aapen = t.getAttribute('aria-expanded') === 'true';

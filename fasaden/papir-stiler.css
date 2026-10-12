@@ -67,6 +67,8 @@
   .pa-instruks { margin: 4pt 0 6pt; font-size: 9.5pt; font-weight: 600; }
   .pa-betingelse { font-size: 9.5pt; color: var(--hb-slate-600); font-style: italic; }
   .pa-betingelse--blokk { margin: 0 0 5pt; font-style: normal; font-weight: 600; color: var(--fg-default); }
+  /* Forklaringen som på skjermen står bak hjelpetekstknappen */
+  .pa-valg-forklaring { display: block; margin-top: 1pt; font-size: 9.5pt; line-height: 1.4; color: var(--hb-slate-600); }
 
   .pa-valg { list-style: none; margin: 0; padding: 0; display: grid; gap: 6pt 18pt; }
   .pa-valg li { display: flex; align-items: flex-start; gap: 9pt; }

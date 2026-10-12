@@ -1,6 +1,6 @@
 # Boligkompasset
 
-Klikkbar prototype for Husbanken: svar på 12 spørsmål om boligen din, og få
+Klikkbar prototype for Husbanken: svar på 11 spørsmål om boligen din, og få
 vite hvor godt den passer deg i dag, hva som skal til for at den fortsatt
 passer om ti år, og hvem som kan være med og betale.
 

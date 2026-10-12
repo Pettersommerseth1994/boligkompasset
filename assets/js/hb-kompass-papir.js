@@ -22,12 +22,18 @@ const paAvsnitt = tekst => String(tekst || '')
    svar, står betingelsen i klartekst. Tekstene er skrevet ut her, for
    betingelsene i innholdsfila er kode. */
 const PA_BETINGELSER = {
-  'bad-bruk:dor-innover': 'bare hvis du har krysset av for «Jeg har et lite bad»',
+  'bad-bruk:dor-innover': 'bare hvis du har krysset av for «Kan bli vanskelig, badet er lite»',
+  'bad-bruk:dor-utover': 'bare hvis du har krysset av for «Kan bli vanskelig, badet er lite»',
   'bad-bruk:dusj-kant': 'bare hvis du har dusj',
   'bad-bruk:dusj-stol': 'bare hvis du har dusj',
   'bad-bruk:badekar': 'bare hvis du har badekar',
-  'toalett-plassering': 'Svar bare hvis du ikke krysset av for «Toalett» i 5a.'
+  'toalett-plassering': 'Svar bare hvis du ikke krysset av for «Toalett» i 4a.'
 };
+
+/* På papir kan ingenting foldes ut. Det skjermen har bak
+   hjelpetekstknappen, står derfor rett etter hjelpeteksten, og etter
+   svaralternativet det hører til. */
+const paMedPopover = (hjelp, popover) => [hjelp, popover].filter(Boolean).join('\n\n');
 
 function paValg(valg, flervalg, nokkel) {
   return `
@@ -37,7 +43,7 @@ function paValg(valg, flervalg, nokkel) {
       return `
     <li>
       <span class="pa-rute" aria-hidden="true"></span>
-      <span>${paEsc(v.tittel)}${betingelse ? ` <span class="pa-betingelse">(${betingelse})</span>` : ''}</span>
+      <span>${paEsc(v.tittel)}${betingelse ? ` <span class="pa-betingelse">(${betingelse})</span>` : ''}${v.popover ? `<span class="pa-valg-forklaring">${paEsc(v.popover)}</span>` : ''}</span>
     </li>`;
     }).join('')}
   </ul>`;
@@ -63,14 +69,14 @@ function paSporsmal(sp, nr) {
     return `
   <div class="pa-gruppe">
     ${sp.hjelp ? `<p class="pa-gruppe-ingress">${paEsc(sp.hjelp)}</p>` : ''}
-    ${sp.felt.map((f, i) => paDelsporsmal(`${nr}${'abc'[i]}`, f.ledetekst, f.hjelp, f.valg, false, f.navn)).join('')}
+    ${sp.felt.map((f, i) => paDelsporsmal(`${nr}${'abc'[i]}`, f.ledetekst, paMedPopover(f.hjelp, f.popover), f.valg, false, f.navn)).join('')}
   </div>`;
   }
   const flervalg = sp.type === 'flervalg';
-  let html = paDelsporsmal(`${nr}a`, sp.tittel, sp.hjelp, sp.valg, flervalg, sp.id);
+  let html = paDelsporsmal(`${nr}a`, sp.tittel, paMedPopover(sp.hjelp, sp.popover), sp.valg, flervalg, sp.id);
   if (sp.betinget) {
     const b = sp.betinget;
-    html += paDelsporsmal(`${nr}b`, b.ledetekst, b.hjelp, b.valg, false, b.navn, PA_BETINGELSER[b.navn]);
+    html += paDelsporsmal(`${nr}b`, b.ledetekst, paMedPopover(b.hjelp, b.popover), b.valg, false, b.navn, PA_BETINGELSER[b.navn]);
   }
   return html;
 }
@@ -90,7 +96,7 @@ function paTegn() {
     <h1 class="pa-h1">Boligkompasset</h1>
     <p class="pa-ingress">
       ${KOMPASS_SPORSMAL.length} spørsmål om boligen du bor i nå, og om hvordan den vil
-      fungere om du får redusert mobilitet. Svarene gir et godt grunnlag for en
+      fungere om du får redusert bevegelighet. Svarene gir et godt grunnlag for en
       samtale om hva som bør gjøres, med en ergoterapeut, kommunen eller familien.
     </p>
   </header>
