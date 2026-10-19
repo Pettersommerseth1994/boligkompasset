@@ -681,10 +681,23 @@ function kpEtappeSetning(e, tall) {
 }
 
 /* Kompasset og kursen står alene, midt på. Hva kursen betyr, hvor
-   mange svar som teller, og hvordan kompasset leses, ligger i to
-   trekkspill under, for den som vil lese mer. */
-const KP_CHEVRON = '<svg class="kp-forklaring__pil" viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
-  + '<path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+   mange svar som teller, og hvordan kompasset leses, ligger i Fasadens
+   trekkspill, hb-accordion med kantlinje, for den som vil lese mer.
+   Pila er Fasadens ikon arrow-down-1. */
+const KP_PIL_NED = '<svg focusable="false" aria-hidden="true" viewBox="0 0 24 24" fill="none">'
+  + '<path d="M23.25 7.311L12.53 18.03a.75.75 0 0 1-1.06 0L.75 7.311" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+const kpTrekkspill = elementer => `
+  <div class="hb-accordion hb-accordion--kantlinje kp-forklaringer">
+    ${elementer.map(({ id, tittel, innhold }) => `
+    <div class="hb-accordion-element">
+      <button type="button" class="hb-accordion-header" aria-expanded="false" aria-controls="${id}" data-trekk>
+        <span class="hb-accordion-tittel">${tittel}</span>
+        <span class="hb-icon hb-accordion-toggle" aria-hidden="true">${KP_PIL_NED}</span>
+      </button>
+      <div class="hb-accordion-body" id="${id}">${innhold}</div>
+    </div>`).join('')}
+  </div>`;
 
 function kpEtappeSluttHtml(f) {
   const kurs = kpBeregnKurs(f.e.id);
@@ -703,18 +716,15 @@ function kpEtappeSluttHtml(f) {
     <p class="kp-steget__kurs">${kurs.tom ? 'Ikke besvart' : info.navn}</p>
     <p class="kp-steget__kort">${kurs.tom ? kpEtappeSetning(f.e, tall) : info.kort + '.'}</p>
 
-    ${kurs.tom ? '' : `
-    <details class="kp-forklaring">
-      <summary>Hva betyr «${info.navn}»? ${KP_CHEVRON}</summary>
-      <div class="kp-forklaring__innhold">
-        <p>${info.tekst}</p>
-        <p class="hb-text--sm hb-mb--none">${kpEtappeSetning(f.e, tall)} ${videre}</p>
-      </div>
-    </details>`}
-    <details class="kp-forklaring">
-      <summary>Slik leser du kompasset ${KP_CHEVRON}</summary>
-      <div class="kp-forklaring__innhold">${kpNokkelHtml(kurs.retning, true)}</div>
-    </details>
+    ${kpTrekkspill([
+      ...(kurs.tom ? [] : [{
+        id: `betyr-${f.e.id}`,
+        tittel: `Hva betyr «${info.navn}»?`,
+        innhold: `<p>${info.tekst}</p>
+          <p class="hb-text--sm hb-mb--none">${kpEtappeSetning(f.e, tall)} ${videre}</p>`
+      }]),
+      { id: `nokkel-${f.e.id}`, tittel: 'Slik leser du kompasset', innhold: kpNokkelHtml(kurs.retning, true) }
+    ])}
   </div>
 
   ${kpNavHtml(sisteEtappe ? 'Se hele oppsummeringen' : 'Videre til neste steg')}
@@ -1040,10 +1050,10 @@ function kpOppsummeringHtml() {
       ${kpKnapp('Start på nytt', 'data-nullstill', 'standard')}
     </div>
 
-    <details class="kp-svardetaljer kp-utskrift-skjul">
-      <summary>Se alle svarene dine</summary>
-      <div class="hb-summary hb-summary--flat">${kpSvarlisteHtml()}</div>
-    </details>
+    <div class="kp-svardetaljer kp-utskrift-skjul">
+      ${kpTrekkspill([{ id: 'alle-svar', tittel: 'Se alle svarene dine',
+        innhold: `<div class="hb-summary hb-summary--flat">${kpSvarlisteHtml()}</div>` }])}
+    </div>
 
   </div>
 </section>`;
@@ -1454,6 +1464,13 @@ function kpKlikk(ev) {
   else if (d.skrivUt !== undefined) window.print();
 
   else if (d.tilfeldig !== undefined) kpFyllTilfeldig();
+  /* Fasadens trekkspill: tilstanden står på elementet */
+  else if (d.trekk !== undefined) {
+    const el = t.closest('.hb-accordion-element');
+    const aapen = !el.classList.contains('hb-accordion-element--utvidet');
+    el.classList.toggle('hb-accordion-element--utvidet', aapen);
+    t.setAttribute('aria-expanded', String(aapen));
+  }
   else if (d.hjelpetekst !== undefined) {
     const el = t.closest('.hb-hjelpetekst');
     const aapen = !el.classList.contains('hb-hjelpetekst--utvidet');

@@ -123,24 +123,15 @@
 .kp-steget__kurs { font: 600 var(--text-2xl)/var(--lh-2xl) var(--font-display); margin: var(--space-2) 0 4px; }
 .kp-steget__kort { margin: 0 auto; max-width: 46ch; }
 
-.kp-forklaring {
-  text-align: left; margin-top: var(--space-5);
-  border: 1px solid var(--hb-slate-200); border-radius: var(--radius-lg);
-}
-.kp-forklaring + .kp-forklaring { margin-top: var(--space-2); }
-.kp-forklaring summary {
-  cursor: pointer; list-style: none;
-  display: flex; justify-content: space-between; align-items: center; gap: var(--space-3);
-  padding: var(--space-3) var(--space-4); font-weight: 600;
-}
-.kp-forklaring summary::-webkit-details-marker { display: none; }
-.kp-forklaring summary:hover { background: var(--hb-slate-50); border-radius: var(--radius-lg); }
-.kp-forklaring summary:focus-visible { outline: 3px solid var(--hb-blue-800); outline-offset: -3px; border-radius: var(--radius-lg); }
-.kp-forklaring__pil { flex: 0 0 20px; width: 20px; height: 20px; transition: transform var(--duration-base) var(--ease-out); }
-.kp-forklaring[open] .kp-forklaring__pil { transform: rotate(180deg); }
-.kp-forklaring__innhold { padding: 0 var(--space-4) var(--space-4); }
-.kp-forklaring__innhold p:last-child { margin-bottom: 0; }
-@media (prefers-reduced-motion: reduce) { .kp-forklaring__pil { transition: none; } }
+/* Trekkspillene er Fasadens hb-accordion. Her står bare plassen, og
+   rammen: i fasaden.css har reglene for hb-accordion--kantlinje fått
+   .fasaden på feil plass i byggingen, så de treffer aldri. De står her
+   slik Fasaden mener dem, med Fasadens farge, til fasaden.css bygges
+   på nytt. Rammen overstyrer også det gamle trekkspillet i hb-app.css,
+   som bruker samme klassenavn. */
+.kp-forklaringer { text-align: left; margin-top: var(--space-5); }
+.fasaden .hb-accordion.hb-accordion--kantlinje { border: 0.0625rem solid #b8c0c7; }
+.fasaden .hb-accordion--kantlinje .hb-accordion-element + .hb-accordion-element { border-top: 0.0625rem solid #b8c0c7; }
 
 /* Nøkkelen til de fire retningene, under kompasset hver gang */
 .kp-nokkel {
@@ -393,15 +384,8 @@
 .kp-ressurs > span { display: inline-flex; align-items: center; }
 .kp-ressurs svg { width: 18px; height: 18px; display: block; }
 
-.kp-svardetaljer {
-  margin-top: var(--space-6);
-  border-top: 1px solid var(--hb-slate-200);
-  padding-top: var(--space-3);
-}
-.kp-svardetaljer summary {
-  cursor: pointer; font-weight: 600; padding: var(--space-2) 0;
-  color: var(--fg-link);
-}
+/* «Se alle svarene dine» er Fasadens trekkspill, som etter hvert steg */
+.kp-svardetaljer { margin-top: var(--space-6); }
 
 /* ═══ Kompasset du vrir selv ══════════════════════════════════════ */
 
