@@ -76,8 +76,6 @@
 .kp-kompass__naal-nord { fill: var(--hb-green-700); }
 .kp-kompass[data-vei="ned"] .kp-kompass__naal-nord { fill: var(--hb-red-700); }
 .kp-kompass[data-tom="1"] .kp-kompass__naal-nord { fill: var(--hb-slate-300); }
-.kp-kompass[data-tom="1"] .kp-kompass__naal-sor  { fill: var(--hb-slate-200); }
-.kp-kompass__naal-sor  { fill: var(--hb-slate-300); }
 .kp-kompass__nav       { fill: var(--hb-slate-700); }
 
 /* Etikettene er kursnavn, ikke himmelretninger, så de settes med
@@ -118,12 +116,41 @@
   .kp-peiling__hoved { grid-template-columns: 330px 1fr; gap: var(--space-5); }
 }
 
+/* Etter hvert steg: kompasset og kursen midt på, og forklaringene i
+   to trekkspill under */
+.kp-steget { text-align: center; padding: var(--space-5) var(--space-4); }
+.kp-steget__rose { width: 100%; max-width: 360px; margin: 0 auto; }
+.kp-steget__kurs { font: 600 var(--text-2xl)/var(--lh-2xl) var(--font-display); margin: var(--space-2) 0 4px; }
+.kp-steget__kort { margin: 0 auto; max-width: 46ch; }
+
+.kp-forklaring {
+  text-align: left; margin-top: var(--space-5);
+  border: 1px solid var(--hb-slate-200); border-radius: var(--radius-lg);
+}
+.kp-forklaring + .kp-forklaring { margin-top: var(--space-2); }
+.kp-forklaring summary {
+  cursor: pointer; list-style: none;
+  display: flex; justify-content: space-between; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4); font-weight: 600;
+}
+.kp-forklaring summary::-webkit-details-marker { display: none; }
+.kp-forklaring summary:hover { background: var(--hb-slate-50); border-radius: var(--radius-lg); }
+.kp-forklaring summary:focus-visible { outline: 3px solid var(--hb-blue-800); outline-offset: -3px; border-radius: var(--radius-lg); }
+.kp-forklaring__pil { flex: 0 0 20px; width: 20px; height: 20px; transition: transform var(--duration-base) var(--ease-out); }
+.kp-forklaring[open] .kp-forklaring__pil { transform: rotate(180deg); }
+.kp-forklaring__innhold { padding: 0 var(--space-4) var(--space-4); }
+.kp-forklaring__innhold p:last-child { margin-bottom: 0; }
+@media (prefers-reduced-motion: reduce) { .kp-forklaring__pil { transition: none; } }
+
 /* Nøkkelen til de fire retningene, under kompasset hver gang */
 .kp-nokkel {
   border-top: 1px solid var(--hb-slate-200);
   margin-top: var(--space-3);
   padding-top: var(--space-3);
 }
+/* Inne i trekkspillet står nøkkelen uten egen strek og overskrift */
+.kp-nokkel--innfelt { border-top: 0; margin-top: 0; padding-top: 0; }
+.kp-nokkel--innfelt .kp-nokkel__tittel { display: none; }
 .kp-nokkel__tittel {
   font: 600 var(--text-xs)/1.3 var(--font-sans);
   color: var(--fg-subtle);

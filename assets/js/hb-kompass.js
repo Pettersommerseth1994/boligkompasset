@@ -275,7 +275,8 @@ function kpKompassSvg(kurs, opt = {}) {
   <g class="kp-kompass__naal" data-naal
      style="transform-origin:${cx}px ${cy}px; transform:rotate(${vinkel.toFixed(1)}deg) scale(${skala.toFixed(2)})">
     <path class="kp-kompass__naal-nord" d="M${cx} ${cy - r + 5} L${cx + 12} ${cy + 8} L${cx} ${cy} L${cx - 12} ${cy + 8} Z"/>
-    <path class="kp-kompass__naal-sor"  d="M${cx} ${cy + r - 18} L${cx + 9} ${cy - 5} L${cx} ${cy} L${cx - 9} ${cy - 5} Z"/>
+    <!-- Nåla har bare spiss, ingen hale. Med hale kunne den leses som
+         om den pekte begge veier. -->
   </g>
   <circle class="kp-kompass__nav" cx="${cx}" cy="${cy}" r="8.5"/>
   <circle cx="${cx}" cy="${cy}" r="3.4" fill="#fff"/>
@@ -679,31 +680,41 @@ function kpEtappeSetning(e, tall) {
   return `Av ${ord(tall.sum)} svar som teller i dette steget, ${liste}.`;
 }
 
+/* Kompasset og kursen står alene, midt på. Hva kursen betyr, hvor
+   mange svar som teller, og hvordan kompasset leses, ligger i to
+   trekkspill under, for den som vil lese mer. */
+const KP_CHEVRON = '<svg class="kp-forklaring__pil" viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+  + '<path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
 function kpEtappeSluttHtml(f) {
   const kurs = kpBeregnKurs(f.e.id);
   const tall = kpEtappeTelling(f.e.id);
   const info = KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT;
   const sisteEtappe = f.nr === KOMPASS_ETAPPER.length;
+  const videre = sisteEtappe ? 'Den samlede kursen får du på neste side.' : 'Neste steg begynner på null igjen.';
 
   return `
 <div class="kp-sporsmal">
   ${kpTittel('Slik ser det ut', f.e.navn)}
-  <p class="kp-sporsmal__under">
-    Her står nåla slik svarene i dette steget samlet sett peker.
-    ${sisteEtappe ? 'Den samlede kursen får du på neste side.' : 'Neste steg begynner på null igjen.'}
-  </p>
 
-  <div class="hb-card kp-peiling">
-    <div class="kp-peiling__hoved">
-      <div class="kp-peiling__rose">${kpKompassSvg(kurs)}</div>
-      <div>
-        <p class="hb-text--sm hb-text--secondary hb-mb--none">Dette steget peker mot</p>
-        <p class="kp-peiling__kurs">${kurs.tom ? 'Ikke besvart' : info.navn}</p>
-        <p class="kp-peiling__tekst">${kurs.tom ? '' : info.tekst}</p>
-        <p class="hb-text--sm hb-mb--none">${kpEtappeSetning(f.e, tall)}</p>
+  <div class="hb-card kp-steget">
+    <div class="kp-steget__rose">${kpKompassSvg(kurs)}</div>
+    <p class="hb-text--sm hb-text--secondary hb-mb--none">Dette steget peker mot</p>
+    <p class="kp-steget__kurs">${kurs.tom ? 'Ikke besvart' : info.navn}</p>
+    <p class="kp-steget__kort">${kurs.tom ? kpEtappeSetning(f.e, tall) : info.kort + '.'}</p>
+
+    ${kurs.tom ? '' : `
+    <details class="kp-forklaring">
+      <summary>Hva betyr «${info.navn}»? ${KP_CHEVRON}</summary>
+      <div class="kp-forklaring__innhold">
+        <p>${info.tekst}</p>
+        <p class="hb-text--sm hb-mb--none">${kpEtappeSetning(f.e, tall)} ${videre}</p>
       </div>
-    </div>
-    ${kpNokkelHtml(kurs.retning)}
+    </details>`}
+    <details class="kp-forklaring">
+      <summary>Slik leser du kompasset ${KP_CHEVRON}</summary>
+      <div class="kp-forklaring__innhold">${kpNokkelHtml(kurs.retning, true)}</div>
+    </details>
   </div>
 
   ${kpNavHtml(sisteEtappe ? 'Se hele oppsummeringen' : 'Videre til neste steg')}
@@ -720,9 +731,9 @@ const KP_NOKKEL = [
   { kode: 'S', grader: 180 }
 ];
 
-function kpNokkelHtml(retning) {
+function kpNokkelHtml(retning, innfelt = false) {
   return `
-  <div class="kp-nokkel">
+  <div class="kp-nokkel${innfelt ? ' kp-nokkel--innfelt' : ''}">
     <p class="kp-nokkel__tittel">Slik leser du kompasset</p>
     <ul>
       ${KP_NOKKEL.map(p => {
