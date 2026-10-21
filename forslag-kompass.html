@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forslag til kompasset | Boligkompasset</title>
+<!-- Arbeidsside: ti forslag til kompasset. 1–5 fra forrige runde, der
+     nr. 3 er det som står i tjenesten nå, og 6–10 nye. Ikke lenket fra
+     tjenesten. -->
+<link rel="stylesheet" href="fasaden/boligkompasset-stiler.css?v=30">
+<style>
+  body { background: var(--hb-slate-50); }
+  .fk-side { max-width: 900px; margin: 0 auto; padding: var(--space-5) var(--space-3) var(--space-7); }
+  .fk-velger { position: sticky; top: 0; z-index: 5; background: var(--hb-slate-50); padding: var(--space-3) 0; border-bottom: 1px solid var(--hb-slate-200); }
+  .fk-velger fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+  .fk-velger legend { font-weight: 600; float: left; padding: 8px var(--space-2) 8px 0; }
+  .fk-velger label { display: inline-flex; align-items: center; gap: 6px; border: 2px solid var(--hb-slate-200); border-radius: var(--radius-pill); padding: 6px 14px; background: #fff; cursor: pointer; }
+  .fk-velger label:has(input:checked) { border-color: var(--hb-blue-800); background: var(--hb-blue-100); font-weight: 600; }
+  .fk-hopp { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: var(--space-2); font-size: var(--text-sm); }
+
+  .fk-forslag { margin-top: var(--space-7); scroll-margin-top: 140px; }
+  .fk-forslag > h2 { margin: 0 0 4px; }
+  .fk-forslag > p { margin: 0 0 var(--space-3); color: var(--fg-subtle); max-width: 66ch; }
+  .fk-ny { display: inline-block; font-size: var(--text-xs); font-weight: 600; background: var(--hb-blue-100); color: var(--hb-blue-900); border-radius: var(--radius-sm); padding: 2px 8px; margin-left: 8px; vertical-align: middle; }
+  .fk-flate { background: #fff; border: 1px solid var(--hb-slate-200); border-radius: var(--radius-lg); padding: var(--space-5) var(--space-4); }
+  .fk-dempet { color: var(--fg-subtle); }
+  .fk-kurs { font: 600 var(--text-2xl)/var(--lh-2xl) var(--font-sans); margin: 2px 0 var(--space-2); }
+  .fk-to { display: grid; gap: var(--space-5); align-items: center; }
+  @media (min-width: 640px) { .fk-to { grid-template-columns: 300px 1fr; } }
+
+  /* 1 */
+  .fk1-kort { list-style: none; margin: var(--space-4) 0 0; padding: 0; display: grid; gap: var(--space-2); }
+  @media (min-width: 640px) { .fk1-kort { grid-template-columns: 1fr 1fr; } }
+  .fk1-kort li { border: 1px solid var(--hb-slate-200); border-radius: var(--radius-lg); padding: var(--space-3); color: var(--fg-subtle); }
+  .fk1-kort li strong { display: block; color: var(--fg-default); }
+  .fk1-kort li[data-naa="true"] { border: 2px solid var(--hb-green-700); background: var(--hb-green-100); color: var(--fg-default); }
+  .fk1-merke { display: inline-block; font-size: var(--text-xs); font-weight: 600; color: var(--hb-green-800); margin-top: 4px; }
+  /* 2 */
+  .fk2-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+  .fk2-liste li { display: grid; grid-template-columns: 28px 1fr; gap: var(--space-2); }
+  .fk2-nr { width: 28px; height: 28px; border-radius: 50%; color: #fff; font-weight: 600; display: grid; place-items: center; font-size: var(--text-xs); }
+  .fk2-liste strong { display: block; }
+  /* 4 */
+  .fk4-skala { list-style: none; margin: var(--space-6) 0 var(--space-3); padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .fk4-skala li { position: relative; text-align: center; padding: var(--space-3) var(--space-2); border-radius: var(--radius-sm); background: var(--hb-slate-100); color: var(--fg-subtle); font-size: var(--text-sm); }
+  .fk4-skala li strong { display: block; color: var(--fg-default); font-size: var(--text-base); }
+  .fk4-skala li[data-naa="true"] { background: var(--hb-green-700); color: #fff; }
+  .fk4-skala li[data-naa="true"][data-vei="ned"] { background: #a42812; }
+  .fk4-skala li[data-naa="true"] strong { color: #fff; }
+  .fk4-skala li[data-naa="true"]::before { content: "Du er her"; position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%); font-size: var(--text-xs); font-weight: 600; color: var(--fg-default); white-space: nowrap; }
+  .fk4-ende { display: flex; justify-content: space-between; font-size: var(--text-xs); color: var(--fg-subtle); }
+  @media (max-width: 560px) { .fk4-skala { grid-template-columns: 1fr; margin-top: var(--space-3); } .fk4-skala li { text-align: left; } .fk4-skala li[data-naa="true"]::before { content: "Du er her"; left: auto; right: var(--space-3); bottom: auto; top: 50%; transform: translateY(-50%); color: #fff; } .fk4-ende { display: none; } }
+  /* 5 */
+  .fk5-valg { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-2); margin: var(--space-3) 0 var(--space-4); }
+  @media (min-width: 640px) { .fk5-valg { grid-template-columns: repeat(4, 1fr); } }
+  .fk5-valg button { display: grid; justify-items: center; gap: 6px; min-height: 96px; cursor: pointer; border: 2px solid var(--hb-blue-800); border-radius: var(--radius-sm); background: #fff; color: var(--hb-blue-800); font: 600 var(--text-base)/1.2 var(--font-sans); padding: var(--space-3) var(--space-2); }
+  .fk5-valg button svg { width: 32px; height: 32px; }
+  .fk5-valg button[aria-pressed="true"] { background: var(--hb-blue-800); color: #fff; }
+  .fk5-forklaring { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+  .fk5-forklaring span { display: inline-flex; align-items: center; gap: 6px; }
+  .fk5-forklaring i { width: 22px; height: 6px; border-radius: 3px; display: inline-block; }
+  /* 7 */
+  .fk7 { text-align: center; }
+  .fk7 svg { width: 100%; max-width: 520px; }
+  /* 8 */
+  .fk8 { list-style: none; margin: var(--space-4) 0 0; padding: 0; display: grid; gap: var(--space-3); }
+  @media (min-width: 640px) { .fk8 { grid-template-columns: 1fr 1fr; } }
+  .fk8 li { display: grid; grid-template-columns: 88px 1fr; gap: var(--space-3); align-items: center; border: 1px solid var(--hb-slate-200); border-radius: var(--radius-lg); padding: var(--space-3); }
+  .fk8 li[data-naa="true"] { border: 2px solid var(--hb-green-700); background: var(--hb-green-100); }
+  .fk8 li[data-naa="true"][data-vei="ned"] { border-color: #a42812; background: #fbe2dd; }
+  .fk8 strong { display: block; }
+  .fk8 span { color: var(--fg-subtle); }
+  .fk8 .fk8-merke { display: block; font-size: var(--text-xs); font-weight: 600; color: var(--fg-default); margin-top: 4px; }
+  /* 9 */
+  .fk9-topp { display: flex; align-items: center; gap: var(--space-3); }
+  .fk9-ikon { flex: 0 0 64px; }
+  .fk9-blokker { display: grid; gap: var(--space-3); margin-top: var(--space-4); }
+  @media (min-width: 640px) { .fk9-blokker { grid-template-columns: repeat(3, 1fr); } }
+  .fk9-blokker > div { border-top: 3px solid var(--hb-green-700); padding-top: var(--space-2); }
+  .fk9-blokker h3 { font-size: var(--text-base); margin: 0 0 4px; }
+  .fk9-blokker p { margin: 0; }
+  /* 10 */
+  .fk10-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+  .fk10-liste li { display: grid; grid-template-columns: 28px 1fr; gap: var(--space-2); align-items: start; }
+</style>
+</head>
+<body>
+<main class="fasaden fk-side">
+  <h1 class="hb-h1">Ti forslag til kompasset</h1>
+  <p class="hb-text--ingress">
+    1–5 er fra forrige runde, og nr. 3 er det som står i tjenesten nå.
+    6–10 er nye. Velg en kurs under for å se forslagene med andre svar.
+  </p>
+
+  <div class="fk-velger">
+    <fieldset>
+      <legend>Svarene peker mot</legend>
+      <label><input type="radio" name="kurs" value="N"><span>Rett kurs</span></label>
+      <label><input type="radio" name="kurs" value="Ø" checked><span>Små grep</span></label>
+      <label><input type="radio" name="kurs" value="V"><span>Større grep</span></label>
+      <label><input type="radio" name="kurs" value="S"><span>Ny kurs</span></label>
+    </fieldset>
+    <nav class="fk-hopp" aria-label="Hopp til forslag" id="hopp"></nav>
+  </div>
+
+  <div id="forslag"></div>
+</main>
+
+<script src="assets/js/hb-kompass-data.js?v=24"></script>
+<script src="assets/js/hb-kompass.js?v=30"></script>
+<script>
+  const R = KOMPASS_RETNINGER;
+  const GRADER = { N: 0, Ø: 90, S: 180, V: 270 };
+  const REKKE = ['N', 'Ø', 'V', 'S'];
+  const vei = k => k === 'S' ? 'ned' : k === 'N' ? 'opp' : 'side';
+  const farge = k => k === 'S' ? '#a42812' : 'var(--hb-green-700)';
+  const kursAv = k => { const r = GRADER[k] * Math.PI / 180; return { x: Math.sin(r), y: Math.cos(r), r: 1, retning: k, tom: false }; };
+  const STEGKURS = k => ({ inne: k, adkomst: k === 'N' ? 'N' : 'Ø', naermiljo: 'N' });
+  const STEGFARGE = { inne: '#4a7729', adkomst: '#c0560a', naermiljo: '#7a3e9d' };
+  const STEGNR = { inne: 2, adkomst: 3, naermiljo: 4 };
+  const EKSEMPEL = { bra: ['Rommene på inngangsplanet', 'Det som finnes på badet'], utf: ['Å komme seg rundt inne', 'Å bruke badet'] };
+  const PIL = g => `<svg viewBox="0 0 24 24" aria-hidden="true"><g style="transform:rotate(${g}deg);transform-origin:12px 12px"><path d="M12 20V5m0 0-5 5m5-5 5 5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></g></svg>`;
+
+  /* En enkel rose med én eller flere nåler, uten hale */
+  function rose(naaler, { etiketter = true, prikker = null } = {}) {
+    const cx = 120, cy = 120, r = 92;
+    let merker = '';
+    for (let a = 0; a < 360; a += 30) {
+      const s = Math.sin(a * Math.PI / 180), c = Math.cos(a * Math.PI / 180), i = r - (a % 90 ? 6 : 12);
+      merker += `<line x1="${(cx + i * s).toFixed(1)}" y1="${(cy - i * c).toFixed(1)}" x2="${(cx + r * s).toFixed(1)}" y2="${(cy - r * c).toFixed(1)}" stroke="var(--hb-slate-300)" stroke-width="1.5"/>`;
+    }
+    /* Små kompass får tykkere nål, så den synes */
+    const sw = etiketter ? 4 : 10, hode = etiketter ? 9 : 20;
+    const nal = n => `<g style="transform:rotate(${n.g}deg);transform-origin:${cx}px ${cy}px">
+        <line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy - r + 26}" stroke="${n.farge}" stroke-width="${sw}" stroke-linecap="round"/>
+        ${n.nr ? `<circle cx="${cx}" cy="${cy - r + 18}" r="11" fill="${n.farge}"/><text x="${cx}" y="${cy - r + 22}" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" style="transform:rotate(${-n.g}deg);transform-origin:${cx}px ${cy - r + 18}px">${n.nr}</text>`
+               : `<path d="M${cx} ${cy - r + 4} L${cx + hode} ${cy - r + 4 + hode * 2.4} L${cx - hode} ${cy - r + 4 + hode * 2.4} Z" fill="${n.farge}"/>`}
+      </g>`;
+    return `<svg viewBox="${etiketter ? '-70 -12 380 266' : '20 20 200 200'}" role="img" aria-label="Kompass">
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="var(--hb-slate-200)" stroke-width="1.5"/>${merker}
+      ${etiketter ? `<text x="${cx}" y="4" text-anchor="middle" font-size="13" font-weight="600" fill="var(--hb-green-700)">Rett kurs</text>
+      <text x="${cx}" y="246" text-anchor="middle" font-size="13" font-weight="600" fill="#a42812">Ny kurs</text>
+      <text x="${cx + r + 8}" y="124" font-size="13" font-weight="600" fill="var(--fg-default)">Små grep</text>
+      <text x="${cx - r - 8}" y="124" text-anchor="end" font-size="13" font-weight="600" fill="var(--fg-default)">Større grep</text>` : ''}
+      ${prikker || ''}
+      ${naaler.map(nal).join('')}
+      <circle cx="${cx}" cy="${cy}" r="7" fill="var(--fg-default)"/>
+    </svg>`;
+  }
+
+  let egenValg = null;
+
+  const FORSLAG = [
+    { tittel: '1. Et fast bilde med tekst',
+      tekst: 'Kompasset er en illustrasjon uten nål. Kortene forklarer de fire kursene, og den svarene peker mot, er markert.',
+      html: k => `
+        <div class="fk-to"><div>${kpKompassSvg(Object.assign({}, KP_TOMKURS))}</div>
+          <div><p class="fk-dempet hb-mb--none">Svarene dine i dette steget ligner mest på</p><p class="fk-kurs">${R[k].navn}</p><p class="hb-mb--none">${R[k].tekst}</p></div></div>
+        <ul class="fk1-kort">${REKKE.map(c => `<li data-naa="${c === k}"><strong>${R[c].navn}</strong>${R[c].kort}.${c === k ? '<br><span class="fk1-merke">Her peker svarene dine</span>' : ''}</li>`).join('')}</ul>` },
+    { tittel: '2. Ett samlet kompass til slutt',
+      tekst: 'Ingen kompass underveis. Oppsummeringen har ett kompass med én nummerert nål per steg.',
+      html: k => { const sk = STEGKURS(k); const ids = Object.keys(sk); const brukt = {};
+        return `<div class="fk-to"><div>${rose(ids.map(id => { const g = GRADER[sk[id]]; const f = (brukt[g] = (brukt[g] || 0) + 1) - 1; return { g: g + f * 22, farge: STEGFARGE[id], nr: STEGNR[id] }; }))}</div>
+          <ol class="fk2-liste">${ids.map(id => `<li><span class="fk2-nr" style="background:${STEGFARGE[id]}">${STEGNR[id]}</span><span><strong>${KOMPASS_ETAPPER.find(e => e.id === id).navn}</strong><span class="fk-dempet">${R[sk[id]].navn}. ${R[sk[id]].kort}.</span></span></li>`).join('')}</ol></div>`; } },
+    { tittel: '3. En refleksjon, ikke en fasit (i tjenesten nå)',
+      tekst: 'Slik det står etter hvert steg nå: navn og forklaring på hver retning, kursen som et spørsmål, og hva som fungerer og hva som kan bli en utfordring.',
+      html: k => `${kpRetningerHtml(kursAv(k))}
+        <p class="hb-text--sm hb-text--secondary hb-mb--none" style="text-align:center">${R[k].navn}</p>
+        <p class="kp-steget__sporsmal" style="text-align:center">${KP_REFLEKSJON[k]}</p>
+        <div class="kp-tokol"><div class="kp-tokol__bra"><h3 class="kp-tokol__tittel">Dette fungerer i dag</h3><ul>${EKSEMPEL.bra.map(t => `<li>${t}</li>`).join('')}</ul></div>
+          <div class="kp-tokol__utfordring"><h3 class="kp-tokol__tittel">Dette kan bli en utfordring</h3><ul>${EKSEMPEL.utf.map(t => `<li>${t}</li>`).join('')}</ul></div></div>` },
+    { tittel: '4. Kursene som en skala',
+      tekst: 'Ingen sirkel og ingen nål. De fire kursene på rad, og «Du er her» peker på den svarene ligner mest.',
+      html: k => `<p class="fk-dempet hb-mb--none">Svarene dine i dette steget</p>
+        <ol class="fk4-skala">${REKKE.map(c => `<li data-naa="${c === k}" data-vei="${vei(c)}"><strong>${R[c].navn}</strong>${R[c].kort}</li>`).join('')}</ol>
+        <div class="fk4-ende"><span>Passer deg i dag</span><span>Krever mest</span></div>
+        <p class="hb-mb--none" style="margin-top:var(--space-4)">${R[k].tekst}</p>` },
+    { tittel: '5. Velg selv med knapper, så sammenlign',
+      tekst: 'Du velger først selv med fire store knapper. Da kommer vår utregning fram i samme kompass.',
+      html: k => `<p class="hb-mb--none"><strong>Hvor føler du at du står?</strong></p>
+        <div class="fk5-valg" role="group" aria-label="Velg kurs">${REKKE.map(c => `<button type="button" aria-pressed="${egenValg === c}" data-fk5="${c}">${PIL(GRADER[c])}${R[c].navn}</button>`).join('')}</div>
+        <div class="fk-to"><div>${rose([...(egenValg ? [{ g: GRADER[k], farge: 'var(--hb-green-600)' }] : []), ...(egenValg ? [{ g: GRADER[egenValg], farge: 'var(--fg-default)' }] : [])])}</div>
+          <div>${egenValg ? `<div class="fk5-forklaring"><span><i style="background:var(--fg-default)"></i>Du: ${R[egenValg].navn}</span><span><i style="background:var(--hb-green-600)"></i>Vår utregning: ${R[k].navn}</span></div>
+            <p style="margin-top:var(--space-3)" class="hb-mb--none">${egenValg === k ? 'Du og kompasset er enige.' : 'Dere peker hver sin vei. Det du selv kjenner på, veier tungt.'}</p>`
+            : '<p class="fk-dempet hb-mb--none">Velg en kurs, så ser du vår utregning ved siden av.</p>'}</div></div>` },
+
+    { ny: true, tittel: '6. Boligen i midten',
+      tekst: 'Et hus står i midten, med fire piler ut mot kursene. Pila svarene peker langs, er fylt og farget. De andre er bare omriss. Mindre «instrument», mer om boligen.',
+      html: k => {
+        const pil = (c) => { const g = GRADER[c], naa = c === k;
+          return `<g style="transform:rotate(${g}deg);transform-origin:160px 130px">
+            <path d="M160 18 L182 52 L170 52 L170 82 L150 82 L150 52 L138 52 Z" fill="${naa ? farge(c) : '#fff'}" stroke="${naa ? farge(c) : 'var(--hb-slate-300)'}" stroke-width="2.5" stroke-linejoin="round"/></g>`; };
+        const tekst = (c, x, y, a) => `<text x="${x}" y="${y}" text-anchor="${a}" font-size="14" font-weight="${c === k ? 700 : 600}" fill="${c === k ? farge(c) : 'var(--fg-default)'}">${R[c].navn}</text>`;
+        return `<div class="fk-to"><div><svg viewBox="-80 -6 480 270" role="img" aria-label="Huset i midten, pila peker mot ${R[k].navn}">
+          ${REKKE.map(pil).join('')}
+          <circle cx="160" cy="130" r="44" fill="var(--hb-green-100)"/>
+          <path d="M136 132 L160 112 L184 132 M142 128 V152 H178 V128" fill="none" stroke="var(--fg-default)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="155" y="138" width="10" height="14" fill="var(--fg-default)"/>
+          ${tekst('N', 160, 8, 'middle')}${tekst('S', 160, 262, 'middle')}${tekst('Ø', 284, 135, 'start')}${tekst('V', 36, 135, 'end')}
+        </svg></div>
+        <div><p class="fk-dempet hb-mb--none">Svarene dine i dette steget peker mot</p><p class="fk-kurs">${R[k].navn}</p><p class="hb-mb--none">${R[k].tekst}</p></div></div>`; } },
+    { ny: true, tittel: '7. En måler fra «passer» til «krever mest»',
+      tekst: 'En halvsirkel som en måler, med de fire kursene i rekkefølge. Lett å lese som «hvor langt unna», men mister skillet mellom små og større grep som to retninger.',
+      html: k => {
+        const idx = REKKE.indexOf(k), farger = ['var(--hb-green-600)', 'var(--hb-green-400)', '#f8b07c', '#c0560a'];
+        const bue = (i) => { const a1 = Math.PI * (1 - i / 4), a2 = Math.PI * (1 - (i + 1) / 4), R1 = 150, R2 = 104, cx = 260, cy = 190;
+          const p = (a, rr) => [cx + rr * Math.cos(a), cy - rr * Math.sin(a)];
+          const [x1, y1] = p(a1, R1), [x2, y2] = p(a2, R1), [x3, y3] = p(a2, R2), [x4, y4] = p(a1, R2);
+          return `<path d="M${x1} ${y1} A${R1} ${R1} 0 0 1 ${x2} ${y2} L${x3} ${y3} A${R2} ${R2} 0 0 0 ${x4} ${y4} Z" fill="${farger[i]}" opacity="${i === idx ? 1 : .35}" stroke="#fff" stroke-width="3"/>`; };
+        const etikett = (i) => { const a = Math.PI * (1 - (i + .5) / 4), x = 260 + 178 * Math.cos(a), y = 190 - 178 * Math.sin(a);
+          return `<text x="${x.toFixed(0)}" y="${y.toFixed(0)}" text-anchor="${i < 2 ? 'end' : 'start'}" font-size="15" font-weight="${i === idx ? 700 : 600}" fill="var(--fg-default)">${R[REKKE[i]].navn}</text>`; };
+        const vinkel = -90 + (idx + .5) * 45;
+        return `<div class="fk7"><svg viewBox="0 0 520 210" role="img" aria-label="Måleren peker på ${R[k].navn}">
+          ${[0, 1, 2, 3].map(bue).join('')}${[0, 1, 2, 3].map(etikett).join('')}
+          <g style="transform:rotate(${vinkel}deg);transform-origin:260px 190px"><path d="M260 70 L270 190 L250 190 Z" fill="var(--fg-default)"/></g>
+          <circle cx="260" cy="190" r="12" fill="var(--fg-default)"/></svg></div>
+        <p class="fk-kurs" style="text-align:center">${R[k].navn}</p><p style="text-align:center;max-width:56ch;margin:0 auto">${R[k].tekst}</p>`; } },
+    { ny: true, tittel: '8. Et lite kompass i hvert kort',
+      tekst: 'Forklaringen og kompasset er det samme. Hvert kort har sitt eget lille kompass som peker mot kursen sin, og kortet svarene ligner mest på, er uthevet.',
+      html: k => `<p class="fk-dempet hb-mb--none">Svarene dine i dette steget peker mot <strong>${R[k].navn}</strong></p>
+        <ul class="fk8">${REKKE.map(c => `<li data-naa="${c === k}" data-vei="${vei(c)}"><div>${rose([{ g: GRADER[c], farge: c === k ? farge(c) : 'var(--hb-slate-400)' }], { etiketter: false })}</div>
+          <div><strong>${R[c].navn}</strong><span>${R[c].kort}.</span>${c === k ? '<span class="fk8-merke">Her peker svarene dine</span>' : ''}</div></li>`).join('')}</ul>` },
+    { ny: true, tittel: '9. Bare tekst, med kompasset som ikon',
+      tekst: 'Ingen stor figur. Kursen står som overskrift med et lite kompassikon, og under står tre korte blokker: hva det betyr, hva du kan gjøre, og hvem som kan hjelpe.',
+      html: k => {
+        const gjor = { N: 'Hold boligen ved like, og gjør de små grepene før du trenger dem.', Ø: 'Begynn med det enkleste, som lys, håndlister og terskler.', V: 'Begynn å planlegge tidlig, før behovet melder seg.', S: 'Se på hva en ombygging koster mot en annen bolig.' }[k];
+        const hjelp = { N: 'Ingen trenger å hjelpe nå. Kommunen kan svare på spørsmål.', Ø: 'Kommunen og Hjelpemiddelsentralen gir gratis råd.', V: 'En ergoterapeut i kommunen kan se på boligen sammen med deg.', S: 'Kommunen kan hjelpe deg å se på alternativene.' }[k];
+        return `<div class="fk9-topp"><div class="fk9-ikon">${rose([{ g: GRADER[k], farge: farge(k) }], { etiketter: false })}</div>
+          <div><p class="fk-dempet hb-mb--none">Svarene dine i dette steget</p><p class="fk-kurs hb-mb--none">${R[k].navn}</p></div></div>
+        <div class="fk9-blokker"><div><h3>Hva betyr det?</h3><p>${R[k].kort}.</p></div><div><h3>Hva kan du gjøre?</h3><p>${gjor}</p></div><div><h3>Hvem kan hjelpe?</h3><p>${hjelp}</p></div></div>`; } },
+    { ny: true, tittel: '10. Reisen gjennom stegene',
+      tekst: 'Ett kompass som viser hvor nåla sto etter hvert steg, som prikker koblet med en stiplet linje. Man ser både hvor man endte og veien dit.',
+      html: k => {
+        const sk = STEGKURS(k), ids = Object.keys(sk), cx = 120, cy = 120, rr = 62;
+        const pkt = ids.map((id, i) => { const g = GRADER[sk[id]] * Math.PI / 180, d = 74 - i * 26; return { id, x: cx + d * Math.sin(g), y: cy - d * Math.cos(g) }; });
+        const sti = `<polyline points="${[{ x: cx, y: cy }, ...pkt].map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}" fill="none" stroke="var(--fg-subtle)" stroke-width="2" stroke-dasharray="4 5"/>`
+          + pkt.map(p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="12" fill="${STEGFARGE[p.id]}"/><text x="${p.x.toFixed(1)}" y="${(p.y + 4).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">${STEGNR[p.id]}</text>`).join('');
+        return `<div class="fk-to"><div>${rose([], { prikker: sti })}</div>
+          <ol class="fk10-liste">${ids.map(id => `<li><span class="fk2-nr" style="background:${STEGFARGE[id]}">${STEGNR[id]}</span><span><strong>${KOMPASS_ETAPPER.find(e => e.id === id).navn}</strong><br><span class="fk-dempet">${R[sk[id]].navn}</span></span></li>`).join('')}</ol></div>`; } }
+  ];
+
+  function tegn() {
+    const k = document.querySelector('input[name="kurs"]:checked').value;
+    document.getElementById('forslag').innerHTML = FORSLAG.map((f, i) => `
+    <section class="fk-forslag" id="f${i + 1}">
+      <h2 class="hb-h3">${f.tittel}${f.ny ? '<span class="fk-ny">Nytt</span>' : ''}</h2><p>${f.tekst}</p>
+      <div class="fk-flate">${f.html(k)}</div>
+    </section>`).join('');
+  }
+  document.getElementById('hopp').innerHTML = FORSLAG.map((f, i) => `<a href="#f${i + 1}">${i + 1}</a>`).join('');
+  document.addEventListener('change', e => { if (e.target.name === 'kurs') tegn(); });
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-fk5]'); if (!b) return;
+    egenValg = b.dataset.fk5; const y = window.scrollY; tegn(); window.scrollTo(0, y);
+  });
+  tegn();
+</script>
+</body>
+</html>
