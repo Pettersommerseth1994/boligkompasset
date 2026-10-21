@@ -3,7 +3,7 @@
 
    Steg, spørsmål, hjelpetekster og svaralternativer er hentet fra
    «MASTERFIL - Boligkompasset_justert 2.xlsx»: fire faner, ett steg
-   per fane, og elleve spørsmål. Overskriften i A1 er stegets navn, og B1 er
+   per fane, og tolv spørsmål på hver sin side (1a og 1b er delt i to). Overskriften i A1 er stegets navn, og B1 er
    ingressen. Under står hvert spørsmål med hjelpeteksten og svarene.
 
    Poengene som flytter kompassnåla, og anbefalingene, er ikke en del
@@ -71,8 +71,8 @@ const KOMPASS_ETAPPER = [
 
 /* ═══ Spørsmålene ══════════════════════════════════════════════════
    Hentet fra «MASTERFIL - Boligkompasset_justert 2.xlsx». Elleve
-   spørsmål, der 1a og 1b står på samme side slik fane 1 sier, og
-   nummereringen er den samme som i arket. Ordlyden er som i arket,
+   spørsmål i arket. 1a og 1b har hver sin side på skjermen, så det
+   blir tolv. Papirutgaven bruker nummereringen fra arket. Ordlyden er som i arket,
    med skrivefeil rettet. Merknadene til designerne om bildeeksempler
    og illustrasjoner, og «IKKE AVKLART», er ikke tatt med i teksten
    folk leser.
@@ -102,38 +102,34 @@ const kpInngangHindringer = S => KP_INNGANG_HINDRING.filter(h => kpHar(S, 'adkom
 const KOMPASS_SPORSMAL = [
 
   /* ─── Steg 1, deg og boligen din ────────────────────────────────── */
+  /* 1a og 1b sto på samme side i masterfila. Etter
+     designgjennomgangen 21. oktober har de hver sin side og hver sin
+     overskrift. Ingen av dem flytter nåla, slik arket sier. */
   {
-    id: 'bolig',
+    id: 'eieform',
     etappe: 'bolig',
-    kilde: 'Fane 1, delspørsmål 1a og 1b på samme side.',
-    tittel: 'Eier eller leier du, og hvordan bor du?',
-    type: 'flerfelt',
-    /* Arket: «Kompasset skal ikke vises her eller må ev. kun vise
-       nøytralt». Ingen av feltene flytter nåla, og steget har ingen
-       oppsummering med kompass. */
+    papirNr: '1a',
+    kilde: 'Fane 1, delspørsmål 1a.',
+    tittel: 'Eier eller leier du i dag?',
+    hjelp: 'Om du eier boligen, har du som regel større mulighet til å gjøre endringer i boligen. I borettslag og sameier er det mulig at endringer må avklares med styret. Leier du, må endringer avklares med utleier.',
     ikkeKompass: true,
-    felt: [
-      {
-        navn: 'eieform',
-        ikkeKompass: true,
-        ledetekst: 'Eier eller leier du i dag?',
-        hjelp: 'Om du eier boligen, har du som regel større mulighet til å gjøre endringer i boligen. I borettslag og sameier er det mulig at endringer må avklares med styret. Leier du, må endringer avklares med utleier.',
-        valg: [
-          { v: 'eier',  tittel: 'Eier' },
-          { v: 'leier', tittel: 'Leier' }
-        ]
-      },
-      {
-        navn: 'inngang',
-        ikkeKompass: true,
-        ledetekst: 'Hvordan bor du i dag?',
-        hjelp: 'Noen boliger har egen inngang og adkomstvei, mens andre deler dette. For eksempel kan rekkehus og tomannsboliger ha egen inngang, selv om de deler adkomstvei eller parkering med andre.',
-        valg: [
-          { v: 'egen',          tittel: 'I en bolig med eget inngangsparti og egen adkomstveg' },
-          { v: 'deler-adkomst', tittel: 'I en bolig med eget inngangsparti og deler adkomstveg med andre' },
-          { v: 'deler-inngang', tittel: 'I en bolig som deler inngangsparti og adkomstveg med andre' }
-        ]
-      }
+    valg: [
+      { v: 'eier',  tittel: 'Eier' },
+      { v: 'leier', tittel: 'Leier' }
+    ]
+  },
+  {
+    id: 'inngang',
+    etappe: 'bolig',
+    papirNr: '1b',
+    kilde: 'Fane 1, delspørsmål 1b.',
+    tittel: 'Hvordan bor du i dag?',
+    hjelp: 'Noen boliger har egen inngang og adkomstvei, mens andre deler dette. For eksempel kan rekkehus og tomannsboliger ha egen inngang, selv om de deler adkomstvei eller parkering med andre.',
+    ikkeKompass: true,
+    valg: [
+      { v: 'egen',          tittel: 'I en bolig med eget inngangsparti og egen adkomstveg' },
+      { v: 'deler-adkomst', tittel: 'I en bolig med eget inngangsparti og deler adkomstveg med andre' },
+      { v: 'deler-inngang', tittel: 'I en bolig som deler inngangsparti og adkomstveg med andre' }
     ]
   },
 

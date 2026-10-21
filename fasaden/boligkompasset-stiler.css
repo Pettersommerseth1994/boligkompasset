@@ -17,4 +17,4 @@
 @import url('../ds/colors_and_type.css')      layer(hb-grunnlag);
 @import url('../assets/css/hb-app.css')       layer(hb-grunnlag);
 @import url('fasaden.css?v=20')               layer(fasaden);
-@import url('../assets/css/hb-kompass.css?v=29') layer(hb-kompass);
+@import url('../assets/css/hb-kompass.css?v=31') layer(hb-kompass);

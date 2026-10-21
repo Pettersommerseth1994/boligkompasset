@@ -553,11 +553,11 @@ function kpStartHtml() {
 }
 
 /* ═══ Framdriften ═════════════════════════════════════════════════
-   Fasadens progress stepper viser de fire stegene, og en tynn grønn
-   linje under viser hvor langt du er kommet i spørsmålene.
-   Telleren teller spørsmål, ett hakk per spørsmål.
+   Fasadens progress stepper viser de fire stegene. Det er den eneste
+   framdriften. Designgjennomgangen 21. oktober: to framdriftsvisninger
+   var forvirrende, og antallet spørsmål varierer med svarene.
 
-   Linja tegnes på nytt for hver skjerm, og da spilte Fasadens animasjon
+   Stepperen tegnes på nytt for hver skjerm, og da spilte Fasadens animasjon
    av det aktive steget hver gang, også mellom to spørsmål i samme steg.
    Nå får den bare spille når du går videre til et nytt steg.
    ─────────────────────────────────────────────────────────────────── */
@@ -566,13 +566,8 @@ let kpForrigeSteg = null;
 
 function kpFramdriftHtml() {
   const f = KP_FLYT[kpPos];
-  const totalt = kpAntallSporsmal();
-  const nr = kpSporsmalNr(kpPos);
   const etappeNr = f.t === 'slutt' ? KOMPASS_ETAPPER.length
     : KOMPASS_ETAPPER.findIndex(e => e.id === f.e.id) + 1;
-  const pst = f.t === 'slutt' ? 100 : Math.round((nr / totalt) * 100);
-  const teller = f.t === 'sp' ? `Spørsmål ${nr} av ${totalt}`
-    : `${nr} av ${totalt} spørsmål besvart`;
   const nyttSteg = kpForrigeSteg !== null && etappeNr > kpForrigeSteg;
   kpForrigeSteg = etappeNr;
 
@@ -599,11 +594,6 @@ function kpFramdriftHtml() {
         · ${f.t === 'slutt' ? 'Oppsummering' : f.e.navn}
       </p>
     </div>
-    <div class="kp-framdrift__bunn">
-      <div class="kp-framdrift__spor" role="progressbar" aria-valuemin="0" aria-valuemax="100"
-           aria-valuenow="${pst}" aria-label="${teller}">
-        <div class="kp-framdrift__fyll" style="width:${pst}%"></div>
-      </div>
     </div>
   </div>
 </div>`;
@@ -758,16 +748,16 @@ function kpEtappeSluttHtml(f) {
       <div class="kp-tokol__bra">
         <h2 class="kp-tokol__tittel">Dette fungerer i dag</h2>
         ${funker.length ? `<ul>${funker.map(sp => `<li>${sp.stikkord}</li>`).join('')}</ul>`
-          : '<p class="hb-text--sm hb-mb--none">Ingen av svarene dine i dette steget peker hit.</p>'}
+          : '<p class="hb-mb--none">Ingen av svarene dine i dette steget peker hit.</p>'}
       </div>
       <div class="kp-tokol__utfordring">
         <h2 class="kp-tokol__tittel">Dette kan bli en utfordring</h2>
         ${utfordring.length ? `<ul>${utfordring.map(sp => `<li>${sp.stikkord}</li>`).join('')}</ul>`
-          : '<p class="hb-text--sm hb-mb--none">Ingen av svarene dine i dette steget peker hit.</p>'}
+          : '<p class="hb-mb--none">Ingen av svarene dine i dette steget peker hit.</p>'}
       </div>
     </div>`}
 
-    <p class="hb-text--sm hb-text--secondary kp-steget__merknad">
+    <p class="hb-text--secondary kp-steget__merknad">
       Dette er en hjelp til å tenke gjennom boligen din, ikke et råd om hva du bør gjøre. ${videre}
     </p>
   </div>
@@ -844,8 +834,8 @@ function kpSporsmalHtml(f) {
   const nr = kpSporsmalNr(kpPos);
   return `
 <div class="kp-sporsmal">
-  ${kpTittel(`Spørsmål ${nr} av ${kpAntallSporsmal()}`, sp.tittel, 'hb-h2')}
-  ${sp.hjelp || sp.popover ? `<div class="kp-hjelp">${kpAvsnitt(sp.hjelp, 'hb-felt-beskrivelse', sp.popover)}</div>` : ''}
+  ${kpTittel(`Spørsmål ${nr}`, sp.tittel, 'hb-h2')}
+  ${sp.hjelp || sp.popover ? `<div class="kp-hjelp">${kpAvsnitt(sp.hjelp, 'kp-hjelp__tekst', sp.popover)}</div>` : ''}
   ${sp.undertekst ? `<p class="hb-text--semibold kp-sporsmal__under">${sp.undertekst}</p>` : ''}
 
   <form id="sporsmalsform" novalidate>

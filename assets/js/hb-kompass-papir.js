@@ -87,7 +87,15 @@ function paTegn() {
   <section class="pa-steg">
     <h2 class="pa-steg-tittel"><span class="pa-steg-nr">Steg ${i + 1} av ${KOMPASS_ETAPPER.length}</span> ${paEsc(e.navn)}</h2>
     <div class="pa-steg-ingress">${paAvsnitt(e.ingress)}</div>
-    ${KOMPASS_SPORSMAL.filter(s => s.etappe === e.id).map(sp => paSporsmal(sp, ++nr)).join('')}
+    ${KOMPASS_SPORSMAL.filter(s => s.etappe === e.id).map(sp => {
+      /* 1a og 1b har hver sin side på skjermen, men hører sammen på
+         papir, med nummeret fra masterfila */
+      if (sp.papirNr) {
+        if (sp.papirNr.endsWith('a')) nr++;
+        return paDelsporsmal(sp.papirNr, sp.tittel, paMedPopover(sp.hjelp, sp.popover), sp.valg, false, sp.id);
+      }
+      return paSporsmal(sp, ++nr);
+    }).join('')}
   </section>`).join('');
 
   document.getElementById('papir').innerHTML = `
