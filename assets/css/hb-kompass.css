@@ -116,12 +116,46 @@
   .kp-peiling__hoved { grid-template-columns: 330px 1fr; gap: var(--space-5); }
 }
 
-/* Etter hvert steg: kompasset og kursen midt på, og forklaringene i
-   to trekkspill under */
+/* Etter hvert steg: kompasset med en forklaring på hver retning,
+   kursen som et spørsmål, og det som fungerer og det som kan bli en
+   utfordring i steget */
 .kp-steget { text-align: center; padding: var(--space-5) var(--space-4); }
-.kp-steget__rose { width: 100%; max-width: 360px; margin: 0 auto; }
-.kp-steget__kurs { font: 600 var(--text-2xl)/var(--lh-2xl) var(--font-display); margin: var(--space-2) 0 4px; }
-.kp-steget__kort { margin: 0 auto; max-width: 46ch; }
+.kp-retninger {
+  display: grid; gap: var(--space-2);
+  grid-template-columns: 1fr minmax(160px, 220px) 1fr;
+  grid-template-areas: ". n ." "v rose o" ". s .";
+  align-items: center; justify-items: center;
+  margin-bottom: var(--space-4);
+}
+.kp-retninger__rose { grid-area: rose; width: 100%; }
+.kp-retning {
+  max-width: 13rem; padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm); line-height: 1.35; color: var(--fg-subtle);
+}
+.kp-retning strong { display: block; color: var(--fg-default); font-size: var(--text-base); }
+.kp-retning[data-naa="true"] { background: var(--hb-green-100); color: var(--fg-default); box-shadow: inset 0 0 0 2px var(--hb-green-600); }
+.kp-retning[data-naa="true"][data-vei="ned"] { background: #fbe2dd; box-shadow: inset 0 0 0 2px #a42812; }
+.kp-retning--n { grid-area: n; }
+.kp-retning--s { grid-area: s; }
+.kp-retning--v { grid-area: v; justify-self: end; text-align: right; }
+.kp-retning--o { grid-area: o; justify-self: start; text-align: left; }
+@media (max-width: 620px) {
+  .kp-retninger { grid-template-columns: 1fr 1fr; grid-template-areas: "rose rose" "n o" "v s"; }
+  .kp-retninger__rose { max-width: 220px; }
+  .kp-retning, .kp-retning--v, .kp-retning--o { justify-self: stretch; max-width: none; text-align: left; }
+}
+
+.kp-steget__sporsmal { font: 600 var(--text-xl, 1.5rem)/1.3 var(--font-display); margin: 4px auto var(--space-4); max-width: 30ch; }
+.kp-tokol { display: grid; gap: var(--space-3); text-align: left; }
+@media (min-width: 640px) { .kp-tokol { grid-template-columns: 1fr 1fr; } }
+.kp-tokol > div { border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4); }
+.kp-tokol__bra { background: var(--hb-green-100); }
+.kp-tokol__utfordring { background: #fef3ea; }
+.kp-tokol__tittel { font: 600 var(--text-base)/var(--lh-base) var(--font-sans); margin: 0 0 var(--space-2); }
+.kp-tokol ul { margin: 0; padding-left: 1.2em; font-size: var(--text-sm); line-height: var(--lh-sm); }
+.kp-tokol li + li { margin-top: 4px; }
+.kp-steget__merknad { margin: var(--space-4) 0 0; }
 
 /* Trekkspillene er Fasadens hb-accordion. Her står bare plassen, og
    rammen: i fasaden.css har reglene for hb-accordion--kantlinje fått
@@ -236,10 +270,6 @@
   transition: width 400ms var(--ease-out);
 }
 @media (prefers-reduced-motion: reduce) { .kp-framdrift__fyll { transition: none; } }
-.kp-framdrift__teller {
-  font-size: var(--text-sm); color: var(--fg-subtle);
-  font-variant-numeric: tabular-nums; white-space: nowrap;
-}
 
 /* ═══ Etappeskjermen ══════════════════════════════════════════════ */
 
@@ -280,9 +310,20 @@
 
 .kp-nav {
   display: flex; flex-wrap: wrap; gap: var(--space-3);
-  align-items: center; justify-content: space-between;
+  align-items: center; justify-content: flex-start;
   margin-top: var(--space-5);
 }
+
+/* Forklaringen under et svar, som «Enkelt, badet er stort nok», står
+   innrykket med strek, som oppfølgingsspørsmålene */
+.kp-valgforklaring {
+  margin: 4px 0 var(--space-2);
+  padding-left: var(--space-3);
+  border-left: 3px solid var(--hb-slate-200);
+}
+
+/* Infoboksen med det masterfila kaller Popover, under hjelpeteksten */
+.kp-infoboks { margin: var(--space-3) 0 var(--space-4); max-width: 62ch; }
 
 /* ═══ Snarveien nederst ═══════════════════════════════════════════
    Bare for prototypen. Den skal se ut som et verktøy, ikke som en del
@@ -405,17 +446,10 @@
     align-items: center; gap: var(--space-4);
   }
 }
-.kp-egen__rose { width: 100%; max-width: 250px; cursor: grab; touch-action: none; }
-.kp-egen__rose:active { cursor: grabbing; }
-.kp-egen__rose .kp-kompass__naal { transition: transform var(--duration-fast) var(--ease-out); }
+.kp-egen__rose { width: 100%; max-width: 250px; }
 .kp-egen__merke {
-  display: block; margin-top: var(--space-4);
-  font: 600 var(--text-sm)/1.3 var(--font-sans);
-}
-.kp-egen__skyv {
-  width: 100%; margin-top: var(--space-2);
-  accent-color: var(--hb-green-700);
-  height: 32px;
+  display: block; margin-bottom: var(--space-2); padding: 0;
+  font: 600 var(--text-base)/var(--lh-base) var(--font-sans);
 }
 
 /* ═══ Modusvelger ═════════════════════════════════════════════════ */
@@ -607,15 +641,3 @@
 
 .kp-utskrift-topp, .kp-utskrift-notat { display: none; }
 
-/* ═══ Hjelpeteksten ═══════════════════════════════════════════════
-   Fasadens hb-hjelpetekst, for det masterfila kaller Popover. I
-   fasaden.css står reglene for utvidet tilstand som
-   «.hb-hjelpetekst--utvidet .fasaden .hb-hjelpetekst-innhold», med
-   .fasaden på feil plass, så de treffer aldri. Her står de slik Fasaden
-   mener dem, til fasaden.css bygges på nytt.
-   ─────────────────────────────────────────────────────────────────── */
-
-.fasaden .hb-hjelpetekst--utvidet .hb-hjelpetekst-innhold { display: block; }
-.fasaden .hb-hjelpetekst--utvidet .hb-hjelpetekst-knapp::before { opacity: 1; }
-/* Knappen og pila over tekstfeltet står i forhold til hverandre */
-.fasaden .hb-hjelpetekst-knapp { position: relative; }
