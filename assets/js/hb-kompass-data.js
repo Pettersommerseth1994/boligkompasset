@@ -71,12 +71,19 @@ const KOMPASS_ETAPPER = [
 
 /* ═══ Spørsmålene ══════════════════════════════════════════════════
    Hentet fra «MASTERFIL - Boligkompasset_3.xlsx». Tolv spørsmål, ett
-   per side, nummerert som i arket: 1, 2, 3a … 12a. Kolonnene arket har
-   fått for veiledningstekst og tiltak (C, D og E) er ikke tatt i bruk
-   ennå. Ordlyden er som i arket,
+   per side, nummerert som i arket: 1, 2, 3a … 12a. Kolonne C,
+   veiledningsteksten, brukes på resultatsiden. Kolonnene for tiltak
+   (D og E) er ikke tatt i bruk ennå. Ordlyden er som i arket,
    med skrivefeil rettet. Merknadene til designerne om bildeeksempler
    og illustrasjoner, og «IKKE AVKLART», er ikke tatt med i teksten
    folk leser.
+
+   «veiledning» er teksten i kolonne C, til resultatsiden. Den står
+   under det svaret den hører til, og «gruppe» sier om svaret fungerer
+   i dag («bra»), kan bli en utfordring («utfordring») eller er usikkert.
+   «veiledningUten» vises når det IKKE er krysset av, som arket sier for
+   rommene i 3a og vaskemaskinen på badet. Badekar, dusj og lite bad har
+   ingen egen tekst: den står under oppfølgingsvalgene i 6a.
 
    «popover» er teksten arket kaller Popover. Den står bak Fasadens
    hjelpetekstknapp, på spørsmålet eller på et svaralternativ.
@@ -144,14 +151,22 @@ const KOMPASS_SPORSMAL = [
     popover: 'Om for eksempel badet eller soverommet ligger i en annen etasje, må du bruke trapp i løpet av døgnet. Skulle dette vare i over en uke, vil du også få behov for vaskemaskin, fryser og noe oppbevaringsplass.',
     type: 'flervalg',
     valg: [
-      { v: 'stue',        tittel: 'Stue' },
-      { v: 'kjokken',     tittel: 'Kjøkken' },
-      { v: 'soverom',     tittel: 'Soverom' },
-      { v: 'bad',         tittel: 'Bad' },
-      { v: 'toalett',     tittel: 'Toalett' },
-      { v: 'vaskemaskin', tittel: 'Vaskemaskin' },
-      { v: 'fryser',      tittel: 'Fryser' },
-      { v: 'oppbevaring', tittel: 'Oppbevaringsplass' }
+      { v: 'stue',        tittel: 'Stue', gruppe: 'utfordring',
+        veiledningUten: 'Du mangler stue på inngangsplanet. Om du gjør grep for å oppnå dette, blir det enklere å bo hjemme om du skulle få redusert bevegelighet. Om dette er en midlertidig situasjon, kan du vurdere om det er andre rom på inngangsplanet som kan benyttes.' },
+      { v: 'kjokken',     tittel: 'Kjøkken', gruppe: 'utfordring',
+        veiledningUten: 'Du mangler kjøkken på inngangsplanet. Om du får redusert bevegelighet vil det være enklere å lage mat dersom kjøkkenet ligger på samme plan som de rommene du bruker mest.' },
+      { v: 'soverom',     tittel: 'Soverom', gruppe: 'utfordring',
+        veiledningUten: 'Du mangler soverom på inngangsplanet. Skulle du få redusert bevegelighet kan trapper bli vanskelig. Se om det er mulig å lage soverom på samme plan som de viktigste rommene dine. Om dette er en midlertidig situasjon, kan du vurdere om det er andre rom på inngangsplanet som kan benyttes.' },
+      { v: 'bad',         tittel: 'Bad', gruppe: 'utfordring',
+        veiledningUten: 'Du mangler bad på inngangsplanet. Får du redusert bevegelighet er det en fordel om dette rommet ligger på samme plan som rommene du oppholder deg mest i.' },
+      { v: 'toalett',     tittel: 'Toalett', gruppe: 'utfordring',
+        veiledningUten: 'Du mangler toalett på inngangsplanet. Om du gjør grep for å oppnå dette, blir det enklere å klare seg selv hjemme.' },
+      { v: 'vaskemaskin', tittel: 'Vaskemaskin', gruppe: 'utfordring',
+        veiledningUten: 'Du mangler vaskemaskin på inngangsplanet. Skulle du få redusert bevegelighet og problemer med trapper, bøying eller tunge løft, er det en fordel om vaskemaskinen flyttes til etasjen du oppholder deg mest.' },
+      { v: 'fryser',      tittel: 'Fryser', gruppe: 'utfordring',
+        veiledningUten: 'Du mangler fryser på inngangsplanet. Om du flytter denne til samme etasje som de viktigste rommene dine så kan det redusere behovet for å gå trapper.' },
+      { v: 'oppbevaring', tittel: 'Oppbevaringsplass', gruppe: 'utfordring',
+        veiledningUten: 'Du mangler oppbevaringsplass på inngangsplanet. Skulle du få redusert bevegelighet og ikke klare å bruke trappen eller loftsstige, må du vurdere andre måter for oppbevaring av det du trenger mest. Dette kan være til daglig gjøremål og sesongbasert. Et eksempel er å flytte klær og medisiner til hyller på inngangsplanet, som er lette å nå.' }
     ],
     /* Det som må finnes for å klare et døgn uten trapp: kjøkken,
        soverom, og bad eller toalett. Mangler noe av det, må det
@@ -173,9 +188,12 @@ const KOMPASS_SPORSMAL = [
     hjelp: 'Det er ikke sikkert du merker noe til trapper, terskler og smale dører i dag, men dette kan bli en utfordring hvis du får redusert bevegelighet eller trenger å bruke rullator eller rullestol. Se på boligen din og tenk gjennom hva du har av hindringer og nivåforskjeller.',
     popover: 'Dette kan du enkelt teste ved å prøve å trille en fullpakket koffert med hjul gjennom alle rommene og se hvor det er vanskelig å komme frem.',
     valg: [
-      { v: 'ja',     tittel: 'Ja',     n: 1,    e: 0 },
-      { v: 'delvis', tittel: 'Delvis', n: 0,    e: 1 },
-      { v: 'nei',    tittel: 'Nei',    n: -0.7, e: 0.6 }
+      { v: 'ja',     tittel: 'Ja', gruppe: 'bra',
+        veiledning: 'Du kommer deg lett rundt i boligen din i dag og det er et godt utgangspunkt. Tenk over om dette vil være like enkelt i fremtiden om du skulle få redusert bevegelighet.',     n: 1,    e: 0 },
+      { v: 'delvis', tittel: 'Delvis', gruppe: 'utfordring',
+        veiledning: 'Du kommer deg delvis lett rundt i boligen din. Vurder om det er noen grep du kan gjøre nå, som gjør det enklere om du får redusert bevegelighet. Enkelte hindringer og nivåforskjeller kan bli krevende i fremtiden.', n: 0,    e: 1 },
+      { v: 'nei',    tittel: 'Nei', gruppe: 'utfordring',
+        veiledning: 'Du har allerede funnet ut at du må gjøre noe for at boligen din skal bli enklere å bo i. Se oppsummering med forslag til tiltak du kan gjøre for at boligen din skal bli mer tilgjengelig.',    n: -0.7, e: 0.6 }
     ]
   },
   {
@@ -188,11 +206,14 @@ const KOMPASS_SPORSMAL = [
     hjelp: 'Badet er et viktig rom for å kunne klare seg selv og bo hjemme så lenge som mulig. Tenk på hvilke funksjoner du har på badet ditt i dag.',
     type: 'flervalg',
     valg: [
-      { v: 'toalett',     tittel: 'Toalett' },
-      { v: 'vask',        tittel: 'Vask' },
+      { v: 'toalett',     tittel: 'Toalett', gruppe: 'bra',
+        veiledning: 'Du har toalett på badet ditt og det kan være praktisk da du har kort vei til alt du trenger på badet. Tenk over om plasseringen og plassen rundt toalettet vil være tilstrekkelig om du får behov for hjelpemidler i fremtiden.' },
+      { v: 'vask',        tittel: 'Vask', gruppe: 'bra',
+        veiledning: 'Tenk over hvor godt vasken din fungerer i dag og om det vil fungere i fremtiden, om du skulle få behov for hjelpemidler. Høyde, plassering og fri plass foran kan få større betydning dersom bevegeligheten endrer seg.' },
       { v: 'badekar',     tittel: 'Badekar' },
       { v: 'dusj',        tittel: 'Dusj' },
-      { v: 'vaskemaskin', tittel: 'Plass til vaskemaskin på badet' }
+      { v: 'vaskemaskin', tittel: 'Plass til vaskemaskin på badet', gruppe: 'utfordring',
+        veiledningUten: 'Du har ikke plass til vaskemaskin på badet. Har du denne på samme etasje som inngangen din, så er det en fordel. Om ikke, så kan du vurdere om du har andre rom som egner seg eller vurder å utvide badet.' }
     ],
     /* 4b: bare når det er svart, men ikke krysset av for toalett */
     betinget: {
@@ -201,9 +222,12 @@ const KOMPASS_SPORSMAL = [
       ledetekst: 'Hvor ligger toalettet?',
       hjelp: 'Hvor toalettet ligger i forhold til bad og soverom kan få betydning dersom bevegeligheten din endrer seg. Tenk særlig på om du må gå langt, bruke trapper eller passere andre hindringer for å komme til toalettet.',
       valg: [
-        { v: 'naborom',      tittel: 'På rommet ved siden av badet' },
-        { v: 'samme-etasje', tittel: 'På samme etasje som badet' },
-        { v: 'annen-etasje', tittel: 'I annen etasje enn badet' }
+        { v: 'naborom',      tittel: 'På rommet ved siden av badet', gruppe: 'utfordring',
+        veiledning: 'Du har toalettet rett ved siden av badet. Tenk over om det er lett å komme dit fra soverommet eller om du må passere terskler eller andre hindringer. Du kan vurdere å fjerne veggen mellom badet og toalettet slik at du får bedre plass.' },
+        { v: 'samme-etasje', tittel: 'På samme etasje som badet', gruppe: 'utfordring',
+        veiledning: 'Du har toalettet på samme etasje som badet. Tenk over om det er lett å komme dit fra soverommet eller om du må passere terskler eller andre hindringer. Vurder om det er mulig å få toalett på badet ditt.' },
+        { v: 'annen-etasje', tittel: 'I annen etasje enn badet', gruppe: 'utfordring',
+        veiledning: 'Du har ikke toalett og bad på samme etasje. Trapper kan gjøre hverdagen mer krevende ved redusert bevegelighet, spesielt på natten kan dette utgjøre en risiko. Vurder om det er mulig å få toalett på badet ditt.' }
       ]
     },
     poeng: (v, S) => {
@@ -230,22 +254,30 @@ const KOMPASS_SPORSMAL = [
        ikke både være stort nok og lite. Dørene hører til det lille
        badet og forsvinner med det. */
     valg: [
-      { v: 'terskel',      tittel: 'Kan bli vanskelig, baderomsdøren har terskel' },
-      { v: 'stort',        tittel: 'Enkelt, badet er stort nok', utelukker: ['lite', 'dor-innover', 'dor-utover'],
+      { v: 'terskel',      tittel: 'Kan bli vanskelig, baderomsdøren har terskel', gruppe: 'utfordring',
+        veiledning: 'Baderomsdøren din har en terskel. Vurder om denne enkelt kan fjernes eller om det bør gjøres større grep, om du for eksempel har trinn inn til badet. Om du gjør noe med dette nå, vil det bli enklere senere om du får dårlig balanse eller bruk for hjelpemidler. Dette vil også redusere risikoen for å snuble.' },
+      { v: 'stort',        tittel: 'Enkelt, badet er stort nok', gruppe: 'bra',
+        veiledning: 'Badet ditt har god plass og dette gir deg fleksibilitet dersom behovene endrer seg. Vurder om du har god nok plass til å bevege deg mellom toalett, vask og dusj. Dette vil gjøre det enklere om du skulle trenge hjelpemidler i fremtiden.', utelukker: ['lite', 'dor-innover', 'dor-utover'],
         popover: 'Større enn 4,5 kvm og plass til alle baderomsfunksjoner, for eksempel toalett, vask, dusj.' },
       { v: 'lite',         tittel: 'Kan bli vanskelig, badet er lite', utelukker: ['stort'],
         popover: 'Mindre enn 4,5 kvm og har ikke plass til alle baderomsfunksjoner, for eksempel kan toalett være på eget rom.' },
-      { v: 'dor-innover',  tittel: 'Baderomsdøren slår innover i rommet', utelukker: ['dor-utover'],
+      { v: 'dor-innover',  tittel: 'Baderomsdøren slår innover i rommet', gruppe: 'utfordring',
+        veiledning: 'Du har et lite bad og en dør som slår innover. Dette kan fungere fint i dag, men om du trenger hjelpemidler i fremtiden kan det bli for lite plass. Det kan også være vanskelig om du skulle trenge hjelp fra andre. Om du faller rett innenfor døren, kan det være vanskelig for andre å komme til for å hjelpe.', utelukker: ['dor-utover'],
         under: 'lite', vis: S => kpHar(S, 'bad-bruk', 'lite') },
-      { v: 'dor-utover',   tittel: 'Baderomsdøren slår utover i rommet', utelukker: ['dor-innover'],
+      { v: 'dor-utover',   tittel: 'Baderomsdøren slår utover i rommet', gruppe: 'utfordring',
+        veiledning: 'Du har et lite bad og en dør som slår utover. Dette kan fungere fint i dag, men om du trenger hjelpemidler i fremtiden kan det bli for lite plass. Det kan også være vanskelig om du skulle trenge hjelp fra andre.', utelukker: ['dor-innover'],
         under: 'lite', vis: S => kpHar(S, 'bad-bruk', 'lite') },
-      { v: 'dusj-kant',    tittel: 'Kan bli vanskelig, dusjkabinett eller dusjsone har en høydeforskjell',
+      { v: 'dusj-kant',    tittel: 'Kan bli vanskelig, dusjkabinett eller dusjsone har en høydeforskjell', gruppe: 'utfordring',
+        veiledning: 'Dusjen din har en kant som kan gjøre den vanskelig å bruke, om du skulle få redusert bevegelighet. En høydeforskjell kan øke risikoen for fall, og det kan bli vanskelig å bruke hjelpemidler. Vurder om du har mulighet for en trinnfri dusjløsning.',
         vis: S => kpHar(S, 'bad-innhold', 'dusj') },
-      { v: 'dusj-stol',    tittel: 'Kan bli vanskelig, dusjen har ikke plass til dusjstol/-krakk',
+      { v: 'dusj-stol',    tittel: 'Kan bli vanskelig, dusjen har ikke plass til dusjstol/-krakk', gruppe: 'utfordring',
+        veiledning: 'Du mangler sitteplass i dusjen og dette kan utgjøre en risiko, spesielt dersom balansen din eller utholdenheten din blir redusert. Vurder om du kan erstatte dusjen din med en større, som har plass til dusjkrakk. God plass i dusjen gjør det også enklere om du skulle trenge hjelp fra andre.',
         vis: S => kpHar(S, 'bad-innhold', 'dusj') },
-      { v: 'badekar',      tittel: 'Kan bli vanskelig, badekaret har en høy kant',
+      { v: 'badekar',      tittel: 'Kan bli vanskelig, badekaret har en høy kant', gruppe: 'utfordring',
+        veiledning: 'Badekaret ditt kan fungere godt nå, selv om det har en høy kant. Dette kan endre seg om du får dårlig balanse eller redusert bevegelighet, da kan det bli vanskelig å bruke. Ved høy kant på badekaret øker også risikoen for fall, når du går inn og ut av dette. Vurder om du også har plass til en trinnfri dusj eller bytte ut badekaret med en trinnfri dusjløsning.',
         vis: S => kpHar(S, 'bad-innhold', 'badekar') },
-      { v: 'usikker',      tittel: 'Usikker', alene: true }
+      { v: 'usikker',      tittel: 'Usikker', gruppe: 'usikker',
+        veiledning: 'Vi forstår at du er usikker på hvordan badet vil fungere hvis behovene endrer seg. Snakk med noen eller bruk litt tid på å tenke over hvordan du kan bruke badet ditt om du får problemer med å gå uten hjelpemidler, eller du får dårlig balanse. Gå gjerne tilbake til kartleggingen og se om du nå klarer å svare på spørsmål 6. Dette for at du skal få mer konkrete forslag til tiltak du kan gjøre for å få et bedre og tilgjengelig bad.', alene: true }
     ],
     /* Hvert hinder drar nåla nedover. Terskel, dør og plass til krakk
        løses med små grep. Et lite bad, en kant inn i dusjen eller et
@@ -273,9 +305,12 @@ const KOMPASS_SPORSMAL = [
     tittel: 'Kommer du deg lett fram til boligen din fra offentlig vei?',
     hjelp: 'Hvor lett adkomsten til boligen din er, avhenger av om du går til fots eller kommer i bil. Veien kan være bratt, lang, glatt om vinteren eller så kan det være andre forhold som gjør adkomsten vanskelig. Tenk over strekningen fra der bilen, bussen eller drosjen slipper deg av, og fram til inngangsdøra.',
     valg: [
-      { v: 'ja',     tittel: 'Ja',     n: 1,    e: 0 },
-      { v: 'delvis', tittel: 'Delvis', n: -0.3, e: 0.8 },
-      { v: 'nei',    tittel: 'Nei',    n: -0.9, e: -0.4 }
+      { v: 'ja',     tittel: 'Ja', gruppe: 'bra',
+        veiledning: 'Du kommer deg lett frem til boligen din. Tenk over om dette vil være like lett i fremtiden om du får redusert bevegelighet.',     n: 1,    e: 0 },
+      { v: 'delvis', tittel: 'Delvis', gruppe: 'utfordring',
+        veiledning: 'Du opplyser at du opplever at deler av adkomsten din kan være utfordrende. Tenk over om dette er noe du kan gjøre noe med for eksempel fjerne trinn eller endre på terrenget.', n: -0.3, e: 0.8 },
+      { v: 'nei',    tittel: 'Nei', gruppe: 'utfordring',
+        veiledning: 'Du har allerede funnet ut at du må gjøre noe med adkomsten til boligen din for at du skal kunne bo lengre hjemme. Se oppsummering med forslag til tiltak du kan gjøre for at adkomsten din skal bli mer tilgjengelig.',    n: -0.9, e: -0.4 }
     ]
   },
   {
@@ -289,14 +324,21 @@ const KOMPASS_SPORSMAL = [
     undertekst: 'Kryss av for det som passer.',
     type: 'flervalg',
     valg: [
-      { v: 'ingen-trinn', tittel: 'Lett, det er ingen trinn eller høye terskler' },
-      { v: 'heis',        tittel: 'Lett, bygget har heis' },
-      { v: 'dor-lett',    tittel: 'Lett, døren er bred og lett å åpne',
+      { v: 'ingen-trinn', tittel: 'Lett, det er ingen trinn eller høye terskler', gruppe: 'bra',
+        veiledning: 'Det er et godt utgangspunkt at du ikke har trinn eller terskler når du skal komme deg inn i boligen din. Dette er en fordel om du skulle få redusert bevegelighet.' },
+      { v: 'heis',        tittel: 'Lett, bygget har heis', gruppe: 'bra',
+        veiledning: 'Det er et godt utgangspunkt at du har heis. Dette er en fordel om du skulle få redusert bevegelighet. Tenk også over om du kommer deg trinnfritt til og fra heisen, og om denne er enkel å bruke.' },
+      { v: 'dor-lett',    tittel: 'Lett, døren er bred og lett å åpne', gruppe: 'bra',
+        veiledning: 'Det er et godt utgangspunkt at døren din er bred og lett å åpne. Dette er en fordel om du skulle trenge hjelpemidler eller få redusert styrke. Vurder også om det er god plass foran og innenfor døren.',
         popover: 'Vurder om døren er så bred at man kommer gjennom med for eksempel en rullator eller rullestol.' },
-      { v: 'trapp',       tittel: 'Kan bli vanskelig, jeg må opp en trapp' },
-      { v: 'terskler',    tittel: 'Kan bli vanskelig, det er høye terskler eller trinn' },
-      { v: 'dor-tung',    tittel: 'Kan bli vanskelig, døren er tung å åpne' },
-      { v: 'terreng',     tittel: 'Kan bli vanskelig, det er bratt eller ujevnt terreng foran inngangen' }
+      { v: 'trapp',       tittel: 'Kan bli vanskelig, jeg må opp en trapp', gruppe: 'utfordring',
+        veiledning: 'Du har allerede funnet ut at du må gjøre noe med trappen til boligen din for at du skal kunne bo lengre hjemme. Se oppsummering med forslag til tiltak du kan gjøre for å tilpasse inngangspartiet ditt, slik at det blir mer tilgjengelig.' },
+      { v: 'terskler',    tittel: 'Kan bli vanskelig, det er høye terskler eller trinn', gruppe: 'utfordring',
+        veiledning: 'Du har allerede funnet ut at du må gjøre noe med terskler eller trinn inn til boligen din. Se oppsummering med forslag til tiltak du kan gjøre for å tilpasse inngangen din.' },
+      { v: 'dor-tung',    tittel: 'Kan bli vanskelig, døren er tung å åpne', gruppe: 'utfordring',
+        veiledning: 'Du har allerede funnet ut at du må gjøre noe med døren din, som er vanskelig å åpne. Vurder om du kan gjøre noe med døren eller om det er behov for en ny dør.' },
+      { v: 'terreng',     tittel: 'Kan bli vanskelig, det er bratt eller ujevnt terreng foran inngangen', gruppe: 'utfordring',
+        veiledning: 'Du har allerede funnet ut at du må gjøre noe med terrenget rett utenfor inngangen din. Vurder å jevne ut terrengforskjeller eller andre tiltak som gir deg et flatt underlag. Når du vurderer tiltak her, er det lurt å ha fokus på å gjøre dette så trinnfritt som mulig.' }
     ],
     /* Bare det som er lett, taler for boligen. Hver hindring drar nåla
        ned. Trapp og bratt terreng krever større arbeid, terskler og en
@@ -321,9 +363,12 @@ const KOMPASS_SPORSMAL = [
     hjelp: 'Vurder om det finnes lagringsplass nær inngangsdøren. Dette kan være en bod, entre, et overbygd område eller plass inne i boligen der hjelpemidler og annet utstyr kan oppbevares tørt og lett tilgjengelig.',
     popover: 'Tenk på om du har plass til å lagre for eksempel sykkel, rullator, rullestol eller handlevogn.',
     valg: [
-      { v: 'ja',     tittel: 'Ja',     n: 0.8,  e: 0 },
-      { v: 'delvis', tittel: 'Delvis', n: 0,    e: 1 },
-      { v: 'nei',    tittel: 'Nei',    n: -0.5, e: 0.8 }
+      { v: 'ja',     tittel: 'Ja', gruppe: 'bra',
+        veiledning: 'Du har opplyst at du har lagringsplass i nærheten av inngangsdøren din. Dette kan gjøre det enklere å lagre hjelpemidler om du skulle få behov for dette. Tenk over om denne plassen også er brukbar i fremtiden, for eksempel om det er terskler, trinn eller tung dør.',     n: 0.8,  e: 0 },
+      { v: 'delvis', tittel: 'Delvis', gruppe: 'utfordring',
+        veiledning: 'Du opplyser at du delvis har plass til lagring i nærheten av inngangsdøren din. Vurder om du har plass til å lagre hjelpemidler eller gjøre noen grep for å få plass til dette. Tenk også over om plassen er brukbar i fremtiden, for eksempel om det er terskler, trinn eller tung dør.', n: 0,    e: 1 },
+      { v: 'nei',    tittel: 'Nei', gruppe: 'utfordring',
+        veiledning: 'Du har allerede funnet ut at du må gjøre noe med lagringsplassen i nærheten av inngangen din. Manglende lagringsplass kan bli upraktisk dersom du senere skulle få behov for hjelpemidler eller annet utstyr du trenger for å kunne bli boende.',    n: -0.5, e: 0.8 }
     ]
   },
 
@@ -337,10 +382,14 @@ const KOMPASS_SPORSMAL = [
     tittel: 'Hvor tilgjengelig vil service- og tjenestetilbud være for deg ved redusert bevegelighet?',
     hjelp: 'Eksempler på tilbud som er viktige for de fleste er matbutikk, apotek, lege, offentlige tjenester og andre steder du er avhengig av i hverdagen. Vurder om du fortsatt vil kunne komme deg dit eller få tilgang til de tilbudene du ønsker, dersom bevegeligheten din blir redusert. I vurderingen kan du gjerne ta hensyn til gangavstand, transportmuligheter, tilgjengelighet, leveringsmuligheter eller digitale alternativer.',
     valg: [
-      { v: 'god',       tittel: 'God tilgang',              n: 1,    e: 0 },
-      { v: 'begrenset', tittel: 'Begrenset tilgang',        n: -0.5, e: 0 },
-      { v: 'sterkt',    tittel: 'Sterkt begrenset tilgang', n: -1,   e: 0 },
-      { v: 'usikker',   tittel: 'Usikker',                  n: 0,    e: 0 }
+      { v: 'god',       tittel: 'God tilgang', gruppe: 'bra',
+        veiledning: 'Du har god tilgang til service- og tjenestetilbud selv om du får redusert bevegelighet. Det kan gjøre det enklere å bo godt og selvstendig over tid.',              n: 1,    e: 0 },
+      { v: 'begrenset', tittel: 'Begrenset tilgang', gruppe: 'utfordring',
+        veiledning: 'Du får begrenset tilgang til service- og tjenestetilbud om du skulle få redusert bevegelighet. Dette kan påvirke hvor lenge du klarer deg selv og kan bli boende. Tenk over om du har transportmuligheter eller leveringsmuligheter.',        n: -0.5, e: 0 },
+      { v: 'sterkt',    tittel: 'Sterkt begrenset tilgang', gruppe: 'utfordring',
+        veiledning: 'Du har svært begrenset tilgang til service- og tjenestetilbud om du skulle få redusert bevegelighet. Dette kan gjøre det vanskelig å bli boende uten å være avhengig av hjelp fra andre.', n: -1,   e: 0 },
+      { v: 'usikker',   tittel: 'Usikker', gruppe: 'usikker',
+        veiledning: 'Vi forstår at du er usikker på hvor tilgjengelig service- og tjenestetilbudet vil være om behovene dine endrer seg. Snakk med noen eller bruk litt tid på å tenke over gåavstand, transport- og leveringsmuligheter om du får problemer med å gå uten hjelpemidler. Gå gjerne tilbake til kartleggingen og se om du nå klarer å svare på spørsmål 10.',                  n: 0,    e: 0 }
     ]
   },
   {
@@ -352,10 +401,14 @@ const KOMPASS_SPORSMAL = [
     tittel: 'Hvor lett vil det være for deg å delta på de aktivitetene du ønsker ved redusert bevegelighet?',
     hjelp: 'Tenk på aktiviteter og møteplasser som er viktige for deg, for eksempel kulturtilbud, idrett, frivillige aktiviteter, tros- og livssynstilbud, bibliotek, natur- og parkområder, kafé eller å bare kunne treffe familie og venner. I vurderingen kan du gjerne ta hensyn til gangavstand, tilgjengelighet og transportmuligheter. Ved å planlegge tidlig kan du legge til rette for å opprettholde sosial kontakt og fortsette med aktiviteter som gir deg glede og mening i hverdagen.',
     valg: [
-      { v: 'lett',      tittel: 'Lett',            n: 1,    e: 0 },
-      { v: 'noe',       tittel: 'Noe vanskelig',   n: 0.3,  e: 0.5 },
-      { v: 'svaert',    tittel: 'Svært vanskelig', n: -1,   e: 0 },
-      { v: 'usikker',   tittel: 'Usikker',         n: 0,    e: 0 }
+      { v: 'lett',      tittel: 'Lett', gruppe: 'bra',
+        veiledning: 'Du har et godt utgangspunkt siden det er lett for deg å delta på aktivitetene du ønsker, selv om du får redusert bevegelighet. Det å kunne delta på aktiviteter og møte andre mennesker er viktig for trivsel, helse og livskvalitet.',            n: 1,    e: 0 },
+      { v: 'noe',       tittel: 'Noe vanskelig', gruppe: 'utfordring',
+        veiledning: 'Det kan bli noe vanskelig å delta på aktivitetene du ønsker, om du får redusert bevegelighet. Det å ikke kunne delta på aktiviteter og møte andre mennesker kan påvirke trivsel, helse og livskvalitet.',   n: 0.3,  e: 0.5 },
+      { v: 'svaert',    tittel: 'Svært vanskelig', gruppe: 'utfordring',
+        veiledning: 'Det kan bli svært vanskelig å delta på aktivitetene du ønsker, om du får redusert bevegelighet. Det å ikke kunne delta på aktiviteter og møte andre mennesker kan i stor grad påvirke trivsel, helse og livskvalitet.', n: -1,   e: 0 },
+      { v: 'usikker',   tittel: 'Usikker', gruppe: 'usikker',
+        veiledning: 'Vi forstår at du er usikker på hvor lett det vil være for deg å delta på aktivitetene du ønsker om behovene dine endrer seg. Snakk med noen eller bruk litt tid på å tenke over gåavstand og transportmuligheter om du får problemer med å gå uten hjelpemidler. Gå gjerne tilbake til kartleggingen og se om du nå klarer å svare på spørsmål 11.',         n: 0,    e: 0 }
     ]
   },
   {
@@ -367,9 +420,12 @@ const KOMPASS_SPORSMAL = [
     tittel: 'Har du noen som kan hjelpe deg med praktiske oppgaver om du trenger det?',
     hjelp: 'Noen praktiske oppgaver kan være handling, transport, snømåking, hagearbeid, flytting av tunge gjenstander eller enkle oppgaver i hjemmet. Tenk over om du har familie, venner, naboer eller andre som kan hjelpe deg med praktiske oppgaver dersom bevegeligheten din blir redusert for en periode.',
     valg: [
-      { v: 'ja',     tittel: 'Ja',     n: 1,    e: 0 },
-      { v: 'delvis', tittel: 'Delvis', n: 0.2,  e: 0.5 },
-      { v: 'nei',    tittel: 'Nei',    n: -0.6, e: 0.5 }
+      { v: 'ja',     tittel: 'Ja', gruppe: 'bra',
+        veiledning: 'Du har et godt utgangspunkt siden du har noen som kan hjelpe deg med praktiske oppgaver om du skulle trenge dette. Det kan gjøre det enklere å bli boende hjemme selv om du får redusert bevegelighet. Tenk også på om denne hjelpen vil være tilgjengelig over tid.',     n: 1,    e: 0 },
+      { v: 'delvis', tittel: 'Delvis', gruppe: 'utfordring',
+        veiledning: 'Når du bare har hjelp til noen av de praktiske oppgavene dine, kan dette gjøre det vanskeligere å bli boende over lengre tid. Familie, venner og naboer kan være viktige støttespillere. Det finnes også ulike private og kommunale tjenester, som kan bidra med praktisk hjelp. Ved å se på mulighetene kan det bli enklere å håndtere økt behov for hjelp fra andre.', n: 0.2,  e: 0.5 },
+      { v: 'nei',    tittel: 'Nei', gruppe: 'utfordring',
+        veiledning: 'Om du ikke har noen å spørre om praktisk hjelp, vil dette gjøre det vanskeligere å bli boende over lengre tid. Familie, venner og naboer kan være viktige støttespillere. Det finnes også ulike private og kommunale tjenester, som kan bidra med praktisk hjelp. Ved å se på mulighetene kan det bli enklere å håndtere økt behov for hjelp fra andre.',    n: -0.6, e: 0.5 }
     ]
   }
 ];

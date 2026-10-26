@@ -425,6 +425,28 @@
 /* «Se alle svarene dine» er Fasadens trekkspill, som etter hvert steg */
 .kp-svardetaljer { margin-top: var(--space-6); }
 
+/* ═══ Resultatet, med veiledningstekstene ════════════════════════
+   Ett avsnitt per steg. Det som fungerer står i grønt, det som kan bli
+   en utfordring i oransje, og det du var usikker på i grått, de samme
+   tonene som etter hvert steg.
+   ─────────────────────────────────────────────────────────────────── */
+
+.kp-resultat-start { margin-top: var(--space-5); }
+.kp-resultatsteg { margin-top: var(--space-5); }
+.kp-resultatsteg > .hb-h3 { margin-bottom: var(--space-3); }
+.kp-veiledning { border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4); }
+.kp-veiledning + .kp-veiledning { margin-top: var(--space-3); }
+.kp-veiledning--bra { background: var(--hb-green-100); }
+.kp-veiledning--utfordring { background: #fef3ea; }
+.kp-veiledning--usikker { background: var(--hb-slate-50); border: 1px solid var(--hb-slate-200); }
+.kp-veiledning__tittel { font: 600 var(--text-base)/var(--lh-base) var(--font-sans); margin: 0 0 var(--space-2); }
+.kp-veiledning__liste { list-style: none; margin: 0; padding: 0; }
+.kp-veiledning__liste li + li { margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid rgba(44, 70, 86, 0.12); }
+.kp-veiledning__svar { margin: 0 0 4px; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--fg-subtle); }
+.kp-veiledning__svar strong { color: var(--fg-default); }
+.kp-veiledning__tekst { margin: 0; max-width: 66ch; }
+@media print { .kp-veiledning { break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+
 /* ═══ Kompasset du vrir selv ══════════════════════════════════════ */
 
 .kp-egen {

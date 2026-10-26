@@ -85,7 +85,7 @@ const KP_VERSJONER = [
     ]
   },
   {
-    nr: 8,
+    nr: 8, commit: '29fe53b', mappe: 'iterasjoner/8/',
     navn: 'Masterfil 3', dato: '26. oktober 2026',
     endringer: [
       'Spørsmålene følger «MASTERFIL - Boligkompasset_3»: tolv spørsmål, nummerert 1, 2, 3a … 12a.',
@@ -98,6 +98,16 @@ const KP_VERSJONER = [
       'Lengre hjelpetekst til 11a om aktiviteter.',
       'Papirutgaven (PDF) er laget på nytt med de nye spørsmålene.',
       'Versjonsvelgeren nede til venstre er ny. Den holder deg på samme skjerm når du bytter iterasjon.'
+    ]
+  },
+  {
+    nr: 9,
+    navn: 'Resultatsiden med veiledningstekster', dato: '26. oktober 2026',
+    endringer: [
+      'Oppsummeringen starter med «Slik fungerer boligen din»: veiledningsteksten fra kolonne C i masterfila for hvert svar, steg for steg.',
+      'Tekstene er delt i «Dette fungerer i dag», «Dette kan bli en utfordring» og «Dette var du usikker på».',
+      'For rommene i 3a og vaskemaskinen på badet står teksten under det som ikke er krysset av, slik masterfila sier.',
+      'Den gamle handlingsplanen med stikkord er tatt ut.'
     ]
   }
 ];

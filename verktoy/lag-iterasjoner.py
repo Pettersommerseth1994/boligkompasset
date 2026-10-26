@@ -41,7 +41,7 @@ TIL_ROT = '../../'
 
 # Versjonen av velgeren, så GitHub Pages ikke gir en gammel utgave fra
 # hurtiglageret. Økes når kp-versjoner.js eller -.css endres.
-VELGER_V = 2
+VELGER_V = 3
 
 
 def les_versjoner():

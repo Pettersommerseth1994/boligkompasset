@@ -945,13 +945,87 @@ function kpHandlingsplan() {
   return { funker, funkerIkke };
 }
 
+/* ═══ Resultatet, med veiledningstekstene ═════════════════════════
+   Kolonne C i masterfila: én tekst per svar, som sier hva svaret betyr
+   for deg. Sortert i det som fungerer i dag, det som kan bli en
+   utfordring, og det du var usikker på, steg for steg.
+
+   For rommene i 3a og vaskemaskinen på badet står teksten under det du
+   IKKE krysset av, slik arket sier. Et spørsmål du ikke har svart på,
+   gir ingen tekst.
+   ─────────────────────────────────────────────────────────────────── */
+
+const KP_GRUPPER = [
+  { id: 'bra',        tittel: 'Dette fungerer i dag' },
+  { id: 'utfordring', tittel: 'Dette kan bli en utfordring' },
+  { id: 'usikker',    tittel: 'Dette var du usikker på' }
+];
+
+function kpVeiledningFor(etappeId) {
+  const funn = { bra: [], utfordring: [], usikker: [] };
+  const legg = (sporsmal, svar, v, tekst) => funn[v.gruppe || 'utfordring'].push({ sporsmal, svar, tekst });
+
+  const ettFelt = (sporsmal, valg, svar) => {
+    if (svar === undefined || svar === null || svar === 'hoppet') return;
+    if (Array.isArray(svar)) {
+      if (!svar.length) return;
+      valg.filter(v => !v.vis || v.vis(S)).forEach(v => {
+        const valgt = svar.includes(v.v);
+        if (valgt && v.veiledning) legg(sporsmal, v.tittel, v, v.veiledning);
+        if (!valgt && v.veiledningUten && !svar.includes('usikker')) legg(sporsmal, `Ikke krysset av: ${v.tittel}`, v, v.veiledningUten);
+      });
+      return;
+    }
+    const v = valg.find(x => x.v === svar);
+    if (v && v.veiledning) legg(sporsmal, v.tittel, v, v.veiledning);
+  };
+
+  KOMPASS_SPORSMAL.filter(sp => sp.etappe === etappeId).forEach(sp => {
+    if (sp.type === 'flerfelt') {
+      sp.felt.forEach(f => ettFelt(f.ledetekst, f.valg, S[f.navn]));
+    } else {
+      ettFelt(sp.stikkord || sp.tittel, sp.valg, S[sp.id]);
+    }
+    const b = sp.betinget;
+    if (b && b.naar(S)) ettFelt(b.ledetekst, b.valg, S[b.navn]);
+  });
+  return funn;
+}
+
+function kpResultatHtml() {
+  const steg = KOMPASS_ETAPPER.map(e => ({ e, funn: kpVeiledningFor(e.id) }))
+    .filter(x => KP_GRUPPER.some(g => x.funn[g.id].length));
+
+  return `
+    <h2 class="hb-h2 kp-resultat-start">1. Slik fungerer boligen din</h2>
+    <p class="kp-hjelp__tekst">
+      Her står hva svarene dine betyr, steg for steg: hva som fungerer i dag, og
+      hva som kan bli en utfordring om du får redusert bevegelighet.
+    </p>
+    ${steg.length ? steg.map(({ e, funn }) => `
+    <section class="kp-resultatsteg">
+      <h3 class="hb-h3">${e.navn}</h3>
+      ${KP_GRUPPER.filter(g => funn[g.id].length).map(g => `
+      <div class="kp-veiledning kp-veiledning--${g.id}">
+        <h4 class="kp-veiledning__tittel">${g.tittel}</h4>
+        <ul class="kp-veiledning__liste">
+          ${funn[g.id].map(f => `
+          <li>
+            <p class="kp-veiledning__svar"><strong>${f.sporsmal}</strong> · ${f.svar}</p>
+            <p class="kp-veiledning__tekst">${f.tekst}</p>
+          </li>`).join('')}
+        </ul>
+      </div>`).join('')}
+    </section>`).join('')
+    : '<p class="hb-text--secondary">Du har ikke svart på noe som gir veiledning ennå. Gå tilbake og svar på spørsmålene, så kommer den her.</p>'}`;
+}
+
 function kpOppsummeringHtml() {
   const kurs = kpBeregnKurs();
   const info = KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT;
   const anb = kpAnbefalinger();
   const naa = anb.filter(a => a.storrelse === 'liten');
   const frem = anb.filter(a => a.storrelse === 'stor');
-  const plan = kpHandlingsplan();
   const ubesvart = kpAntallSporsmal() - KOMPASS_SPORSMAL.filter(kpBesvart).length;
 
   /* Ordningene som er nevnt i tiltakene, uten gjentakelser */
@@ -994,38 +1068,7 @@ function kpOppsummeringHtml() {
 
     <h1 class="hb-h1 kp-h1 kp-utskrift-skjul">Oppsummering</h1>
 
-    <h2 class="hb-h2">1. Handlingsplan</h2>
-    <div class="kp-plan">
-      <div class="kp-plan__kol kp-plan__kol--ja">
-        <h3 class="hb-h4">Hva funker i dag</h3>
-        ${plan.funker.length ? `<ul>
-          ${plan.funker.map(sp => `<li><span class="kp-plan__merke" aria-hidden="true">✓</span>${sp.stikkord}</li>`).join('')}
-        </ul>` : '<p class="hb-text--sm hb-text--secondary">Ingen av svarene dine peker denne veien ennå.</p>'}
-      </div>
-      <div class="kp-plan__kol kp-plan__kol--nei">
-        <h3 class="hb-h4">Hva funker ikke</h3>
-        ${plan.funkerIkke.length ? `
-        <ul>
-          ${plan.funkerIkke.slice(0, 3).map(sp => `<li>
-            <span class="kp-plan__merke" aria-hidden="true">✕</span>
-            <span>${sp.stikkord}<span class="kp-plan__grep">${sp.grep}</span></span>
-          </li>`).join('')}
-        </ul>
-        ${plan.funkerIkke.length > 3 ? `
-        <button type="button" class="kp-mer" aria-expanded="false" data-mer="flere-hindringer">
-          <span data-ikon="chevron"></span>Se de ${plan.funkerIkke.length - 3} andre
-        </button>
-        <div class="kp-mer-panel" id="flere-hindringer" hidden>
-          <ul>
-            ${plan.funkerIkke.slice(3).map(sp => `<li>
-              <span class="kp-plan__merke" aria-hidden="true">✕</span>
-              <span>${sp.stikkord}<span class="kp-plan__grep">${sp.grep}</span></span>
-            </li>`).join('')}
-          </ul>
-        </div>` : ''}`
-        : '<p class="hb-text--sm hb-text--secondary">Ingenting av det du svarte peker på en hindring.</p>'}
-      </div>
-    </div>
+    ${kpResultatHtml()}
 
     <h2 class="hb-h2 kp-seksjon">2. Generelle anbefalinger</h2>
     <div class="kp-plan">
