@@ -18,13 +18,15 @@
    ────────────────────────────────────────────────────────────────── */
 
 /* ═══ Kompasset ════════════════════════════════════════════════════
-   To akser. Nord–sør sier om boligen bærer deg videre. Øst–vest sier
-   hvor stort arbeidet er. Hvert svar flytter nåla litt.
+   To akser. Den loddrette sier om boligen passer for deg videre. Den
+   vannrette sier hvor stort arbeidet er. Hvert svar flytter nåla litt.
+   Himmelretningene er ikke navngitt utad, bare kursene, men kodene N,
+   Ø, S og V brukes fortsatt internt som korte navn på de åtte feltene.
    ─────────────────────────────────────────────────────────────────── */
 
 const KOMPASS_RETNINGER = {
   N:  { navn: 'Rett kurs',
-        kort: 'Boligen bærer deg videre',
+        kort: 'Boligen er passende for deg',
         tekst: 'Boligen din fungerer godt slik den er. Det viktigste du kan gjøre nå, er å holde den ved like og gjøre de små grepene før du trenger dem.' },
   NØ: { navn: 'Rett kurs med små grep',
         kort: 'Nesten i mål',
@@ -36,13 +38,13 @@ const KOMPASS_RETNINGER = {
         kort: 'Begynn enkelt, planlegg videre',
         tekst: 'Du kan gjøre mye enkelt med én gang. Men noe av det som er vanskelig hos deg, løses ikke uten et større arbeid. Begynn med det enkle, og bruk tiden til å planlegge resten.' },
   S:  { navn: 'Ny kurs',
-        kort: 'Se på andre boliger også',
+        kort: 'Det kan være verdt å se etter noe nytt',
         tekst: 'Flere av hindringene hos deg er tunge å bygge bort. Da kan en annen bolig gi deg mer for pengene enn en stor ombygging. Det betyr ikke at du må flytte nå, men at det er verdt å se på.' },
   SV: { navn: 'Stort valg foran deg',
         kort: 'Bygge om, eller bytte bolig',
         tekst: 'Boligen kan tilpasses, men det krever et omfattende arbeid. Da står valget mellom en stor ombygging og en annen bolig. Begge deler tåler å bli regnet på før du bestemmer deg.' },
   V:  { navn: 'Større ombygging',
-        kort: 'Boligen kan bli god, men det koster',
+        kort: 'Boligen kan bli passende for deg',
         tekst: 'Boligen din kan bli god å bli gammel i, men det krever bygging. Bad, planløsning eller inngang må gjøres om. Det er verdt å starte planleggingen tidlig.' },
   NV: { navn: 'Bli boende, men bygg om',
         kort: 'Ett stort grep holder lenge',
@@ -102,12 +104,26 @@ const KOMPASS_SPORSMAL = [
         ]
       },
       {
+        /* Eieformen flytter ikke nåla. Å leie er ikke et dårligere svar
+           enn å eie. Det er spørsmålet under, om du er fornøyd med
+           ordningen, som sier noe om kursen. */
         navn: 'eieform',
+        ikkeKompass: true,
         ledetekst: 'Eier eller leier du boligen?',
         hjelp: 'Eier du gjennom borettslag eller sameie, svarer du «Eier».',
         valg: [
-          { v: 'eier',  tittel: 'Eier',  desc: 'Selveier, borettslag eller sameie. Du bestemmer selv over det som er inne i boligen.', n: 0.4, e: 0 },
-          { v: 'leier', tittel: 'Leier', desc: 'Du leier av kommunen, en stiftelse eller en privat utleier. Da må utleier si ja til større endringer.', n: -0.6, e: 0.5 }
+          { v: 'eier',  tittel: 'Eier',  desc: 'Selveier, borettslag eller sameie. Du bestemmer selv over det som er inne i boligen.', n: 0, e: 0 },
+          { v: 'leier', tittel: 'Leier', desc: 'Du leier av kommunen, en stiftelse eller en privat utleier. Da må utleier si ja til større endringer.', n: 0, e: 0 }
+        ]
+      },
+      {
+        navn: 'bolignoyd',
+        ledetekst: 'Hvor fornøyd er du med denne boligsituasjonen?',
+        hjelp: 'Mange er godt fornøyde med å leie. Det passer økonomien, det er lite å vedlikeholde, og noen andre tar seg av det som går i stykker. Andre eier og angrer aldri. Det finnes ikke noe riktig svar her. Vi spør fordi det du selv synes om ordningen, betyr mer for rådene våre enn hva som står i papirene.',
+        valg: [
+          { v: 'fornoyd',    tittel: 'Fornøyd',        desc: 'Ordningen passer deg, og du ser ingen grunn til å endre den.', n: 1, e: 0 },
+          { v: 'delvis',     tittel: 'Delvis fornøyd', desc: 'Det går greit, men det er sider ved det du gjerne skulle hatt annerledes.', n: 0, e: 0 },
+          { v: 'misfornoyd', tittel: 'Ikke fornøyd',   desc: 'Du trives ikke med ordningen, og har tenkt at noe burde vært annerledes.', n: -1, e: 0 }
         ]
       }
     ]
@@ -118,16 +134,27 @@ const KOMPASS_SPORSMAL = [
     kilde: 'Nytt spørsmål. Designkritikken 21. september: «Mangler spørsmål om helse».',
     ny: true,
     tittel: 'Er det noe i hverdagen som er blitt tyngre det siste året?',
-    undertekst: 'Vi spør ikke om diagnoser eller sykdom. Vi spør om hva som faktisk er blitt tungt, for det er det tiltakene skal løse.',
+    undertekst: 'Kryss av for alt som passer. Vi spør ikke om diagnoser eller sykdom, men om hva som faktisk er blitt tungt, for det er det tiltakene skal løse.',
     hvorfor: 'To personer på samme alder kan ha helt ulike behov. Alder alene sier lite om hvilke tiltak som haster.',
     brukesTil: 'Svaret bestemmer rekkefølgen på tiltakene i oppsummeringen. Det lagres sammen med de andre svarene dine, og deles ikke med noen.',
     kanHoppes: true,
+    type: 'flervalg',
     valg: [
-      { v: 'ingen',   tittel: 'Nei, alt går som før', desc: 'Du gjør det du pleier, i det tempoet du pleier.', n: 1, e: 0 },
-      { v: 'litt',    tittel: 'Litt. Noen ting tar lengre tid', desc: 'Trapper, bæring eller husarbeid merkes mer enn før, men går greit.', n: 0.4, e: 0.3 },
-      { v: 'noe',     tittel: 'Ja. Noe er blitt vanskelig', desc: 'Det er ting du har sluttet med, eller ber om hjelp til.', n: -0.4, e: 0 },
-      { v: 'hjelpemiddel', tittel: 'Ja. Jeg bruker hjelpemidler', desc: 'Stokk, rullator, rullestol eller annet du støtter deg til daglig.', n: -0.8, e: 0 }
-    ]
+      { v: 'ingen',   tittel: 'Nei, alt går som før', desc: 'Du gjør det du pleier, i det tempoet du pleier.', alene: true },
+      { v: 'litt',    tittel: 'Litt. Noen ting tar lengre tid', desc: 'Trapper, bæring eller husarbeid merkes mer enn før, men går greit.' },
+      { v: 'noe',     tittel: 'Ja. Noe er blitt vanskelig', desc: 'Det er ting du har sluttet med, eller ber om hjelp til.' },
+      { v: 'hjelpemiddel', tittel: 'Ja. Jeg bruker hjelpemidler', desc: 'Stokk, rullator, rullestol eller annet du støtter deg til daglig.' }
+    ],
+    /* Flere kryss er lov. Da er det tyngste av dem som avgjør, for det
+       er det som bestemmer hva boligen må tåle. */
+    poeng: (verdier) => {
+      const vekt = { ingen: { n: 1, e: 0 }, litt: { n: 0.4, e: 0.3 },
+                     noe: { n: -0.4, e: 0 }, hjelpemiddel: { n: -0.8, e: 0 } };
+      const valgte = (verdier || []).map(v => vekt[v]).filter(Boolean);
+      if (!valgte.length) return { n: 0, e: 0 };
+      return valgte.reduce((tyngst, p) => (p.n < tyngst.n ? p : tyngst));
+    },
+    maks: { n: 1, e: 0.3 }
   },
 
   /* ─── Etappe 2, nærmiljøet ──────────────────────────────────────── */
@@ -137,7 +164,7 @@ const KOMPASS_SPORSMAL = [
     kilde: 'Spørsmål 3, omskrevet. Spørsmål 4 og 5 er tatt inn her.',
     tittel: 'Hva finnes i nærmiljøet ditt?',
     undertekst: 'Kryss av for det du har innen rimelig avstand hjemmefra. Med rimelig avstand mener vi noe du kommer deg til på egen hånd, uten å måtte planlegge turen.',
-    hvorfor: 'Nærmiljøet er det eneste i denne kartleggingen du ikke kan bygge om. Derfor teller det tungt når vi vurderer om boligen bærer deg videre.',
+    hvorfor: 'Nærmiljøet er det eneste i denne kartleggingen du ikke kan bygge om. Derfor teller det tungt når vi vurderer om boligen passer for deg videre.',
     brukesTil: 'Mangler mye rundt deg, sier vi det rett ut i oppsummeringen, og peker på hva som da er verdt å vurdere.',
     type: 'flervalg',
     valg: [

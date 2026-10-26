@@ -1108,25 +1108,7 @@ function kpOppsummeringHtml() {
 
     <h1 class="kp-h1 kp-utskrift-skjul" style="margin-bottom:var(--space-3)">Oppsummering</h1>
 
-    <div class="kp-resultat">
-      <div class="kp-resultat__topp">
-        <div class="kp-kompass-stort">${kpKompassSvg(kurs)}</div>
-        <div>
-          <p class="kp-resultat__kurs">Kompasset peker mot</p>
-          <p class="kp-resultat__navn">${info.navn}</p>
-          <p class="kp-resultat__tekst">${info.tekst}</p>
-          ${ubesvart ? `<p class="hb-small hb-muted" style="margin:var(--space-2) 0 0">
-            ${ubesvart} av ${kpAntallSporsmal()} spørsmål står ubesvart.</p>` : ''}
-        </div>
-      </div>
-      <div class="kp-resultat__bunn">
-        ${kpOversiktHtml()}
-      </div>
-    </div>
-
-    ${kpEgenKursHtml()}
-
-    <h2 class="hb-h2" style="margin-top:var(--space-6)">1. Handlingsplan</h2>
+    <h2 class="hb-h2">1. Handlingsplan</h2>
     <div class="kp-plan">
       <div class="kp-plan__kol kp-plan__kol--ja">
         <h3 class="hb-h4">Hva funker i dag</h3>
@@ -1136,12 +1118,26 @@ function kpOppsummeringHtml() {
       </div>
       <div class="kp-plan__kol kp-plan__kol--nei">
         <h3 class="hb-h4">Hva funker ikke</h3>
-        ${plan.funkerIkke.length ? `<ul>
-          ${plan.funkerIkke.map(sp => `<li>
+        ${plan.funkerIkke.length ? `
+        <ul>
+          ${plan.funkerIkke.slice(0, 3).map(sp => `<li>
             <span class="kp-plan__merke" aria-hidden="true">✕</span>
             <span>${sp.stikkord}<span class="kp-plan__grep">${sp.grep}</span></span>
           </li>`).join('')}
-        </ul>` : '<p class="hb-small hb-muted">Ingenting av det du svarte peker på en hindring.</p>'}
+        </ul>
+        ${plan.funkerIkke.length > 3 ? `
+        <button type="button" class="kp-mer" aria-expanded="false" data-mer="flere-hindringer">
+          <span data-ikon="chevron"></span>Se de ${plan.funkerIkke.length - 3} andre
+        </button>
+        <div class="kp-mer-panel" id="flere-hindringer" hidden>
+          <ul>
+            ${plan.funkerIkke.slice(3).map(sp => `<li>
+              <span class="kp-plan__merke" aria-hidden="true">✕</span>
+              <span>${sp.stikkord}<span class="kp-plan__grep">${sp.grep}</span></span>
+            </li>`).join('')}
+          </ul>
+        </div>` : ''}`
+        : '<p class="hb-small hb-muted">Ingenting av det du svarte peker på en hindring.</p>'}
       </div>
     </div>
 
@@ -1175,6 +1171,25 @@ function kpOppsummeringHtml() {
     </ul>
     ${kpOkonomiHtml()}
 
+    <h2 class="hb-h2" style="margin-top:var(--space-6)">4. Kursen din</h2>
+    <div class="kp-resultat">
+      <div class="kp-resultat__topp">
+        <div class="kp-kompass-stort">${kpKompassSvg(kurs)}</div>
+        <div>
+          <p class="kp-resultat__kurs">Kompasset peker mot</p>
+          <p class="kp-resultat__navn">${info.navn}</p>
+          <p class="kp-resultat__tekst">${info.tekst}</p>
+          ${ubesvart ? `<p class="hb-small hb-muted" style="margin:var(--space-2) 0 0">
+            ${ubesvart} av ${kpAntallSporsmal()} spørsmål står ubesvart.</p>` : ''}
+        </div>
+      </div>
+      <div class="kp-resultat__bunn">
+        ${kpOversiktHtml()}
+      </div>
+    </div>
+
+    ${kpEgenKursHtml()}
+
     <div class="kp-utskrift-notat">
       <strong>Plass til dine egne notater</strong>
     </div>
@@ -1182,13 +1197,13 @@ function kpOppsummeringHtml() {
     <div style="display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-6)" class="kp-utskrift-skjul">
       <button type="button" class="hb-btn hb-btn--primary" data-skriv-ut>Skriv ut eller lagre som PDF</button>
       <button type="button" class="hb-btn hb-btn--secondary" data-til-soknad>Ta svarene med i søknaden</button>
-      <button type="button" class="hb-btn hb-btn--tertiary" data-tilbake-svar>Endre svarene mine</button>
-      <button type="button" class="hb-btn hb-btn--tertiary" data-nullstill>Start på nytt</button>
+      <button type="button" class="hb-btn hb-btn--secondary" data-tilbake-svar>Endre svarene mine</button>
+      <button type="button" class="hb-btn hb-btn--secondary" data-nullstill>Start på nytt</button>
     </div>
 
     <details class="kp-svardetaljer kp-utskrift-skjul">
       <summary>Se alle svarene dine</summary>
-      <ul class="kp-svarliste">${kpSvarlisteHtml()}</ul>
+      <div class="hb-summary hb-summary--flat">${kpSvarlisteHtml()}</div>
     </details>
 
   </div>
@@ -1383,35 +1398,55 @@ function kpOkonomiHtml() {
   </div>`;
 }
 
+/* Svarene settes opp som oppsummeringen i søknaden: én bolk per steg,
+   med «Endre» under overskriften, og etikett over verdi med hårstrek
+   mellom. Den gamle varianten la «Endre» på egen linje til høyre i
+   hver rad, og på mobil ble det en trapp av lenker uten sammenheng
+   med teksten over. */
+
+const KP_BLYANT = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+  + '<path d="M4 20h4L19 9l-4-4L4 16v4Z" fill="none" stroke="currentColor" '
+  + 'stroke-width="1.8" stroke-linejoin="round"/>'
+  + '<path d="M14.5 5.5 18.5 9.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+
+function kpSvarRader(sp) {
+  const tekstFor = (valg, v) => (valg.find(o => o.v === v) || {}).tittel || v;
+  if (sp.type === 'flerfelt') {
+    return sp.felt.map(f => ({
+      sp: f.ledetekst,
+      svar: S[f.navn] ? tekstFor(f.valg, S[f.navn]) : null
+    }));
+  }
+  const v = S[sp.id];
+  if (sp.type === 'flervalg') {
+    return [{ sp: sp.tittel,
+              svar: Array.isArray(v) && v.length ? v.map(x => tekstFor(sp.valg, x)).join(', ') : null }];
+  }
+  return [{ sp: sp.tittel, svar: v && v !== 'hoppet' ? tekstFor(sp.valg, v) : null }];
+}
+
 function kpSvarlisteHtml() {
-  const rader = [];
-  KOMPASS_SPORSMAL.forEach(sp => {
-    const tekstFor = (valg, v) => (valg.find(o => o.v === v) || {}).tittel || v;
-    if (sp.type === 'flerfelt') {
-      sp.felt.forEach(f => rader.push({
-        id: sp.id, sp: f.ledetekst,
-        svar: S[f.navn] ? tekstFor(f.valg, S[f.navn]) : 'Ikke besvart'
-      }));
-    } else if (sp.type === 'flervalg') {
-      const v = S[sp.id];
-      rader.push({
-        id: sp.id, sp: sp.tittel,
-        svar: Array.isArray(v) && v.length ? v.map(x => tekstFor(sp.valg, x)).join(', ') : 'Ikke besvart'
-      });
-    } else {
-      const v = S[sp.id];
-      rader.push({
-        id: sp.id, sp: sp.tittel,
-        svar: v === 'hoppet' ? 'Hoppet over' : v ? tekstFor(sp.valg, v) : 'Ikke besvart'
-      });
-    }
-  });
-  return rader.map(r => `
-    <li>
-      <span class="kp-svarliste__sp">${r.sp}</span>
-      <span class="kp-svarliste__sv">${kpEsc(r.svar)}</span>
-      <button type="button" class="kp-hopp kp-utskrift-skjul" data-endre="${r.id}">Endre</button>
-    </li>`).join('');
+  return KOMPASS_ETAPPER.map(e => {
+    const sporsmal = KOMPASS_SPORSMAL.filter(x => x.etappe === e.id);
+    if (!sporsmal.length) return '';
+    const rader = [].concat(...sporsmal.map(kpSvarRader));
+    return `
+    <div class="hb-summary__group">
+      <div class="hb-summary__head">
+        <h3>${e.navn}</h3>
+        <button type="button" class="hb-summary__edit kp-utskrift-skjul" data-endre="${sporsmal[0].id}">
+          ${KP_BLYANT}Endre
+        </button>
+      </div>
+      <dl>
+        ${rader.map(r => `
+        <div>
+          <dt>${r.sp}</dt>
+          <dd${r.svar ? '' : ' class="hb-muted"'}>${r.svar ? kpEsc(r.svar) : 'Ikke besvart'}</dd>
+        </div>`).join('')}
+      </dl>
+    </div>`;
+  }).join('');
 }
 
 /* ═══ Snarveien nederst ═══════════════════════════════════════════

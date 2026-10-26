@@ -43,7 +43,7 @@ const KOMPASS_RETNINGER = {
   SV: { navn: 'Stort valg foran deg',
         kort: 'Bygge om, eller bytte bolig',
         tekst: 'Boligen kan tilpasses, men det krever et omfattende arbeid. Da står valget mellom en stor ombygging og en annen bolig. Begge deler tåler å bli regnet på før du bestemmer deg.' },
-  V:  { navn: 'Større ombygging',
+  V:  { navn: 'Større grep',
         kort: 'Boligen kan bli passende for deg',
         tekst: 'Boligen din kan bli god å bli gammel i, men det krever bygging. Bad, planløsning eller inngang må gjøres om. Det er verdt å starte planleggingen tidlig.' },
   NV: { navn: 'Bli boende, men bygg om',
@@ -67,13 +67,13 @@ const KOMPASS_ETAPPER = [
     ingress: 'Et godt nærmiljø gjør hverdagen enklere. Å komme seg til butikken, til folk og til det du liker å gjøre, betyr like mye som selve boligen. Det er også det som er vanskeligst å bygge seg ut av.',
     ikon: 'kart' },
   { id: 'adkomst',  navn: 'Veien inn til boligen din',
-    ingress: 'Nå ser vi på veien fra veien eller parkeringen og inn døra. Kommer du deg ikke inn og ut, hjelper det lite hva som er gjort inne. Derfor veier denne etappen tyngst.',
+    ingress: 'Nå ser vi på veien fra veien eller parkeringen og inn døra. Kommer du deg ikke inn og ut, hjelper det lite hva som er gjort inne. Derfor veier dette steget tyngst.',
     ikon: 'dor' },
   { id: 'inne',     navn: 'Inne i boligen din',
     ingress: 'Her handler det om rommene, avstandene og badet. Det er her de fleste tiltakene i det nye tilskuddet ligger.',
     ikon: 'rom' },
   { id: 'okonomi',  navn: 'Økonomien din',
-    ingress: 'Til slutt fire frivillige spørsmål om økonomi. De endrer ikke kursen i kompasset. De brukes bare til å vise hvilke lån og tilskudd som kan passe for deg. Ingenting sjekkes mot bank, skatt eller register, og du kan hoppe over hele etappen.',
+    ingress: 'Til slutt fire frivillige spørsmål om økonomi. De endrer ikke kursen i kompasset. De brukes bare til å vise hvilke lån og tilskudd som kan passe for deg. Ingenting sjekkes mot bank, skatt eller register, og du kan hoppe over hele steget.',
     ikon: 'krone', frivillig: true }
 ];
 
@@ -93,7 +93,11 @@ const KOMPASS_SPORSMAL = [
     type: 'flerfelt',
     felt: [
       {
+        /* Boligtypen flytter ikke nåla, like lite som eieformen gjør
+           det. Den sier hva som er mulig å gjøre, ikke hvordan du har
+           det. Det er fornøydspørsmålet under som teller. */
         navn: 'boligtype',
+        ikkeKompass: true,
         ledetekst: 'Hvilken boligtype bor du i?',
         hjelp: 'Leilighetsbygg kan ha felles inngang eller flere innganger. Rekkehus kan ha felles inngang, flere felles innganger eller en egen inngang til hver bolig. Tomannsbolig kan ha felles inngang eller egen inngang til hver bolig.',
         valg: [
@@ -119,11 +123,11 @@ const KOMPASS_SPORSMAL = [
       {
         navn: 'bolignoyd',
         ledetekst: 'Hvor fornøyd er du med denne boligsituasjonen?',
-        hjelp: 'Mange er godt fornøyde med å leie. Det passer økonomien, det er lite å vedlikeholde, og noen andre tar seg av det som går i stykker. Andre eier og angrer aldri. Det finnes ikke noe riktig svar her. Vi spør fordi det du selv synes om ordningen, betyr mer for rådene våre enn hva som står i papirene.',
+        hjelp: 'Mange er godt fornøyde med å leie. Det passer økonomien, det er lite å vedlikeholde, og noen andre tar seg av det som går i stykker. Andre eier og angrer aldri. Det finnes ikke noe riktig svar her.',
         valg: [
-          { v: 'fornoyd',    tittel: 'Fornøyd',        desc: 'Ordningen passer deg, og du ser ingen grunn til å endre den.', n: 1, e: 0 },
-          { v: 'delvis',     tittel: 'Delvis fornøyd', desc: 'Det går greit, men det er sider ved det du gjerne skulle hatt annerledes.', n: 0, e: 0 },
-          { v: 'misfornoyd', tittel: 'Ikke fornøyd',   desc: 'Du trives ikke med ordningen, og har tenkt at noe burde vært annerledes.', n: -1, e: 0 }
+          { v: 'fornoyd',    tittel: 'Fornøyd',        desc: 'Boforholdet passer deg, og du ser ingen grunn til å endre det.', n: 1, e: 0 },
+          { v: 'delvis',     tittel: 'Delvis fornøyd', desc: 'Det går greit, men det er sider ved boforholdet du gjerne skulle hatt annerledes.', n: 0, e: 1 },
+          { v: 'misfornoyd', tittel: 'Ikke fornøyd',   desc: 'Du trives ikke med boforholdet, og har tenkt at noe burde vært annerledes.', n: -1, e: 0 }
         ]
       }
     ]
@@ -142,14 +146,13 @@ const KOMPASS_SPORSMAL = [
     valg: [
       { v: 'ingen',   tittel: 'Nei, alt går som før', desc: 'Du gjør det du pleier, i det tempoet du pleier.', alene: true },
       { v: 'litt',    tittel: 'Litt. Noen ting tar lengre tid', desc: 'Trapper, bæring eller husarbeid merkes mer enn før, men går greit.' },
-      { v: 'noe',     tittel: 'Ja. Noe er blitt vanskelig', desc: 'Det er ting du har sluttet med, eller ber om hjelp til.' },
-      { v: 'hjelpemiddel', tittel: 'Ja. Jeg bruker hjelpemidler', desc: 'Stokk, rullator, rullestol eller annet du støtter deg til daglig.' }
+      { v: 'noe',     tittel: 'Ja. Noe er blitt vanskelig', desc: 'Det er ting du har sluttet med, eller ber om hjelp til.' }
     ],
     /* Flere kryss er lov. Da er det tyngste av dem som avgjør, for det
        er det som bestemmer hva boligen må tåle. */
     poeng: (verdier) => {
       const vekt = { ingen: { n: 1, e: 0 }, litt: { n: 0.4, e: 0.3 },
-                     noe: { n: -0.4, e: 0 }, hjelpemiddel: { n: -0.8, e: 0 } };
+                     noe: { n: -0.8, e: 0 } };
       const valgte = (verdier || []).map(v => vekt[v]).filter(Boolean);
       if (!valgte.length) return { n: 0, e: 0 };
       return valgte.reduce((tyngst, p) => (p.n < tyngst.n ? p : tyngst));
@@ -635,7 +638,8 @@ const KOMPASS_ANBEFALINGER = [
   {
     id: 'trapp',
     prioritet: 7, storrelse: 'liten', etappe: 'inne',
-    naar: S => S['inne-rom'] === 'delvis' || S['inne-rom'] === 'nei' || S['hverdag'] === 'noe' || S['hverdag'] === 'hjelpemiddel',
+    naar: S => S['inne-rom'] === 'delvis' || S['inne-rom'] === 'nei'
+               || (S['hverdag'] || []).includes('noe') || (S['hverdag'] || []).includes('litt'),
     tittel: 'Håndlist på begge sider i trappa',
     tekst: 'Håndlist på begge sider, hele veien opp og ned, og et par centimeter forbi øverste og nederste trinn. Merk forkanten på trinnene med en stripe i en farge som skiller seg ut. Det koster lite, og det er blant de mest effektive fallforebyggende tiltakene som finnes.',
     hvorfor: S => (S['inne-rom'] === 'delvis' || S['inne-rom'] === 'nei')

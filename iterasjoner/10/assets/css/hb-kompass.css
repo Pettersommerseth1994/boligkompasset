@@ -353,20 +353,82 @@
 
 /* ═══ Kompass per etappe i oppsummeringen ═════════════════════════ */
 
-.kp-etappekort { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
-@media (min-width: 560px) { .kp-etappekort { grid-template-columns: 1fr 1fr; } }
+/* Fire tette kort på rad. Dette er en oversikt man skummer, ikke noe
+   man leser ord for ord, så høyden skal være liten. */
+.kp-etappekort {
+  list-style: none; margin: var(--space-3) 0 0; padding: 0;
+  display: grid; gap: var(--space-2);
+  grid-template-columns: repeat(2, 1fr);
+}
+@media (min-width: 620px) { .kp-etappekort { grid-template-columns: repeat(4, 1fr); } }
 .kp-etappekort__kort {
-  display: flex; gap: var(--space-3); align-items: center;
   border: 1px solid var(--hb-slate-200);
   border-radius: var(--radius-lg);
-  padding: var(--space-3);
+  padding: var(--space-2);
+  background: #fff;
+  text-align: center;
+}
+.kp-etappekort__rose { width: 76px; margin: 0 auto 2px; }
+.kp-etappekort__navn { margin: 0; font-size: 12px; line-height: 1.3; color: var(--fg-subtle); }
+.kp-etappekort__kurs { margin: 2px 0 6px; font-weight: 600; font-size: 13px; line-height: 1.3; }
+
+/* ═══ Handlingsplanen og anbefalingene ════════════════════════════
+   To spalter, etter skissen. Holdt tett i høyden: dette er siden folk
+   skal kunne skumme og skrive ut.
+   ─────────────────────────────────────────────────────────────────── */
+
+.kp-plan { display: grid; gap: var(--space-3); margin-top: var(--space-3); }
+@media (min-width: 640px) { .kp-plan { grid-template-columns: 1fr 1fr; gap: var(--space-4); } }
+
+.kp-plan__kol {
+  border: 1px solid var(--hb-slate-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
   background: #fff;
 }
-.kp-etappekort__rose { flex: 0 0 auto; width: 92px; }
-.kp-etappekort__tekst { min-width: 0; flex: 1; }
-.kp-etappekort__navn { margin: 0; font-size: var(--text-sm); color: var(--fg-subtle); }
-.kp-etappekort__kurs { margin: 0 0 6px; font-weight: 600; line-height: 1.3; }
-.kp-etappekort__dom { margin: 6px 0 0; font-size: 13px; color: var(--fg-subtle); }
+.kp-plan__kol h3 { margin: 0 0 var(--space-2); }
+.kp-plan__kol ul { list-style: none; margin: 0; padding: 0; }
+.kp-plan__kol li {
+  display: flex; gap: var(--space-2); align-items: flex-start;
+  padding-block: 5px;
+  font-size: var(--text-sm); line-height: var(--lh-sm);
+}
+.kp-plan__kol--ja { border-left: 5px solid var(--hb-green-600); }
+.kp-plan__kol--nei { border-left: 5px solid #c0560a; }
+.kp-plan__merke { flex: 0 0 auto; font-weight: 700; width: 1em; }
+.kp-plan__kol--ja .kp-plan__merke { color: var(--hb-green-700); }
+.kp-plan__kol--nei .kp-plan__merke { color: #c0560a; }
+.kp-plan__grep {
+  display: block; color: var(--fg-subtle); font-size: 13px; line-height: 1.4;
+}
+.kp-plan__liste li { display: block; padding-block: 2px; }
+.kp-plan__tiltak .kp-mer { text-align: left; }
+
+.kp-ressurser {
+  list-style: none; margin: var(--space-3) 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: var(--space-2);
+}
+.kp-ressurs {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  border: 2px solid var(--hb-blue-800);
+  border-radius: var(--radius-pill);
+  padding: 9px var(--space-4);
+  background: #fff; color: var(--hb-blue-700);
+  text-decoration: none; font: 600 var(--text-sm)/1.3 var(--font-sans);
+  min-height: 44px;
+}
+.kp-ressurs:hover { background: var(--hb-blue-100); }
+.kp-ressurs svg { width: 18px; height: 18px; }
+
+.kp-svardetaljer {
+  margin-top: var(--space-6);
+  border-top: 1px solid var(--hb-slate-200);
+  padding-top: var(--space-3);
+}
+.kp-svardetaljer summary {
+  cursor: pointer; font-weight: 600; padding: var(--space-2) 0;
+  color: var(--fg-link);
+}
 
 /* ═══ Kompasset du vrir selv ══════════════════════════════════════ */
 
@@ -381,12 +443,12 @@
 }
 @media (min-width: 640px) {
   .kp-egen {
-    grid-template-columns: 300px 1fr;
+    grid-template-columns: 250px 1fr;
     justify-items: stretch; text-align: left;
-    align-items: center; gap: var(--space-5);
+    align-items: center; gap: var(--space-4);
   }
 }
-.kp-egen__rose { width: 100%; max-width: 320px; cursor: grab; touch-action: none; }
+.kp-egen__rose { width: 100%; max-width: 250px; cursor: grab; touch-action: none; }
 .kp-egen__rose:active { cursor: grabbing; }
 .kp-egen__rose .kp-kompass__naal { transition: transform var(--duration-fast) var(--ease-out); }
 .kp-egen__merke {

@@ -61,21 +61,19 @@ const KOMPASS_RETNINGER = {
 
 const KOMPASS_ETAPPER = [
   { id: 'bolig',    navn: 'Deg og boligen din',
-    ingress: 'Først noen få opplysninger om boligen og om hverdagen din. De avgjør hvilke råd som passer for deg, og hvilke støtteordninger du kan bruke.',
+    ingress: 'Vi begynner med det som er nærmest: boligen din, hverdagen din, og hva du ser for deg å bruke på en oppgradering.',
     ikon: 'hus' },
-  { id: 'naermiljo', navn: 'Nærmiljøet ditt',
-    ingress: 'Et godt nærmiljø gjør hverdagen enklere. Å komme seg til butikken, til folk og til det du liker å gjøre, betyr like mye som selve boligen. Det er også det som er vanskeligst å bygge seg ut av.',
-    ikon: 'kart' },
+  { id: 'inne',     navn: 'Inne i boligen din',
+    ingress: 'Så går vi inn: rommene, avstandene og badet. Det er her de fleste tiltakene i det nye tilskuddet ligger.',
+    ikon: 'rom' },
   { id: 'adkomst',  navn: 'Veien inn til boligen din',
     ingress: 'Nå ser vi på veien fra veien eller parkeringen og inn døra. Kommer du deg ikke inn og ut, hjelper det lite hva som er gjort inne. Derfor veier dette steget tyngst.',
     ikon: 'dor' },
-  { id: 'inne',     navn: 'Inne i boligen din',
-    ingress: 'Her handler det om rommene, avstandene og badet. Det er her de fleste tiltakene i det nye tilskuddet ligger.',
-    ikon: 'rom' },
-  { id: 'okonomi',  navn: 'Økonomien din',
-    ingress: 'Til slutt fire frivillige spørsmål om økonomi. De endrer ikke kursen i kompasset. De brukes bare til å vise hvilke lån og tilskudd som kan passe for deg. Ingenting sjekkes mot bank, skatt eller register, og du kan hoppe over hele steget.',
-    ikon: 'krone', frivillig: true }
+  { id: 'naermiljo', navn: 'Nærmiljøet ditt',
+    ingress: 'Til slutt går vi utenfor døra. Å komme seg til butikken, til folk og til det du liker å gjøre, betyr like mye som selve boligen. Det er også det som er vanskeligst å bygge seg ut av.',
+    ikon: 'kart' }
 ];
+
 
 /* ═══ Spørsmålene ══════════════════════════════════════════════════ */
 
@@ -84,6 +82,8 @@ const KOMPASS_SPORSMAL = [
   /* ─── Etappe 1, deg og boligen ──────────────────────────────────── */
   {
     id: 'bolig',
+    stikkord: 'Trivsel i boforholdet',
+    grep: 'Ta det opp med utleier, eller se på andre boliger',
     etappe: 'bolig',
     kilde: 'Slått sammen av spørsmål 1 og 2, slik merknaden i arbeidsdokumentet ber om.',
     tittel: 'Hvordan bor du i dag?',
@@ -134,6 +134,8 @@ const KOMPASS_SPORSMAL = [
   },
   {
     id: 'hverdag',
+    stikkord: 'Hverdagen din',
+    grep: 'La tiltakene følge det som er blitt tyngre',
     etappe: 'bolig',
     kilde: 'Nytt spørsmål. Designkritikken 21. september: «Mangler spørsmål om helse».',
     ny: true,
@@ -160,9 +162,30 @@ const KOMPASS_SPORSMAL = [
     maks: { n: 1, e: 0.3 }
   },
 
-  /* ─── Etappe 2, nærmiljøet ──────────────────────────────────────── */
+  {
+    id: 'investering',
+    etappe: 'bolig',
+    kilde: 'Nytt spørsmål 23. september. Erstatter de fire spørsmålene om økonomi.',
+    tittel: 'Hvor mye ønsker du å investere i å oppgradere boligen?',
+    undertekst: 'Et grovt anslag holder. Du binder deg ikke til noe, og du kan endre svaret senere.',
+    hvorfor: 'De fleste tiltakene finnes i flere størrelser. Vet vi hva du ser for deg å bruke, kan vi peke på dem som er innenfor rekkevidde, i stedet for å ramse opp alt.',
+    brukesTil: 'Beløpet flytter ikke nåla. Kompasset ser bare på boligen. Vi bruker det til å velge hvilke tiltak og ordninger vi viser deg til slutt, og ingenting sjekkes mot bank eller register.',
+    ikkeKompass: true,
+    valg: [
+      { v: '0',       tittel: '0 kroner',                 desc: 'Du vil se hva som finnes, men har ikke tenkt å bruke penger nå.' },
+      { v: '0-50',    tittel: 'Inntil 50 000 kroner',     desc: 'Rekker til håndlister, lys, terskelplater og andre små grep.' },
+      { v: '50-200',  tittel: '50 000 – 200 000 kroner',  desc: 'Rekker til et mindre byggearbeid, for eksempel dører, inngangsparti eller en trygg dusjsone.' },
+      { v: '200-400', tittel: '200 000 – 400 000 kroner', desc: 'Rekker til en baderomsombygging eller et trinnfritt inngangsparti.' },
+      { v: '400-600', tittel: '400 000 – 600 000 kroner', desc: 'Rekker til å endre planløsningen, eller til bad og adkomst samtidig.' },
+      { v: '600+',    tittel: '600 000 kroner eller mer', desc: 'Rekker til å bygge ut, eller til å samle alle de nødvendige rommene på inngangsplanet.' }
+    ]
+  },
+
+  /* ─── Nærmiljøet, som nå er siste steg ──────────────────────────── */
   {
     id: 'naermiljo-tilbud',
+    stikkord: 'Tilbud i nærmiljøet',
+    grep: 'Dette kan ikke bygges om. Det teller hvis du en dag vurderer å flytte',
     etappe: 'naermiljo',
     kilde: 'Spørsmål 3, omskrevet. Spørsmål 4 og 5 er tatt inn her.',
     tittel: 'Hva finnes i nærmiljøet ditt?',
@@ -195,6 +218,8 @@ const KOMPASS_SPORSMAL = [
   },
   {
     id: 'naermiljo-komme-seg',
+    stikkord: 'Å komme seg dit du vil',
+    grep: 'Sjekk transporttjenesten i kommunen din',
     etappe: 'naermiljo',
     kilde: 'Spørsmål 6, omskrevet.',
     tittel: 'Kommer du deg lett på de aktivitetene og tjenestene du ønsker?',
@@ -209,6 +234,8 @@ const KOMPASS_SPORSMAL = [
   },
   {
     id: 'naermiljo-hjelp',
+    stikkord: 'Noen å be om hjelp',
+    grep: 'Frivilligsentralen formidler hjelp til praktiske ting',
     etappe: 'naermiljo',
     kilde: 'Spørsmål 7, omskrevet.',
     tittel: 'Har du noen som kan hjelpe deg med praktiske ting?',
@@ -234,6 +261,8 @@ const KOMPASS_SPORSMAL = [
   /* ─── Etappe 3, veien inn ───────────────────────────────────────── */
   {
     id: 'adkomst-frem',
+    stikkord: 'Veien fram til døra',
+    grep: 'Jevn ut terrenget, og få bedre lys',
     etappe: 'adkomst',
     kilde: 'Spørsmål 8, omskrevet.',
     tittel: 'Kommer du deg lett fram til boligen fra offentlig vei?',
@@ -248,6 +277,8 @@ const KOMPASS_SPORSMAL = [
   },
   {
     id: 'adkomst-oppbevaring',
+    stikkord: 'Plass under tak ved inngangen',
+    grep: 'Sett opp takoverbygg og plass til rullator',
     etappe: 'adkomst',
     kilde: 'Spørsmål 9, omskrevet.',
     tittel: 'Har du plass under tak i inngangspartiet?',
@@ -262,6 +293,8 @@ const KOMPASS_SPORSMAL = [
   },
   {
     id: 'adkomst-trinn',
+    stikkord: 'Trinn inn til døra',
+    grep: 'Terskelplate, rampe eller løfteplattform',
     etappe: 'adkomst',
     kilde: 'Spørsmål 10. Står som i prototypen. Arbeidsdokumentet har status «Avklar» og ingen omskriving.',
     tittel: 'Hvor mange trinn er det fra bakken og inn til inngangsdøra?',
@@ -279,6 +312,8 @@ const KOMPASS_SPORSMAL = [
   },
   {
     id: 'adkomst-hindringer',
+    stikkord: 'Å komme seg inn og ut',
+    grep: 'Be kommunen eller Hjelpemiddelsentralen se på inngangen',
     etappe: 'adkomst',
     kilde: 'Spørsmål 11, omskrevet. Tre alvorlighetsgrader i stedet for «Ja / Delvis / Nei».',
     tittel: 'Hvor vanskelig er det å komme seg inn i boligen?',
@@ -295,6 +330,8 @@ const KOMPASS_SPORSMAL = [
   /* ─── Etappe 4, inne i boligen ──────────────────────────────────── */
   {
     id: 'inne-rom',
+    stikkord: 'Nødvendige rom på ett plan',
+    grep: 'Endre planløsningen, eller bygg ut',
     etappe: 'inne',
     kilde: 'Spørsmål 12, omskrevet. Spørsmål 13 og 14 er tatt inn her.',
     tittel: 'Har du alle de nødvendige rommene på inngangsplanet?',
@@ -309,6 +346,8 @@ const KOMPASS_SPORSMAL = [
   },
   {
     id: 'inne-bevegelse',
+    stikkord: 'Å komme seg rundt inne',
+    grep: 'Fjern terskler og utvid de trangeste dørene',
     etappe: 'inne',
     kilde: 'Spørsmål 15, omskrevet. Spørsmål 16 og 17 er tatt inn her.',
     tittel: 'Kommer du deg lett rundt inne i boligen?',
@@ -323,6 +362,8 @@ const KOMPASS_SPORSMAL = [
   },
   {
     id: 'bad-samme-rom',
+    stikkord: 'Bad og toalett samlet',
+    grep: 'Slå sammen bad og toalett til ett rom',
     etappe: 'inne',
     kilde: 'Spørsmål 18. Står som i prototypen. Arbeidsdokumentet gjør denne ferdig på dag 2.',
     tittel: 'Er bad og toalett i samme rom?',
@@ -336,6 +377,8 @@ const KOMPASS_SPORSMAL = [
   },
   {
     id: 'bad-plass',
+    stikkord: 'Plass foran toalett og vask',
+    grep: 'Bygg om eller utvid badet',
     etappe: 'inne',
     kilde: 'Spørsmål 19. Står som i prototypen.',
     tittel: 'Er det god plass foran toalett og vask?',
@@ -349,6 +392,8 @@ const KOMPASS_SPORSMAL = [
   },
   {
     id: 'bad-dusj',
+    stikkord: 'Trinnfri dusj',
+    grep: 'Lag en dusjsone uten kant',
     etappe: 'inne',
     kilde: 'Spørsmål 20. Står som i prototypen.',
     tittel: 'Kommer du lett inn i dusjen, uten kant eller terskel?',
@@ -363,6 +408,8 @@ const KOMPASS_SPORSMAL = [
   },
   {
     id: 'bad-stol',
+    stikkord: 'Plass til krakk i dusjen',
+    grep: 'Endre plasseringen av baderomsfunksjonene',
     etappe: 'inne',
     kilde: 'Spørsmål 21. Står som i prototypen.',
     tittel: 'Er det plass til en stol eller krakk inne i dusjen?',
@@ -377,6 +424,8 @@ const KOMPASS_SPORSMAL = [
   },
   {
     id: 'bad-dor',
+    stikkord: 'Baderomsdøra',
+    grep: 'Snu døra så den slår utover',
     etappe: 'inne',
     kilde: 'Spørsmål 22. Står som i prototypen.',
     tittel: 'Er badet lite, med en dør som slår innover?',
@@ -388,70 +437,6 @@ const KOMPASS_SPORSMAL = [
       { v: 'usikker', tittel: 'Usikker', desc: 'Du må se etter. Vi tar det med som noe å sjekke.', n: 0, e: 0 },
       { v: 'nei',     tittel: 'Nei',     desc: 'Døra slår utover, eller badet er stort nok til at det ikke er noe problem.', n: 0.6, e: 0 }
     ]
-  },
-
-  /* ─── Etappe 5, økonomi ─────────────────────────────────────────── */
-  {
-    id: 'ok-eier',
-    etappe: 'okonomi',
-    kilde: 'Spørsmål 23. Står som i prototypen.',
-    tittel: 'Eier du bolig eller fritidsbolig?',
-    undertekst: 'Vi spør fordi eiendom kan brukes som sikkerhet for lån, og fordi det avgjør hvilke ordninger du kan søke på.',
-    hvorfor: 'Eier du noe, har du flere muligheter i banken. Eier du ingenting, er startlån og kommunale tilskudd desto viktigere.',
-    brukesTil: 'Bare til å velge hvilke støtteordninger vi viser deg til slutt. Ingenting kontrolleres mot noe register.',
-    valg: [
-      { v: 'ja',  tittel: 'Ja',  desc: 'Du eier bolig, hytte eller annen eiendom.' },
-      { v: 'nei', tittel: 'Nei', desc: 'Du eier ingen eiendom i dag.' }
-    ],
-    ikkeKompass: true
-  },
-  {
-    id: 'ok-laan',
-    etappe: 'okonomi',
-    kilde: 'Spørsmål 24. Står som i prototypen.',
-    tittel: 'Har du lån på bolig eller andre eiendeler?',
-    undertekst: 'Vi trenger ikke beløp. Bare om du har lån eller ikke.',
-    hvorfor: 'Har du lån fra før, kan det være enklere å utvide det du har enn å ta opp noe nytt. Banken din vet mer om det enn vi gjør.',
-    brukesTil: 'Bare til å velge hvilke støtteordninger vi viser deg til slutt.',
-    valg: [
-      { v: 'ja',  tittel: 'Ja',  desc: 'Du betaler på ett eller flere lån i dag.' },
-      { v: 'nei', tittel: 'Nei', desc: 'Du har ingen lån.' }
-    ],
-    ikkeKompass: true
-  },
-  {
-    id: 'ok-sparing',
-    etappe: 'okonomi',
-    kilde: 'Spørsmål 25. Står som i prototypen.',
-    tittel: 'Har du sparepenger du kan bruke på boligen?',
-    undertekst: 'Bankinnskudd, aksjer, fond eller annet du har lett tilgang til. Velg det som ligger nærmest.',
-    hvorfor: 'Tilskudd dekker sjelden hele regningen. Det nye tilskuddet dekker 25 prosent av det du oppgraderer for. Resten må du dekke selv, eller låne.',
-    brukesTil: 'Til å si hvilke tiltak du kan ta med én gang, og hvilke som trenger finansiering først.',
-    valg: [
-      { v: '20',      tittel: 'Rundt 20 000 kroner',      desc: 'Rekker til håndlister, lys, terskelplater og små grep.' },
-      { v: '20-50',   tittel: '20 000 – 50 000 kroner',   desc: 'Rekker til flere små tiltak, eller egenandelen på et større.' },
-      { v: '50-100',  tittel: '50 000 – 100 000 kroner',  desc: 'Rekker til et mindre byggearbeid, for eksempel døråpninger og inngangsparti.' },
-      { v: '100+',    tittel: 'Over 100 000 kroner',      desc: 'Rekker som egenkapital i en baderomsombygging.' },
-      { v: 'usikker', tittel: 'Usikker',                  desc: 'Du vet ikke, eller du vil ikke oppgi det. Helt greit. Vi viser alle ordningene i stedet.' }
-    ],
-    ikkeKompass: true
-  },
-  {
-    id: 'ok-maaned',
-    etappe: 'okonomi',
-    kilde: 'Spørsmål 26. Står som i prototypen.',
-    tittel: 'Hvor mye kan du betale i måneden på et nytt lån?',
-    undertekst: 'Et grovt anslag holder. Tenk på hva du har til overs når alt fast er betalt.',
-    hvorfor: 'Et lån til boligtilpasning betales tilbake over mange år. Da er den månedlige summen viktigere enn totalbeløpet.',
-    brukesTil: 'Til å si om startlån fra kommunen eller lån fra Husbanken er verdt å se på for deg.',
-    valg: [
-      { v: '1000',    tittel: 'Rundt 1 000 kroner',   desc: 'Nok til et mindre lån over lang tid.' },
-      { v: '2000',    tittel: 'Rundt 2 000 kroner',   desc: '' },
-      { v: '3000',    tittel: 'Rundt 3 000 kroner',   desc: '' },
-      { v: '3000+',   tittel: 'Mer enn 3 000 kroner', desc: 'Nok til å finansiere et større byggearbeid.' },
-      { v: 'usikker', tittel: 'Usikker',              desc: 'Du vet ikke, eller du vil ikke oppgi det. Banken din kan regne på det sammen med deg.' }
-    ],
-    ikkeKompass: true
   }
 ];
 

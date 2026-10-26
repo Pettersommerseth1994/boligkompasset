@@ -1,36 +1,53 @@
 /* ──────────────────────────────────────────────────────────────────
    Boligkompasset
-   Bygger på ds/colors_and_type.css og assets/css/hb-app.css.
-   Ingenting her definerer nye farger. Alt kommer fra tokens.
+   Komponentene er Fasaden, Husbankens designsystem (fasaden/fasaden.css).
+   Her står bare det Fasaden ikke har: kompasset, oppsettet rundt
+   komponentene og utskriften. Ingenting her definerer nye farger.
    ────────────────────────────────────────────────────────────────── */
 
-/* ═══ Overskrifter ════════════════════════════════════════════════
-   Designkritikken: «Alt for stor H1 med for stort mellomrom».
-   H1 er tatt ned ett trinn, og luften under er halvert.
+/* ═══ Overskrifter og ingress ════════════════════════════════════
+   Fasadens hb-h1 og hb-text--ingress. Her settes bare bredden, så
+   linjene ikke blir for lange på bred skjerm.
    ─────────────────────────────────────────────────────────────────── */
 
-.kp-h1 {
-  font: 600 var(--text-3xl)/var(--lh-3xl) var(--font-display);
-  letter-spacing: -0.02em;
-  margin: 0 0 var(--space-2);
-  max-width: 20ch;
-}
-.kp-h1--smal { max-width: 26ch; }
+.kp-h1 { max-width: 22ch; }
 
-.kp-ingress {
-  font: 400 var(--text-lg)/var(--lh-lg) var(--font-heading);
-  margin: 0 0 var(--space-4);
-  max-width: 54ch;
+/* Fasadens overskrifter setter ikke skrifttype selv, så prototypens
+   grunnlag (ds/colors_and_type.css og hb-app.css) slo gjennom med
+   «Inter 28» og tettere bokstaver. Her arver de Fasadens Inter. */
+.fasaden :is(h1, h2, h3, h4, h5, h6, .hb-h1, .hb-h2, .hb-h3, .hb-h4, .hb-h5) {
+  font-family: inherit;
+  letter-spacing: normal;
 }
 
-/* ═══ Knapper som ikke brekker ════════════════════════════════════
-   Designkritikken: «Tekst i knapper kan ikke brekke på to linjer».
+/* Overtittelen («Spørsmål 3») står litt høyere over spørsmålet */
+.fasaden .kp-tittel .hb-h1-overtittel { margin-bottom: calc(.5em + 0.25rem); }
+@media screen and (min-width: 30em) {
+  .fasaden .kp-tittel .hb-h1-overtittel { margin-bottom: 0.25rem; }
+}
+
+/* Hjelpeteksten under et spørsmål er brødtekst, like stor som resten */
+.kp-hjelp__tekst { font-size: var(--text-base); line-height: var(--lh-base); color: var(--fg-default); max-width: 62ch; margin: 0 0 var(--space-3); }
+.kp-ingress { max-width: 56ch; }
+
+/* ═══ Knapper ═════════════════════════════════════════════════════
+   Fasadens hb-button i stor utgave. Designkritikken: «Tekst i knapper
+   kan ikke brekke på to linjer». Pila er Husbankens felles ikon.
    ─────────────────────────────────────────────────────────────────── */
 
-.ds-button { white-space: nowrap; }
+.fasaden .hb-button { white-space: nowrap; }
 @media (max-width: 380px) {
-  .ds-button { white-space: normal; text-wrap: balance; }
+  .fasaden .hb-button { white-space: normal; text-wrap: balance; }
 }
+.kp-ikon { display: inline-flex; align-items: center; margin-left: 0.5rem; }
+.kp-ikon--venstre { margin-left: 0; margin-right: 0.5rem; }
+.kp-ikon svg { display: block; width: 20px; height: 20px; }
+.kp-ikon--venstre svg { transform: rotate(180deg); }
+.kp-knapper { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-3); align-items: center; }
+
+.kp-callout { margin-bottom: var(--space-6); }
+.kp-callout .hb-callout-content p { margin-bottom: var(--space-3); }
+.kp-seksjon { margin-top: var(--space-7); }
 
 /* Overskrifter som får fokus programmatisk når skjermen bytter, skal
    ikke tegne fokusramme. Tastaturfokus vises fortsatt som før. */
@@ -76,8 +93,6 @@
 .kp-kompass__naal-nord { fill: var(--hb-green-700); }
 .kp-kompass[data-vei="ned"] .kp-kompass__naal-nord { fill: var(--hb-red-700); }
 .kp-kompass[data-tom="1"] .kp-kompass__naal-nord { fill: var(--hb-slate-300); }
-.kp-kompass[data-tom="1"] .kp-kompass__naal-sor  { fill: var(--hb-slate-200); }
-.kp-kompass__naal-sor  { fill: var(--hb-slate-300); }
 .kp-kompass__nav       { fill: var(--hb-slate-700); }
 
 /* Etikettene er kursnavn, ikke himmelretninger, så de settes med
@@ -118,12 +133,66 @@
   .kp-peiling__hoved { grid-template-columns: 330px 1fr; gap: var(--space-5); }
 }
 
+/* Etter hvert steg: kompasset med en forklaring på hver retning,
+   kursen som et spørsmål, og det som fungerer og det som kan bli en
+   utfordring i steget */
+.kp-steget { text-align: center; padding: var(--space-5) var(--space-4); }
+.kp-retninger {
+  display: grid; gap: var(--space-2);
+  grid-template-columns: 1fr minmax(160px, 220px) 1fr;
+  grid-template-areas: ". n ." "v rose o" ". s .";
+  align-items: center; justify-items: center;
+  margin-bottom: var(--space-4);
+}
+.kp-retninger__rose { grid-area: rose; width: 100%; }
+.kp-retning {
+  max-width: 13rem; padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm); line-height: 1.35; color: var(--fg-subtle);
+}
+.kp-retning strong { display: block; color: var(--fg-default); font-size: var(--text-base); }
+.kp-retning[data-naa="true"] { background: var(--hb-green-100); color: var(--fg-default); box-shadow: inset 0 0 0 2px var(--hb-green-600); }
+.kp-retning[data-naa="true"][data-vei="ned"] { background: #fbe2dd; box-shadow: inset 0 0 0 2px #a42812; }
+.kp-retning--n { grid-area: n; }
+.kp-retning--s { grid-area: s; }
+.kp-retning--v { grid-area: v; justify-self: end; text-align: right; }
+.kp-retning--o { grid-area: o; justify-self: start; text-align: left; }
+@media (max-width: 620px) {
+  .kp-retninger { grid-template-columns: 1fr 1fr; grid-template-areas: "rose rose" "n o" "v s"; }
+  .kp-retninger__rose { max-width: 220px; }
+  .kp-retning, .kp-retning--v, .kp-retning--o { justify-self: stretch; max-width: none; text-align: left; }
+}
+
+.kp-steget__sporsmal { font: 600 var(--text-xl, 1.5rem)/1.3 var(--font-sans); margin: 4px auto var(--space-4); max-width: 30ch; }
+.kp-tokol { display: grid; gap: var(--space-3); text-align: left; }
+@media (min-width: 640px) { .kp-tokol { grid-template-columns: 1fr 1fr; } }
+.kp-tokol > div { border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4); }
+.kp-tokol__bra { background: var(--hb-green-100); }
+.kp-tokol__utfordring { background: #fef3ea; }
+.kp-tokol__tittel { font: 600 var(--text-base)/var(--lh-base) var(--font-sans); margin: 0 0 var(--space-2); }
+.kp-tokol ul { margin: 0; padding-left: 1.2em; font-size: var(--text-base); line-height: var(--lh-base); }
+.kp-tokol li + li { margin-top: 4px; }
+.kp-steget__merknad { margin: var(--space-4) 0 0; }
+
+/* Trekkspillene er Fasadens hb-accordion. Her står bare plassen, og
+   rammen: i fasaden.css har reglene for hb-accordion--kantlinje fått
+   .fasaden på feil plass i byggingen, så de treffer aldri. De står her
+   slik Fasaden mener dem, med Fasadens farge, til fasaden.css bygges
+   på nytt. Rammen overstyrer også det gamle trekkspillet i hb-app.css,
+   som bruker samme klassenavn. */
+.kp-forklaringer { text-align: left; margin-top: var(--space-5); }
+.fasaden .hb-accordion.hb-accordion--kantlinje { border: 0.0625rem solid #b8c0c7; }
+.fasaden .hb-accordion--kantlinje .hb-accordion-element + .hb-accordion-element { border-top: 0.0625rem solid #b8c0c7; }
+
 /* Nøkkelen til de fire retningene, under kompasset hver gang */
 .kp-nokkel {
   border-top: 1px solid var(--hb-slate-200);
   margin-top: var(--space-3);
   padding-top: var(--space-3);
 }
+/* Inne i trekkspillet står nøkkelen uten egen strek og overskrift */
+.kp-nokkel--innfelt { border-top: 0; margin-top: 0; padding-top: 0; }
+.kp-nokkel--innfelt .kp-nokkel__tittel { display: none; }
 .kp-nokkel__tittel {
   font: 600 var(--text-xs)/1.3 var(--font-sans);
   color: var(--fg-subtle);
@@ -150,23 +219,8 @@
   color: var(--hb-slate-400); margin-top: 1px;
 }
 .kp-nokkel__rad[data-naa="true"] .kp-nokkel__pil { color: var(--hb-green-700); }
-.kp-peiling__kurs { font: 600 var(--text-lg)/var(--lh-lg) var(--font-heading); margin: 0 0 4px; }
+.kp-peiling__kurs { font: 600 var(--text-lg)/var(--lh-lg) var(--font-sans); margin: 0 0 4px; }
 .kp-peiling__tekst { font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--fg-subtle); margin: 0; }
-.kp-peiling__utslag {
-  display: inline-flex; align-items: flex-start; gap: 8px;
-  margin-top: var(--space-2);
-  font: 600 var(--text-xs)/1.45 var(--font-sans);
-  background: var(--hb-green-100);
-  border: 1px solid var(--hb-green-400);
-  border-radius: var(--radius-lg);
-  padding: 8px 14px;
-  text-align: left;
-  color: var(--hb-green-800);
-}
-.kp-peiling__utslag svg { flex: 0 0 auto; width: 18px; height: 18px; margin-top: 1px; }
-.kp-peiling__utslag[data-vei="sor"] { background: rgb(255,244,224); border-color: var(--hb-slate-200); color: var(--hb-slate-700); }
-.kp-peiling__utslag[data-vei="ingen"] { background: var(--hb-slate-100); border-color: var(--hb-slate-200); color: var(--fg-subtle); }
-
 /* Stort kompass på forsiden og i oppsummeringen */
 /* Bredden må stå eksplisitt. Et rutenettelement med auto-marger
    strekker seg ikke, og da falt rosa tilbake til sin egen
@@ -202,56 +256,28 @@
   position: sticky; top: 0; z-index: 20;
   background: #fff;
   border-bottom: 1px solid var(--hb-slate-200);
-  padding-block: var(--space-2);
+  padding-block: var(--space-3);
 }
-.kp-framdrift__topp {
-  display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-3);
-  align-items: baseline; justify-content: space-between;
-  font-size: var(--text-sm);
-  margin-bottom: 6px;
+/* Fasadens stepper er laget for e-søknaden, med sidetittelen som en
+   del av komponenten. Her er sidetittelen spørsmålet, så stepperen
+   brukes bare til de fire stegene. Lufta under lista er tatt ned. */
+.kp-framdrift .hb-progress-stepper-nav { margin-bottom: var(--space-3); }
+/* Uten animasjon når du står i samme steg som på forrige skjerm.
+   Sluttilstanden fra Fasadens makeIconActive settes direkte. */
+.kp-framdrift--rolig .hb-progress-stepper-list-item.hb-is-active .hb-icon--encapsulated {
+  animation: none; background: #3b444c; color: #fff; transform: none;
 }
-.kp-framdrift__etappe { font-weight: 600; }
-.kp-framdrift__teller { color: var(--fg-subtle); font-variant-numeric: tabular-nums; }
-.kp-framdrift__spor { height: 8px; background: var(--hb-slate-200); border-radius: var(--radius-pill); overflow: hidden; }
-.kp-framdrift__fyll { height: 100%; background: var(--hb-green-700); border-radius: var(--radius-pill); transition: width 400ms var(--ease-out); }
-
-.kp-etapper { display: flex; gap: 4px; list-style: none; margin: 8px 0 0; padding: 0; }
-.kp-etapper li { flex: 1; }
-.kp-etapper__merke {
-  display: block; width: 100%; height: 6px;
-  background: var(--hb-slate-200); border-radius: var(--radius-pill);
-  transition: background var(--duration-base) var(--ease-out);
-}
-.kp-etapper__merke[data-tilstand="ferdig"] { background: var(--hb-green-600); }
-.kp-etapper__merke[data-tilstand="aktiv"]  { background: var(--hb-green-800); }
-.kp-etapper__navn {
-  display: block; font-size: 12px; line-height: 1.3; color: var(--fg-subtle);
-  margin-top: 5px; text-align: center;
-}
-@media (max-width: 560px) { .kp-etapper__navn { display: none; } }
+.kp-framdrift--rolig .hb-progress-stepper-list-item.hb-is-active::after { animation: none; transform: none; }
+.kp-framdrift__steg { margin: 0; font-size: var(--text-sm); }
+@media (min-width: 768px) { .kp-framdrift__steg { display: none; } }
 
 /* ═══ Etappeskjermen ══════════════════════════════════════════════ */
 
-.kp-etappe-kort {
-  border: 2px solid var(--hb-green-700);
-  border-radius: var(--radius-lg);
-  background: #fff;
-  padding: var(--space-5) var(--space-4);
-  text-align: center;
-}
-.kp-etappe-kort__nr {
-  display: inline-block;
-  font: 600 var(--text-xs)/1 var(--font-sans);
-  letter-spacing: 0;
-  color: var(--hb-green-800);
-  background: var(--hb-green-100);
-  border-radius: var(--radius-pill);
-  padding: 7px 14px;
-  margin-bottom: var(--space-3);
-}
-.kp-etappe-kort h2 { margin-bottom: var(--space-3); }
-.kp-etappe-kort p { max-width: 48ch; margin-inline: auto; }
-.kp-etappe-kort__fig { width: 96px; height: 96px; margin: 0 auto var(--space-3); display: block; }
+.kp-etappe-kort { text-align: center; padding: var(--space-6) var(--space-4); }
+.kp-etappe-kort .hb-h1 { margin-bottom: var(--space-3); }
+.kp-etappe-kort__ingress { max-width: 56ch; margin-inline: auto; text-align: left; }
+.kp-etappe-kort__ingress p:last-child { margin-bottom: 0; }
+.kp-etappe-kort__fig { width: 88px; height: 88px; margin: 0 auto var(--space-3); display: block; color: var(--hb-green-700); }
 
 /* ═══ Spørsmålene ═════════════════════════════════════════════════ */
 
@@ -259,81 +285,42 @@
 @keyframes kp-inn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .kp-sporsmal { animation: none; } }
 
-.kp-sporsmal h2 { margin-bottom: var(--space-2); }
-/* Overtittelen over H1. Den delen som før stod bak et kolon i overskrifta,
-   står nå over den, så øyet finner det egentlige navnet på steget først.
-   Grønn og 600, ikke versaler og ikke tynnere enn brødteksten. */
-.kp-tittel__over {
-  display: block;
-  font: 600 var(--text-sm)/1.3 var(--font-sans);
-  letter-spacing: 0;
-  color: var(--hb-green-800);
-  margin-bottom: 2px;
-}
-.kp-tittel { margin-bottom: var(--space-2); }
+.kp-tittel { max-width: 30ch; margin-bottom: var(--space-3); }
+.kp-hjelp { max-width: 62ch; }
+.kp-hjelp .hb-felt-beskrivelse { margin-bottom: var(--space-3); }
 
 .kp-sporsmal__under { color: var(--fg-default); margin: 0 0 var(--space-3); max-width: 56ch; }
 
-/* «Derfor spør vi» og «Dette brukes svaret til» står alltid framme.
-   Designkritikken var tydelig på at trekkspill ikke fungerer her.
-
-   To adskilte bokser, ikke én, fordi de svarer på to ulike spørsmål:
-   hvorfor vi spør, og hva vi gjør med svaret. Grønn for det første,
-   blå for det andre, så det er lett å se at det er to ting. */
-.kp-forklaring {
-  display: grid; gap: var(--space-2);
-  margin-bottom: var(--space-4);
-}
-@media (min-width: 640px) {
-  .kp-forklaring { grid-template-columns: 1fr 1fr; gap: var(--space-3); }
-}
-.kp-forklaring__boks {
-  border-left: 4px solid;
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-  padding: var(--space-3);
-  font-size: var(--text-sm);
-  line-height: var(--lh-sm);
-}
-.kp-forklaring__boks p { margin: 0; }
-.kp-forklaring__tittel {
-  font: 600 var(--text-sm)/var(--lh-sm) var(--font-sans);
-  letter-spacing: 0;
-  margin: 0 0 2px;
-}
-.kp-forklaring__boks--sporsmal {
-  background: var(--hb-green-100);
-  border-left-color: var(--hb-green-700);
-}
-.kp-forklaring__boks--sporsmal .kp-forklaring__tittel { color: var(--hb-green-800); }
-
-.kp-forklaring__boks--bruk {
-  background: var(--hb-blue-100);
-  border-left-color: var(--hb-blue-800);
-}
-.kp-forklaring__boks--bruk .kp-forklaring__tittel { color: var(--hb-blue-900); }
-
 .kp-felt + .kp-felt { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--hb-slate-200); }
-.kp-felt__ledetekst { font-weight: 600; display: block; margin-bottom: 4px; }
-.kp-felt__hjelp { display: block; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--fg-subtle); margin-bottom: var(--space-3); max-width: 58ch; }
+.kp-felt { margin-top: var(--space-4); }
 
+/* Et svaralternativ som hører til et annet, som «Baderomsdøren slår
+   innover» under «Jeg har et lite bad». Fasadens avkrysning på to nivåer
+   legger barna i en egen liste med vanlig listeinnrykk, 40 px.
+   .hb-feltliste nuller innrykket, så det settes tilbake her. */
+.fasaden .kp-underliste { padding-left: 2.5rem; margin-top: 0.25rem; }
+.kp-felt .hb-felt-beskrivelse { max-width: 62ch; }
+
+/* Oppfølgingen, som 5b, står innrykket under svaret den hører til */
 .kp-oppfolging {
-  margin: var(--space-3) 0 0 var(--space-5);
+  margin: var(--space-4) 0 0 var(--space-3);
   padding-left: var(--space-4);
-  border-left: 3px solid var(--hb-blue-300);
-}
-
-.kp-hopp {
-  background: none; border: 0; padding: var(--space-2) 0;
-  color: var(--fg-link); text-decoration: underline; cursor: pointer;
-  font: 400 var(--text-sm)/var(--lh-sm) var(--font-sans);
+  border-left: 3px solid var(--hb-slate-200);
 }
 
 .kp-nav {
   display: flex; flex-wrap: wrap; gap: var(--space-3);
-  align-items: center; justify-content: space-between;
+  align-items: center; justify-content: flex-start;
   margin-top: var(--space-5);
 }
-.kp-nav__hoyre { display: flex; gap: var(--space-2); align-items: center; margin-left: auto; }
+
+/* Forklaringen under et svar, som «Enkelt, badet er stort nok», står
+   i grått rett under svarteksten, med samme venstrekant. Innrykket er
+   Fasadens eget for hb-felt-beskrivelse--alternativ. */
+.kp-valgforklaring { margin: 2px 0 var(--space-2); }
+
+/* Infoboksen med det masterfila kaller Popover, under hjelpeteksten */
+.kp-infoboks { margin: var(--space-3) 0 var(--space-4); max-width: 62ch; }
 
 /* ═══ Snarveien nederst ═══════════════════════════════════════════
    Bare for prototypen. Den skal se ut som et verktøy, ikke som en del
@@ -357,7 +344,6 @@
   margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm);
   color: var(--fg-subtle); max-width: 52ch;
 }
-.kp-snarvei .ds-button { min-height: 44px; padding: 8px var(--space-3); font-size: var(--text-sm); }
 
 /* ═══ Etappeoppsummeringen ════════════════════════════════════════ */
 
@@ -372,7 +358,8 @@
   display: grid; gap: var(--space-2);
   grid-template-columns: repeat(2, 1fr);
 }
-@media (min-width: 620px) { .kp-etappekort { grid-template-columns: repeat(4, 1fr); } }
+/* Ett kort per steg med kompass. Steg 1 har ikke kompass, så det er tre. */
+@media (min-width: 620px) { .kp-etappekort { grid-template-columns: repeat(3, 1fr); } }
 .kp-etappekort__kort {
   border: 1px solid var(--hb-slate-200);
   border-radius: var(--radius-lg);
@@ -381,8 +368,8 @@
   text-align: center;
 }
 .kp-etappekort__rose { width: 76px; margin: 0 auto 2px; }
-.kp-etappekort__navn { margin: 0; font-size: 12px; line-height: 1.3; color: var(--fg-subtle); }
-.kp-etappekort__kurs { margin: 2px 0 6px; font-weight: 600; font-size: 13px; line-height: 1.3; }
+.kp-etappekort__navn { margin: 0; font-size: var(--text-xs); line-height: 1.3; color: var(--fg-subtle); }
+.kp-etappekort__kurs { margin: 2px 0 6px; font-weight: 600; font-size: var(--text-xs); line-height: 1.3; }
 
 /* ═══ Handlingsplanen og anbefalingene ════════════════════════════
    To spalter, etter skissen. Holdt tett i høyden: dette er siden folk
@@ -411,7 +398,7 @@
 .kp-plan__kol--ja .kp-plan__merke { color: var(--hb-green-700); }
 .kp-plan__kol--nei .kp-plan__merke { color: #c0560a; }
 .kp-plan__grep {
-  display: block; color: var(--fg-subtle); font-size: 13px; line-height: 1.4;
+  display: block; color: var(--fg-subtle); font-size: var(--text-xs); line-height: 1.4;
 }
 .kp-plan__liste li { display: block; padding-block: 2px; }
 .kp-plan__tiltak .kp-mer { text-align: left; }
@@ -435,15 +422,8 @@
 .kp-ressurs > span { display: inline-flex; align-items: center; }
 .kp-ressurs svg { width: 18px; height: 18px; display: block; }
 
-.kp-svardetaljer {
-  margin-top: var(--space-6);
-  border-top: 1px solid var(--hb-slate-200);
-  padding-top: var(--space-3);
-}
-.kp-svardetaljer summary {
-  cursor: pointer; font-weight: 600; padding: var(--space-2) 0;
-  color: var(--fg-link);
-}
+/* «Se alle svarene dine» er Fasadens trekkspill, som etter hvert steg */
+.kp-svardetaljer { margin-top: var(--space-6); }
 
 /* ═══ Kompasset du vrir selv ══════════════════════════════════════ */
 
@@ -463,143 +443,29 @@
     align-items: center; gap: var(--space-4);
   }
 }
-.kp-egen__rose { width: 100%; max-width: 250px; cursor: grab; touch-action: none; }
-.kp-egen__rose:active { cursor: grabbing; }
-.kp-egen__rose .kp-kompass__naal { transition: transform var(--duration-fast) var(--ease-out); }
+.kp-egen__rose { width: 100%; max-width: 250px; }
 .kp-egen__merke {
-  display: block; margin-top: var(--space-4);
-  font: 600 var(--text-sm)/1.3 var(--font-sans);
-}
-.kp-egen__skyv {
-  width: 100%; margin-top: var(--space-2);
-  accent-color: var(--hb-green-700);
-  height: 32px;
+  display: block; margin-bottom: var(--space-2); padding: 0;
+  font: 600 var(--text-base)/var(--lh-base) var(--font-sans);
 }
 
 /* ═══ Modusvelger ═════════════════════════════════════════════════ */
 
 .kp-modus { display: grid; gap: var(--space-3); }
 @media (min-width: 720px) { .kp-modus { grid-template-columns: 1fr 1fr; } }
-.kp-modus__kort {
-  border: 2px solid var(--hb-slate-200);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  background: #fff;
-  display: flex; flex-direction: column; gap: var(--space-2);
-}
-.kp-modus__kort--anbefalt { border-color: var(--hb-green-700); }
-.kp-modus__merke {
-  align-self: flex-start;
-  font: 600 12px/1 var(--font-sans); letter-spacing: 0;
-  background: var(--hb-green-100); color: var(--hb-green-800);
-  border-radius: var(--radius-pill); padding: 6px 12px;
-}
-.kp-modus__kort h3 { margin: 0; }
-.kp-modus__kort p { margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--fg-subtle); }
-.kp-modus__kort .ds-button { margin-top: auto; }
+.kp-modus__kort { display: flex; flex-direction: column; margin: 0; }
+.kp-modus__kort .hb-card-body { flex: 1; }
+.kp-modus__kort .hb-card-body p:last-child { margin-bottom: 0; }
+.kp-modus__kort--anbefalt { box-shadow: inset 0 4px 0 var(--hb-green-700); }
 
-.kp-bytt {
-  display: inline-flex; align-items: center; gap: 8px;
-  text-align: left;
-  background: none; border: 0; cursor: pointer; padding: 6px 0;
-  color: var(--fg-link); text-decoration: underline;
-  font: 400 var(--text-sm)/var(--lh-sm) var(--font-sans);
-}
-/* Ikonet ligger i en inline span, og den setter seg på grunnlinja.
-   Uten dette står pila lavere enn teksten ved siden av. */
-.kp-bytt > span { display: inline-flex; align-items: center; }
-.kp-bytt svg { display: block; }
+/* Hvem, hvorfor og hva, tre Fasaden-kort på rad */
+.kp-tre { list-style: none; padding: 0; margin: var(--space-7) 0 var(--space-6); display: grid; gap: var(--space-3); }
+@media (min-width: 760px) { .kp-tre { grid-template-columns: repeat(3, 1fr); } }
+.kp-tre .hb-card { margin: 0; }
 
-/* ═══ Listemodus ══════════════════════════════════════════════════
-   Etappene har hver sin fane i margen, som seksjonene i OneNote. Du
-   ser hvor du er, hvor mye som står igjen i hver etappe, og du kan
-   hoppe rett dit du vil. Fanen følger med når du blar.
-   ─────────────────────────────────────────────────────────────────── */
-
-.kp-liste__oppsett { display: grid; gap: var(--space-4); }
-/* Uten dette vokser rutenettelementene med innholdet sitt, og da biter
-   ikke overflow-x på fanerada. Sida fikk vannrett rulling i stedet. */
-.kp-liste__innhold, .kp-tabs { min-width: 0; }
-
-.kp-tabs ol { list-style: none; margin: 0; padding: 0; }
-.kp-tabs__tittel {
-  font: 600 var(--text-xs)/1.3 var(--font-sans);
-  color: var(--fg-subtle);
-  margin: 0 0 var(--space-2);
-}
-.kp-tab {
-  display: flex; align-items: center; gap: var(--space-2);
-  min-height: 46px;
-  text-decoration: none; color: var(--fg-default);
-  background: #fff;
-  font-size: var(--text-sm); line-height: 1.35;
-  transition: background var(--duration-fast) var(--ease-out),
-              border-color var(--duration-fast) var(--ease-out);
-}
-.kp-tab:hover { background: var(--hb-slate-50); }
-.kp-tab__nr {
-  flex: 0 0 auto;
-  width: 22px; height: 22px; border-radius: 50%;
-  display: grid; place-items: center;
-  background: var(--tab-farge); color: #fff;
-  font: 600 12px/1 var(--font-sans);
-}
-.kp-tab__navn { flex: 1; }
-.kp-tab__tall {
-  flex: 0 0 auto;
-  font-variant-numeric: tabular-nums;
-  font-size: 13px; color: var(--fg-subtle);
-}
-.kp-tab[data-ferdig="true"] .kp-tab__tall { color: var(--hb-green-800); font-weight: 600; }
-.kp-tab[aria-current="true"] { background: var(--hb-slate-50); font-weight: 600; }
-
-/* Bred skjerm: fanene står i margen og blir stående mens du blar */
-@media (min-width: 900px) {
-  .kp-liste__oppsett {
-    grid-template-columns: 250px minmax(0, 1fr);
-    gap: var(--space-6);
-    align-items: start;
-  }
-  .kp-tabs { position: sticky; top: var(--space-4); }
-  .kp-tabs ol { display: grid; gap: 2px; }
-  .kp-tab {
-    padding: 8px var(--space-3) 8px 12px;
-    border-left: 6px solid var(--tab-farge);
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  }
-  .kp-tab[aria-current="true"] { border-left-width: 10px; padding-left: 8px; }
-  .kp-liste__innhold { max-width: 720px; }
-}
-
-/* Smal skjerm: en rad med faner som blir liggende øverst */
-@media (max-width: 899px) {
-  .kp-tabs {
-    position: sticky; top: 0; z-index: 20;
-    background: #fff;
-    border-bottom: 1px solid var(--hb-slate-200);
-    padding-block: var(--space-2);
-  }
-  .kp-tabs__tittel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .kp-tabs ol { display: flex; gap: var(--space-2); overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .kp-tab {
-    flex: 0 0 auto; white-space: nowrap;
-    padding: 6px var(--space-3);
-    border-bottom: 4px solid var(--tab-farge);
-    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  }
-  .kp-tab__tall { display: none; }
-}
-
-.kp-liste__etappe { margin-bottom: var(--space-7); scroll-margin-top: 84px; }
-@media (min-width: 900px) { .kp-liste__etappe { scroll-margin-top: var(--space-4); } }
-.kp-liste__etappe > h2 {
-  padding-top: var(--space-3);
-  border-top: 4px solid var(--etappe-farge, var(--hb-green-700));
-}
-.kp-liste__sporsmal { padding-block: var(--space-4); border-bottom: 1px solid var(--hb-slate-200); }
-.kp-liste__sporsmal:last-child { border-bottom: 0; }
-.kp-liste__nr { font-size: var(--text-sm); color: var(--fg-subtle); font-variant-numeric: tabular-nums; }
-.kp-liste__sporsmal h3 { margin: 2px 0 var(--space-2); }
+.kp-veier { display: grid; gap: var(--space-4); margin-bottom: var(--space-6); }
+@media (min-width: 860px) { .kp-veier { grid-template-columns: 1.25fr 1fr; align-items: center; } }
+.kp-kursforklaring { margin-top: var(--space-3); min-height: 3em; }
 
 /* ═══ Oppsummeringen ══════════════════════════════════════════════
    Designkritikken: «Siste siden er den dårligste», «trenger mer
@@ -622,7 +488,7 @@
   .kp-resultat__topp { grid-template-columns: 330px 1fr; padding: var(--space-6) var(--space-5); }
 }
 .kp-resultat__kurs { font: 600 var(--text-xs)/1 var(--font-sans); color: var(--hb-green-800); margin: 0 0 var(--space-2); }
-.kp-resultat__navn { font: 600 var(--text-2xl)/var(--lh-2xl) var(--font-display); margin: 0 0 var(--space-3); letter-spacing: -0.01em; }
+.kp-resultat__navn { font: 600 var(--text-2xl)/var(--lh-2xl) var(--font-sans); margin: 0 0 var(--space-3); letter-spacing: -0.01em; }
 .kp-resultat__tekst { margin: 0; max-width: 46ch; }
 .kp-resultat__bunn { padding: var(--space-4); }
 
@@ -675,7 +541,7 @@
    teksten la seg utenfor. Nå er det rader med rett kant. */
 .kp-merkeliste { list-style: none; margin: var(--space-2) 0 0; padding: 0; display: grid; gap: 4px; }
 .kp-merke {
-  font-size: 13px; line-height: 1.45;
+  font-size: var(--text-xs); line-height: 1.45;
   background: var(--hb-blue-100); color: var(--hb-blue-900);
   border-radius: var(--radius-sm);
   border-left: 3px solid var(--hb-blue-800);
@@ -711,7 +577,7 @@
   padding: 0 0 var(--space-2);
 }
 .hb-summary--flat .hb-summary__head h3 {
-  font: 600 var(--text-lg)/var(--lh-lg) var(--font-heading);
+  font: 600 var(--text-lg)/var(--lh-lg) var(--font-sans);
   margin: 0;
 }
 .hb-summary--flat .hb-summary__edit {
@@ -743,7 +609,7 @@
   @page { size: A4; margin: 16mm 14mm; }
 
   .hb-protobar, .hb-topbar, .hb-contextbar, .hb-menubar, .hb-footer,
-  .hb-skiplink, .kp-framdrift, .kp-snarvei, .kp-bytt, .kp-mer,
+  .hb-skiplink, .kp-framdrift, .kp-snarvei, .kp-tilbake, .kp-mer,
   .kp-utskrift-skjul, .hb-totop, .kp-egen { display: none !important; }
 
   body { background: #fff; font-size: 11pt; line-height: 1.5; }
@@ -771,3 +637,4 @@
 }
 
 .kp-utskrift-topp, .kp-utskrift-notat { display: none; }
+

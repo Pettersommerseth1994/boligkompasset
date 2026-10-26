@@ -64,7 +64,7 @@ const KOMPASS_ETAPPER = [
   { id: 'naermiljo', navn: 'Nærmiljøet ditt',
     ingress: 'Et godt nærmiljø gjør hverdagen enklere. Å komme seg til butikken, til folk og til det du liker å gjøre, betyr like mye som selve boligen. Det er også det som er vanskeligst å bygge seg ut av.',
     ikon: 'kart' },
-  { id: 'adkomst',  navn: 'Veien inn til deg',
+  { id: 'adkomst',  navn: 'Veien inn til boligen din',
     ingress: 'Nå ser vi på veien fra veien eller parkeringen og inn døra. Kommer du deg ikke inn og ut, hjelper det lite hva som er gjort inne. Derfor veier denne etappen tyngst.',
     ikon: 'dor' },
   { id: 'inne',     navn: 'Inne i boligen din',

@@ -547,7 +547,7 @@ function kpEtappeHtml(f) {
   <div class="kp-nav">
     ${kpPos > 0 ? '<button type="button" class="hb-btn hb-btn--tertiary" data-forrige>Forrige</button>' : ''}
     <span class="kp-nav__hoyre">
-      ${f.e.frivillig ? '<button type="button" class="hb-btn hb-btn--tertiary" data-hopp-etappe>Hopp over økonomi</button>' : ''}
+      ${f.e.frivillig ? '<button type="button" class="hb-btn hb-btn--tertiary" data-hopp-etappe>Hopp over økonomien</button>' : ''}
       <button type="button" class="hb-btn hb-btn--primary" data-neste>
         ${f.nr === 1 ? 'Til første spørsmål' : 'Fortsett'} <span data-ikon="pil"></span>
       </button>

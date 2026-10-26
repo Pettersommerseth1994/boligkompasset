@@ -397,7 +397,7 @@ function kpStartHtml() {
     <h2 class="hb-h3">Velg hvordan du vil svare</h2>
     <p style="max-width:56ch">
       Spørsmålene er de samme, svarene lagres på samme sted, og du får samme
-      oppsummering. Du kan bytte underveis uten å miste noe.
+      oppsummering.
     </p>
     <div class="kp-modus" style="margin-top:var(--space-4)">
       <div class="kp-modus__kort kp-modus__kort--anbefalt">
@@ -1090,11 +1090,6 @@ function kpTegn() {
     frem.innerHTML = kpFramdriftHtml();
     rot.innerHTML = `<section class="hb-section" style="padding-top:var(--space-5)">
       <div class="hb-shell">
-        <p class="kp-utskrift-skjul" style="margin:0 0 var(--space-4)">
-          <button type="button" class="kp-bytt" data-bytt="liste">
-            <span data-ikon="pil"></span>Bytt til enkel liste på én side
-          </button>
-        </p>
         ${f.t === 'etappe' ? kpEtappeHtml(f) : kpSporsmalHtml(f)}
       </div>
     </section>`;

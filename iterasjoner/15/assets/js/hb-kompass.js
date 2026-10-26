@@ -302,23 +302,30 @@ function kpHvorforBoks(sp) {
   </div>`;
 }
 
+/* Svaralternativene er Designsystemets ds-field med data-variant="outline",
+   altså komponenten deres for radio og avkryssing i en ramme. Den gjør det
+   samme som den gamle hb-choice gjorde: hele ruta er trykkflate, ramma blir
+   tykkere og farget når svaret er valgt, og beskrivelsen står under tittelen.
+   Størrelse lg, fordi målgruppa er over 60 og trykkflata skal være romslig. */
 function kpValgHtml(navn, valg, type, gjeldende) {
   const flertall = type === 'flervalg';
   const valgt = flertall ? (Array.isArray(gjeldende) ? gjeldende : []) : gjeldende;
-  return valg.map(v => {
-    const av = flertall
-      ? valgt.includes(v.v)
-      : valgt === v.v;
+  const rutene = valg.map((v, i) => {
+    const av = flertall ? valgt.includes(v.v) : valgt === v.v;
+    const id = `valg-${navn}-${i}`;
     return `
-    <label class="hb-choice">
-      <input type="${flertall ? 'checkbox' : 'radio'}" name="${navn}" value="${v.v}"
+    <div class="ds-field" data-variant="outline" data-size="lg" data-clickdelegatefor="${id}">
+      <input class="ds-input" data-size="lg" id="${id}"
+             type="${flertall ? 'checkbox' : 'radio'}" name="${navn}" value="${v.v}"
              ${av ? 'checked' : ''} ${v.alene ? 'data-alene="1"' : ''}>
-      <span class="hb-choice__text">
-        <span class="hb-choice__title">${v.tittel}</span>
-        ${v.desc ? `<span class="hb-choice__desc">${v.desc}</span>` : ''}
-      </span>
-    </label>`;
+      <label class="ds-label" for="${id}">${v.tittel}</label>
+      ${v.desc ? `<p class="ds-paragraph" data-field="description">${v.desc}</p>` : ''}
+    </div>`;
   }).join('');
+  /* ds-fieldset er Designsystemets egen beholder for en gruppe felter. Den
+     har ingen ramme, bare luft mellom barna. Uten den står svarrutene helt
+     inntil hverandre, og to nabobokser leses som én. */
+  return `<div class="ds-fieldset">${rutene}</div>`;
 }
 
 /* ═══ Flyten i kompassmodus ═══════════════════════════════════════ */
@@ -382,7 +389,7 @@ function kpStartHtml() {
           passer deg i dag, hva som skal til for at den fortsatt passer om ti år,
           og hvem som kan betale for det. Det tar 5–10 minutter.
         </p>
-        <p class="hb-small" style="margin:0">
+        <p class="ds-paragraph" data-size="sm" style="margin:0">
           Du trenger ikke logge inn. Ingenting sendes til Husbanken før du selv velger det.
         </p>
       </div>
@@ -396,8 +403,7 @@ function kpStartHtml() {
   <div class="hb-shell hb-shell--wide">
 
     ${paabegynt ? `
-    <div class="hb-note" style="margin-bottom:var(--space-5)">
-      <span class="hb-note__icon" data-ikon="info"></span>
+    <div class="ds-alert" data-color="info" style="margin-bottom:var(--space-5)">
       <div>
         <strong>Du har begynt før.</strong>
         <p style="margin:4px 0 var(--space-3)">
@@ -405,32 +411,66 @@ function kpStartHtml() {
           Du kan fortsette der du slapp, eller begynne på nytt.
         </p>
         <div style="display:flex;flex-wrap:wrap;gap:var(--space-2)">
-          <button type="button" class="hb-btn hb-btn--primary" data-fortsett>Fortsett der jeg slapp</button>
-          <button type="button" class="hb-btn hb-btn--tertiary" data-nullstill>Begynn på nytt</button>
+          <button type="button" class="ds-button" data-size="lg" data-fortsett>Fortsett der jeg slapp</button>
+          <button type="button" class="ds-button" data-variant="tertiary" data-size="lg" data-nullstill>Begynn på nytt</button>
         </div>
       </div>
     </div>` : ''}
 
-    <div class="hb-cardgrid hb-cardgrid--3" style="margin-bottom:var(--space-6)">
-      <div class="hb-card">
-        <h2 class="hb-h4">Hvem er det for?</h2>
-        <p class="hb-small">
+    <h2 class="ds-heading" data-size="sm">Velg hvordan du vil svare</h2>
+    <p style="max-width:56ch">
+      Spørsmålene er de samme, svarene lagres på samme sted, og du får samme
+      oppsummering.
+    </p>
+    <div class="kp-modus" style="margin-top:var(--space-4)">
+      <div class="kp-modus__kort kp-modus__kort--anbefalt">
+        <span class="kp-modus__merke">Anbefalt</span>
+        <h3 class="ds-heading" data-size="xs">Med kompasset</h3>
+        <p>
+          Ett spørsmål om gangen, i ${KOMPASS_ETAPPER.length} steg. Under hvert spørsmål ser du
+          kompassnåla flytte seg, og du får vite hva svaret ditt betydde.
+          Litt som en valgomat.
+        </p>
+        <p><strong>${KOMPASS_ETAPPER.length} steg · ${kpAntallSporsmal()} spørsmål · 5–10 minutter</strong></p>
+        <button type="button" class="ds-button" data-size="lg" data-fullwidth data-start="kompass">
+          Start kartleggingen <span data-ikon="pil"></span>
+        </button>
+      </div>
+      <div class="kp-modus__kort">
+        <span class="kp-modus__merke" style="background:var(--hb-slate-100);color:var(--fg-subtle)">Rett på sak</span>
+        <h3 class="ds-heading" data-size="xs">Som en enkel liste</h3>
+        <p>
+          Alle ${kpAntallSporsmal()} spørsmålene under hverandre på én side. Ingen animasjon,
+          ingen kompassnål. Bla nedover, svar, og trykk «Se oppsummeringen»
+          til slutt. Enklest hvis du bruker skjermleser eller forstørring.
+        </p>
+        <p><strong>Én side · ${kpAntallSporsmal()} spørsmål</strong></p>
+        <button type="button" class="ds-button" data-variant="secondary" data-size="lg" data-fullwidth data-start="liste">
+          Ta spørsmålene i en liste
+        </button>
+      </div>
+    </div>
+
+    <div class="hb-cardgrid hb-cardgrid--3" style="margin:var(--space-7) 0 var(--space-6)">
+      <div class="ds-card">
+        <h2 class="ds-heading" data-size="xs">Hvem er det for?</h2>
+        <p class="ds-paragraph" data-size="sm">
           Deg som er rundt 60 år eller eldre og bor hjemme, og som vil vite hva
           boligen din tåler av årene som kommer. Er du pårørende, kan du gå
           gjennom spørsmålene sammen med den det gjelder.
         </p>
       </div>
-      <div class="hb-card">
-        <h2 class="hb-h4">Hvorfor gjøre det nå?</h2>
-        <p class="hb-small">
+      <div class="ds-card">
+        <h2 class="ds-heading" data-size="xs">Hvorfor gjøre det nå?</h2>
+        <p class="ds-paragraph" data-size="sm">
           De fleste venter til noe har skjedd. Da haster det, valgene er færre,
           og det blir dyrere. Gjør du det mens alt går greit, velger du selv
           både løsning og tidspunkt.
         </p>
       </div>
-      <div class="hb-card">
-        <h2 class="hb-h4">Hva får du?</h2>
-        <p class="hb-small">
+      <div class="ds-card">
+        <h2 class="ds-heading" data-size="xs">Hva får du?</h2>
+        <p class="ds-paragraph" data-size="sm">
           En kurs som sier hvor du står, tiltakene dine i prioritert rekkefølge,
           hvilke tilskudd og lån som kan dekke dem, og hvem du skal ringe.
           Alt kan skrives ut eller tas med inn i en søknad.
@@ -438,10 +478,10 @@ function kpStartHtml() {
       </div>
     </div>
 
-    <div class="hb-panel" style="margin-bottom:var(--space-6)">
+    <div class="ds-card" data-variant="tinted" style="margin-bottom:var(--space-6)">
       <div style="display:grid;gap:var(--space-4)" class="kp-start-split">
         <div>
-          <h2 class="hb-h3">Kartleggingen kan føre fire veier</h2>
+          <h2 class="ds-heading" data-size="sm">Kartleggingen kan føre fire veier</h2>
           <p>
             Kompasset er ikke en karakter. Det er en peiling. Etter hvert som du
             svarer, svinger nåla, og til slutt peker den mot den kursen som
@@ -450,47 +490,13 @@ function kpStartHtml() {
           <div class="kp-kurser">
             ${['N', 'Ø', 'V', 'S'].map(kursKnapp).join('')}
           </div>
-          <p class="hb-small hb-muted" id="kurs-forklaring" style="margin-top:var(--space-3);min-height:3em">
+          <p class="ds-paragraph hb-muted" data-size="sm" id="kurs-forklaring" style="margin-top:var(--space-3);min-height:3em">
             Nåla under står i ro til du begynner å svare.
           </p>
         </div>
         <div>
           <div class="kp-kompass-stort" id="start-kompass">${kpKompassSvg(kurs)}</div>
         </div>
-      </div>
-    </div>
-
-    <h2 class="hb-h3">Velg hvordan du vil svare</h2>
-    <p style="max-width:56ch">
-      Spørsmålene er de samme, svarene lagres på samme sted, og du får samme
-      oppsummering.
-    </p>
-    <div class="kp-modus" style="margin-top:var(--space-4)">
-      <div class="kp-modus__kort kp-modus__kort--anbefalt">
-        <span class="kp-modus__merke">Anbefalt</span>
-        <h3 class="hb-h4">Med kompasset</h3>
-        <p>
-          Ett spørsmål om gangen, i ${KOMPASS_ETAPPER.length} steg. Under hvert spørsmål ser du
-          kompassnåla flytte seg, og du får vite hva svaret ditt betydde.
-          Litt som en valgomat.
-        </p>
-        <p><strong>${KOMPASS_ETAPPER.length} steg · ${kpAntallSporsmal()} spørsmål · 5–10 minutter</strong></p>
-        <button type="button" class="hb-btn hb-btn--primary hb-btn--block" data-start="kompass">
-          Start kartleggingen <span data-ikon="pil"></span>
-        </button>
-      </div>
-      <div class="kp-modus__kort">
-        <span class="kp-modus__merke" style="background:var(--hb-slate-100);color:var(--fg-subtle)">Rett på sak</span>
-        <h3 class="hb-h4">Som en enkel liste</h3>
-        <p>
-          Alle ${kpAntallSporsmal()} spørsmålene under hverandre på én side. Ingen animasjon,
-          ingen kompassnål. Bla nedover, svar, og trykk «Se oppsummeringen»
-          til slutt. Enklest hvis du bruker skjermleser eller forstørring.
-        </p>
-        <p><strong>Én side · ${kpAntallSporsmal()} spørsmål</strong></p>
-        <button type="button" class="hb-btn hb-btn--secondary hb-btn--block" data-start="liste">
-          Ta spørsmålene i en liste
-        </button>
       </div>
     </div>
 
@@ -550,6 +556,12 @@ const KP_ETAPPEFIG = {
   krone: '<circle cx="48" cy="50" r="34" fill="none" stroke="currentColor" stroke-width="5"/><path d="M60 38c-3-4-8-6-12-6-7 0-11 4-11 9 0 10 23 6 23 16 0 5-5 9-12 9-5 0-10-2-13-6M48 24v52" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>'
 };
 
+/* Overtittel over H1, i stedet for en halvsetning bak et kolon. Den ligger
+   inni overskrifta, ikke som et eget avsnitt over, slik at skjermleseren
+   får med seg begge delene, og i samme rekkefølge som øyet ser dem. */
+const kpTittel = (over, tittel) =>
+  `<h1 class="ds-heading kp-tittel" data-size="md"><span class="kp-tittel__over">${over}</span> ${tittel}</h1>`;
+
 function kpEtappeHtml(f) {
   return `
 <div class="kp-sporsmal">
@@ -558,11 +570,10 @@ function kpEtappeHtml(f) {
       ${KP_ETAPPEFIG[f.e.ikon] || ''}
     </svg>
     <span class="kp-etappe-kort__nr">Steg ${f.nr} av ${KOMPASS_ETAPPER.length}</span>
-    <h1 class="hb-h2">${f.e.navn}</h1>
+    <h1 class="ds-heading" data-size="md">${f.e.navn}</h1>
     <p>${f.e.ingress}</p>
     ${f.e.frivillig ? `
-    <div class="hb-note" style="margin-top:var(--space-4);text-align:left">
-      <span class="hb-note__icon" data-ikon="info"></span>
+    <div class="ds-alert" data-color="info" style="margin-top:var(--space-4);text-align:left">
       <p style="margin:0">
         Dette steget er frivillig. Hopper du over det, får du fortsatt kurs og
         tiltak. Du får bare ikke vite hvilke låne- og tilskuddsordninger som
@@ -572,10 +583,10 @@ function kpEtappeHtml(f) {
   </div>
 
   <div class="kp-nav">
-    ${kpPos > 0 ? '<button type="button" class="hb-btn hb-btn--secondary" data-forrige>Forrige</button>' : ''}
+    ${kpPos > 0 ? '<button type="button" class="ds-button" data-variant="secondary" data-size="lg" data-forrige>Forrige</button>' : ''}
     <span class="kp-nav__hoyre">
-      ${f.e.frivillig ? '<button type="button" class="hb-btn hb-btn--tertiary" data-hopp-etappe>Hopp over økonomien</button>' : ''}
-      <button type="button" class="hb-btn hb-btn--primary" data-neste>
+      ${f.e.frivillig ? '<button type="button" class="ds-button" data-variant="tertiary" data-size="lg" data-hopp-etappe>Hopp over økonomien</button>' : ''}
+      <button type="button" class="ds-button" data-size="lg" data-neste>
         ${f.nr === 1 ? 'Til første spørsmål' : 'Fortsett'} <span data-ikon="pil"></span>
       </button>
     </span>
@@ -619,9 +630,9 @@ function kpEtappeSluttHtml(f) {
   const sisteEtappe = f.nr === KOMPASS_ETAPPER.length;
   const navigasjon = `
   <div class="kp-nav">
-    <button type="button" class="hb-btn hb-btn--secondary" data-forrige>Forrige</button>
+    <button type="button" class="ds-button" data-variant="secondary" data-size="lg" data-forrige>Forrige</button>
     <span class="kp-nav__hoyre">
-      <button type="button" class="hb-btn hb-btn--primary" data-neste>
+      <button type="button" class="ds-button" data-size="lg" data-neste>
         ${sisteEtappe ? 'Se hele oppsummeringen' : 'Videre til neste steg'} <span data-ikon="pil"></span>
       </button>
     </span>
@@ -634,11 +645,11 @@ function kpEtappeSluttHtml(f) {
     const svart = sp.filter(kpBesvart).length;
     return `
 <div class="kp-sporsmal">
-  <h1 class="hb-h2">${f.e.navn}: hva vi gjør med svarene</h1>
+  ${kpTittel('Hva vi gjør med svarene', f.e.navn)}
   <p class="kp-sporsmal__under">
     Dette steget flytter ikke nåla. Kompasset ser bare på boligen.
   </p>
-  <div class="hb-panel hb-panel--filled">
+  <div class="ds-card" data-variant="tinted" data-color="brand1">
     <p style="margin:0">
       Du svarte på ${svart} av ${sp.length} spørsmål om økonomi. Det vi bruker
       dem til, er å velge hvilke lån og tilskudd vi viser deg i oppsummeringen.
@@ -652,7 +663,7 @@ function kpEtappeSluttHtml(f) {
 
   return `
 <div class="kp-sporsmal">
-  <h1 class="hb-h2">${f.e.navn}: slik ser det ut</h1>
+  ${kpTittel('Slik ser det ut', f.e.navn)}
   <p class="kp-sporsmal__under">
     Her står nåla slik svarene i dette steget samlet sett peker. Neste steg
     begynner på null igjen.
@@ -662,10 +673,10 @@ function kpEtappeSluttHtml(f) {
     <div class="kp-peiling__hoved">
       <div class="kp-peiling__rose">${kpKompassSvg(kurs)}</div>
       <div>
-        <p class="hb-small hb-muted" style="margin:0 0 2px">Dette steget peker mot</p>
+        <p class="ds-paragraph hb-muted" data-size="sm" style="margin:0 0 2px">Dette steget peker mot</p>
         <p class="kp-peiling__kurs">${info.navn}</p>
         <p class="kp-peiling__tekst">${info.tekst}</p>
-        <p class="hb-small" style="margin:var(--space-3) 0 0">${kpEtappeSetning(f.e, tall)}</p>
+        <p class="ds-paragraph" data-size="sm" style="margin:var(--space-3) 0 0">${kpEtappeSetning(f.e, tall)}</p>
       </div>
     </div>
     ${kpNokkelHtml(kurs.retning)}
@@ -736,10 +747,10 @@ function kpPeilingHtml(kurs) {
   <div class="kp-peiling__hoved">
     <div class="kp-peiling__rose">${kpKompassSvg(kurs)}</div>
     <div>
-      <p class="hb-small hb-muted" style="margin:0 0 2px" data-kurs-over>${t.over}</p>
+      <p class="ds-paragraph hb-muted" data-size="sm" style="margin:0 0 2px" data-kurs-over>${t.over}</p>
       <p class="kp-peiling__kurs" data-kurs-navn>${t.navn}</p>
       <p class="kp-peiling__tekst" data-kurs-tekst>${t.tekst}</p>
-      <p class="hb-small hb-muted" style="margin:var(--space-2) 0 0">
+      <p class="ds-paragraph hb-muted" data-size="sm" style="margin:var(--space-2) 0 0">
         Nåla summerer svarene i dette steget, og begynner på null når
         neste steg starter. Den samlede kursen får du til slutt.
       </p>
@@ -775,7 +786,7 @@ function kpSporsmalHtml(f) {
 
   return `
 <div class="kp-sporsmal">
-  <h1 class="hb-h2">${sp.tittel}</h1>
+  <h1 class="ds-heading" data-size="md">${sp.tittel}</h1>
   <p class="kp-sporsmal__under">${sp.undertekst}</p>
   ${kpHvorforBoks(sp)}
 
@@ -784,9 +795,9 @@ function kpSporsmalHtml(f) {
   </form>
 
   <div class="kp-nav">
-    <button type="button" class="hb-btn hb-btn--secondary" data-forrige>Forrige</button>
+    <button type="button" class="ds-button" data-variant="secondary" data-size="lg" data-forrige>Forrige</button>
     <span class="kp-nav__hoyre">
-      <button type="button" class="hb-btn hb-btn--primary" data-neste>
+      <button type="button" class="ds-button" data-size="lg" data-neste>
         ${kpSporsmalNr(kpPos) === kpAntallSporsmal() ? 'Se oppsummeringen' : 'Neste'} <span data-ikon="pil"></span>
       </button>
     </span>
@@ -916,7 +927,7 @@ function kpListeHtml() {
     return `
     <section class="kp-liste__etappe" id="etappe-${e.id}"
              style="--etappe-farge:${KP_TABFARGE[i]}" aria-labelledby="tittel-${e.id}">
-      <h2 class="hb-h2" id="tittel-${e.id}">${i + 1}. ${e.navn}</h2>
+      <h2 class="ds-heading" data-size="md" id="tittel-${e.id}">${i + 1}. ${e.navn}</h2>
       <p style="max-width:58ch">${e.ingress}</p>
       ${sp.map(s => {
         nr++;
@@ -937,7 +948,7 @@ function kpListeHtml() {
         return `
         <div class="kp-liste__sporsmal" data-sp="${s.id}">
           <span class="kp-liste__nr">Spørsmål ${nr} av ${kpAntallSporsmal()}</span>
-          <h3 class="hb-h4">${s.tittel}</h3>
+          <h3 class="ds-heading" data-size="xs">${s.tittel}</h3>
           <p style="margin:0 0 var(--space-3);max-width:58ch">${s.undertekst}</p>
           ${kpHvorforBoks(s)}
           ${felter}
@@ -960,9 +971,9 @@ function kpListeHtml() {
       <form id="listeform" class="kp-liste__innhold">${etapper}</form>
     </div>
     <div class="kp-nav" style="margin-top:var(--space-6)">
-      <button type="button" class="hb-btn hb-btn--tertiary" data-til-start>Tilbake til starten</button>
+      <button type="button" class="ds-button" data-variant="tertiary" data-size="lg" data-til-start>Tilbake til starten</button>
       <span class="kp-nav__hoyre">
-        <button type="button" class="hb-btn hb-btn--primary" data-oppsummering>
+        <button type="button" class="ds-button" data-size="lg" data-oppsummering>
           Se oppsummeringen <span data-ikon="pil"></span>
         </button>
       </span>
@@ -1004,7 +1015,7 @@ function kpOversikt() {
 function kpOversiktHtml() {
   const rader = kpOversikt();
   return `
-  <h3 class="hb-h4">Steg for steg</h3>
+  <h3 class="ds-heading" data-size="xs">Steg for steg</h3>
   <ul class="kp-etappekort">
     ${rader.map(r => {
       const info = KOMPASS_RETNINGER[r.kurs.retning] || KOMPASS_RETNINGER.MIDT;
@@ -1081,7 +1092,7 @@ function kpOppsummeringHtml() {
       </button>
       <div class="kp-mer-panel" id="t-${a.id}" hidden>
         <p style="margin:0 0 var(--space-2)">${tekst}</p>
-        <p class="hb-small" style="margin:0"><strong>Derfor står det her:</strong> ${hvorfor}</p>
+        <p class="ds-paragraph" data-size="sm" style="margin:0"><strong>Derfor står det her:</strong> ${hvorfor}</p>
         ${a.tiltak.length ? `<ul class="kp-merkeliste">
           ${a.tiltak.map(t => `<li class="kp-merke">${t}. ${KOMPASS_TILTAK[t]}</li>`).join('')}
         </ul>` : ''}
@@ -1108,16 +1119,16 @@ function kpOppsummeringHtml() {
 
     <h1 class="kp-h1 kp-utskrift-skjul" style="margin-bottom:var(--space-3)">Oppsummering</h1>
 
-    <h2 class="hb-h2">1. Handlingsplan</h2>
+    <h2 class="ds-heading" data-size="md">1. Handlingsplan</h2>
     <div class="kp-plan">
       <div class="kp-plan__kol kp-plan__kol--ja">
-        <h3 class="hb-h4">Hva funker i dag</h3>
+        <h3 class="ds-heading" data-size="xs">Hva funker i dag</h3>
         ${plan.funker.length ? `<ul>
           ${plan.funker.map(sp => `<li><span class="kp-plan__merke" aria-hidden="true">✓</span>${sp.stikkord}</li>`).join('')}
-        </ul>` : '<p class="hb-small hb-muted">Ingen av svarene dine peker denne veien ennå.</p>'}
+        </ul>` : '<p class="ds-paragraph hb-muted" data-size="sm">Ingen av svarene dine peker denne veien ennå.</p>'}
       </div>
       <div class="kp-plan__kol kp-plan__kol--nei">
-        <h3 class="hb-h4">Hva funker ikke</h3>
+        <h3 class="ds-heading" data-size="xs">Hva funker ikke</h3>
         ${plan.funkerIkke.length ? `
         <ul>
           ${plan.funkerIkke.slice(0, 3).map(sp => `<li>
@@ -1137,27 +1148,27 @@ function kpOppsummeringHtml() {
             </li>`).join('')}
           </ul>
         </div>` : ''}`
-        : '<p class="hb-small hb-muted">Ingenting av det du svarte peker på en hindring.</p>'}
+        : '<p class="ds-paragraph hb-muted" data-size="sm">Ingenting av det du svarte peker på en hindring.</p>'}
       </div>
     </div>
 
-    <h2 class="hb-h2" style="margin-top:var(--space-6)">2. Generelle anbefalinger</h2>
+    <h2 class="ds-heading" data-size="md" style="margin-top:var(--space-6)">2. Generelle anbefalinger</h2>
     <div class="kp-plan">
       <div class="kp-plan__kol">
-        <h3 class="hb-h4">Nå</h3>
+        <h3 class="ds-heading" data-size="xs">Nå</h3>
         ${naa.length
           ? `<ul class="kp-plan__liste">${naa.map(tiltaksrad).join('')}</ul>`
-          : '<p class="hb-small hb-muted">Ingen enkle grep peker seg ut.</p>'}
+          : '<p class="ds-paragraph hb-muted" data-size="sm">Ingen enkle grep peker seg ut.</p>'}
       </div>
       <div class="kp-plan__kol">
-        <h3 class="hb-h4">Fremtiden, 5–10 år</h3>
+        <h3 class="ds-heading" data-size="xs">Fremtiden, 5–10 år</h3>
         ${frem.length
           ? `<ul class="kp-plan__liste">${frem.map(tiltaksrad).join('')}</ul>`
-          : '<p class="hb-small hb-muted">Ingen større arbeider peker seg ut nå.</p>'}
+          : '<p class="ds-paragraph hb-muted" data-size="sm">Ingen større arbeider peker seg ut nå.</p>'}
       </div>
     </div>
 
-    <h2 class="hb-h2" style="margin-top:var(--space-6)">3. Ressurser</h2>
+    <h2 class="ds-heading" data-size="md" style="margin-top:var(--space-6)">3. Ressurser</h2>
     <ul class="kp-ressurser">
       ${ordninger.map(o => {
         const ord = KOMPASS_ORDNINGER[o];
@@ -1171,7 +1182,7 @@ function kpOppsummeringHtml() {
     </ul>
     ${kpOkonomiHtml()}
 
-    <h2 class="hb-h2" style="margin-top:var(--space-6)">4. Kursen din</h2>
+    <h2 class="ds-heading" data-size="md" style="margin-top:var(--space-6)">4. Kursen din</h2>
     <div class="kp-resultat">
       <div class="kp-resultat__topp">
         <div class="kp-kompass-stort">${kpKompassSvg(kurs)}</div>
@@ -1179,7 +1190,7 @@ function kpOppsummeringHtml() {
           <p class="kp-resultat__kurs">Kompasset peker mot</p>
           <p class="kp-resultat__navn">${info.navn}</p>
           <p class="kp-resultat__tekst">${info.tekst}</p>
-          ${ubesvart ? `<p class="hb-small hb-muted" style="margin:var(--space-2) 0 0">
+          ${ubesvart ? `<p class="ds-paragraph hb-muted" data-size="sm" style="margin:var(--space-2) 0 0">
             ${ubesvart} av ${kpAntallSporsmal()} spørsmål står ubesvart.</p>` : ''}
         </div>
       </div>
@@ -1195,10 +1206,10 @@ function kpOppsummeringHtml() {
     </div>
 
     <div style="display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-6)" class="kp-utskrift-skjul">
-      <button type="button" class="hb-btn hb-btn--primary" data-skriv-ut>Skriv ut eller lagre som PDF</button>
-      <button type="button" class="hb-btn hb-btn--secondary" data-til-soknad>Ta svarene med i søknaden</button>
-      <button type="button" class="hb-btn hb-btn--secondary" data-tilbake-svar>Endre svarene mine</button>
-      <button type="button" class="hb-btn hb-btn--secondary" data-nullstill>Start på nytt</button>
+      <button type="button" class="ds-button" data-size="lg" data-skriv-ut>Skriv ut eller lagre som PDF</button>
+      <button type="button" class="ds-button" data-variant="secondary" data-size="lg" data-til-soknad>Ta svarene med i søknaden</button>
+      <button type="button" class="ds-button" data-variant="secondary" data-size="lg" data-tilbake-svar>Endre svarene mine</button>
+      <button type="button" class="ds-button" data-variant="secondary" data-size="lg" data-nullstill>Start på nytt</button>
     </div>
 
     <details class="kp-svardetaljer kp-utskrift-skjul">
@@ -1226,7 +1237,7 @@ function kpEgenKursHtml() {
   const regnet = kpBeregnKurs();
 
   return `
-  <h2 class="hb-h2" style="margin-top:var(--space-6)">Vri kompasset selv</h2>
+  <h2 class="ds-heading" data-size="md" style="margin-top:var(--space-6)">Vri kompasset selv</h2>
   <p style="max-width:58ch;margin-bottom:0">
     Kompasset over er regnet ut. Du vet noe det ikke vet. Vri nåla dit du selv
     føler at du står.
@@ -1237,7 +1248,7 @@ function kpEgenKursHtml() {
       ${kpKompassSvg(kurs)}
     </div>
     <div>
-      <p class="hb-small hb-muted" style="margin:0 0 2px">Du peker mot</p>
+      <p class="ds-paragraph hb-muted" data-size="sm" style="margin:0 0 2px">Du peker mot</p>
       <p class="kp-peiling__kurs" data-egen-navn>${kpKursnavn(kurs.retning)}</p>
       <p class="kp-peiling__tekst" data-egen-tekst>${(KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT).tekst}</p>
 
@@ -1245,7 +1256,7 @@ function kpEgenKursHtml() {
       <input class="kp-egen__skyv" id="egen-kurs" type="range"
              min="0" max="345" step="15" value="${grader}"
              aria-describedby="egen-avlest">
-      <p class="hb-small" id="egen-avlest" aria-live="polite" data-egen-avlest>
+      <p class="ds-paragraph" data-size="sm" id="egen-avlest" aria-live="polite" data-egen-avlest>
         ${kpEgenSammenlikning(kurs.retning, regnet.retning)}
       </p>
       <p style="margin:var(--space-3) 0 0">
@@ -1351,13 +1362,13 @@ const KP_INVESTERING = {
                raad: 'Du oppga at du ikke har tenkt å bruke penger nå. Da er de enkle grepene over stedet å begynne: lys, håndlister og terskler koster lite, og flere av dem kan du gjøre selv. Resten kan vente til det passer.',
                ordninger: [] },
   '0-50':    { navn: 'inntil 50 000 kroner',
-               raad: 'Med det beløpet kommer du langt på de enkle grepene, og du kan ta ett av de mindre byggearbeidene. Husk at tilskuddet krever at du oppgraderer for minst 40 000 kroner.',
+               raad: 'Med det beløpet kommer du langt på de enkle grepene, og du kan ta ett av de mindre byggearbeidene. Flere av ordningene under har en nedre grense for hvor lite arbeidet kan være, så sjekk vilkårene før du deler opp jobben.',
                ordninger: ['aldersvennlig', 'komtilskudd'] },
   '50-200':  { navn: '50 000 – 200 000 kroner',
-               raad: 'Det rekker til et mindre byggearbeid. Med tilskuddet på toppen kan du komme et godt stykke lenger enn beløpet alene tilsier.',
+               raad: 'Det rekker til et mindre byggearbeid. Med et tilskudd eller lån på toppen kan du komme et godt stykke lenger enn beløpet alene tilsier.',
                ordninger: ['aldersvennlig', 'komtilskudd', 'startlaan'] },
   '200-400': { navn: '200 000 – 400 000 kroner',
-               raad: 'Det rekker til et av de store tiltakene, typisk badet eller inngangen. Snakk med banken om rekkefølgen: tilskudd søkes før arbeidet settes i gang.',
+               raad: 'Det rekker til et av de store tiltakene, typisk badet eller inngangen. Snakk med banken om rekkefølgen, og husk at de fleste tilskudd må være søkt om før arbeidet settes i gang.',
                ordninger: ['aldersvennlig', 'startlaan', 'husbanklaan', 'komtilskudd'] },
   '400-600': { navn: '400 000 – 600 000 kroner',
                raad: 'Det rekker til flere store tiltak samtidig, eller til å endre planløsningen. På dette nivået lønner det seg å få en fagperson til å se på helheten før du begynner.',
@@ -1371,8 +1382,7 @@ function kpOkonomiHtml() {
   const valgt = KP_INVESTERING[S.investering];
   if (!valgt) {
     return `
-    <div class="hb-note" style="margin-top:var(--space-7)">
-      <span class="hb-note__icon" data-ikon="info"></span>
+    <div class="ds-alert" data-color="info" style="margin-top:var(--space-7)">
       <div>
         <strong>Du svarte ikke på hvor mye du vil investere</strong>
         <p style="margin:4px 0 0">
@@ -1384,17 +1394,14 @@ function kpOkonomiHtml() {
     </div>`;
   }
   return `
-  <div class="hb-panel" style="margin-top:var(--space-4)">
-    <h3 class="hb-h4">Beløpet du oppga: ${valgt.navn}</h3>
-    <p style="margin:0" class="hb-small">
+  <div class="ds-card" data-variant="tinted" style="margin-top:var(--space-4)">
+    <h3 class="ds-heading" data-size="xs">Beløpet du oppga: ${valgt.navn}</h3>
+    <p style="margin:0" class="ds-paragraph" data-size="sm">
       Beløpet flyttet ikke nåla. Kompasset ser bare på boligen. Vi brukte det
       til å velge hvilke tiltak og ordninger vi viser deg.
     </p>
     <p style="margin:var(--space-2) 0 0">${valgt.raad}</p>
-    <p class="hb-small hb-muted" style="margin:var(--space-2) 0 0">
-      Tilskuddet dekker 25 prosent av det du oppgraderer for, opptil 75 000
-      kroner. Ingenting er sjekket mot bank eller register.
-    </p>
+
   </div>`;
 }
 
@@ -1468,7 +1475,7 @@ function kpTegnBunn() {
       <strong>Snarvei for prototypen.</strong>
       Fyller ut tilfeldige svar på alle ${kpAntallSporsmal()} spørsmålene og går rett til oppsummeringen.
     </p>
-    <button type="button" class="hb-btn hb-btn--secondary" data-tilfeldig>
+    <button type="button" class="ds-button" data-variant="secondary" data-size="lg" data-tilfeldig>
       Fyll ut tilfeldig og vis oppsummeringen
     </button>
   </div>`;
@@ -1726,6 +1733,35 @@ function kpTilSoknad() {
 
 /* ═══ Hendelser ═══════════════════════════════════════════════════ */
 
+/* Designsystemets data-clickdelegatefor gjør hele svarruta til trykkflate,
+   ikke bare radioknappen og etiketten. Selve delegeringen ligger i
+   React-pakka deres, som denne prototypen ikke bruker, så her er den.
+   Ramma som tykner ved peking, klarer CSS-en selv; dette er klikket, pluss
+   den lille ringen rundt selve knappen. */
+function kpDelegertFelt(mal) {
+  const f = mal.closest && mal.closest('[data-clickdelegatefor]');
+  return f ? [f, document.getElementById(f.dataset.clickdelegatefor)] : [null, null];
+}
+
+function kpKlikkDelegering() {
+  document.addEventListener('click', ev => {
+    const [felt, inn] = kpDelegertFelt(ev.target);
+    /* Etiketten og knappen virker av seg selv. Uten denne sperren ville
+       klikket blitt talt to ganger, og et avkryssingsfelt slått seg av igjen. */
+    if (!felt || !inn || ev.target.closest('label, input, a, button')) return;
+    inn.click();
+  });
+
+  let pekt = null;
+  document.addEventListener('pointerover', ev => {
+    const [, inn] = kpDelegertFelt(ev.target);
+    if (inn === pekt) return;
+    if (pekt) pekt.classList.remove(':click-delegate-hover');
+    if (inn) inn.classList.add(':click-delegate-hover');
+    pekt = inn;
+  });
+}
+
 function kpKlikk(ev) {
   const t = ev.target.closest('button, a');
   if (!t) return;
@@ -1824,6 +1860,7 @@ function kompassStart() {
 
   const rot = document.getElementById('kompasset');
   document.addEventListener('click', kpKlikk);
+  kpKlikkDelegering();
   kpLesSkjema(rot);
   kpTegn();
 }

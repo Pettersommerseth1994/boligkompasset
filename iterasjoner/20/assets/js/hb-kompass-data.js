@@ -1,20 +1,14 @@
 /* ──────────────────────────────────────────────────────────────────
    Boligkompasset, innholdet
 
-   Spørsmålene på dag 1 er hentet fra kolonnene «Forslag spørsmål»,
-   «Forslag svaralternativer» og «Forslag veiledningstekst» i
-   arbeidsdokumentet fra workshopen 21.–22. september 2026.
-   Spørsmålene med status «Fjern» er tatt ut, og spørsmål 1 og 2 er
-   slått sammen slik merknaden i kolonne K ber om.
+   Steg, spørsmål, hjelpetekster og svaralternativer er hentet fra
+   «MASTERFIL - Boligkompasset_justert 2.xlsx»: fire faner, ett steg
+   per fane, og elleve spørsmål. Overskriften i A1 er stegets navn, og B1 er
+   ingressen. Under står hvert spørsmål med hjelpeteksten og svarene.
 
-   Dag 2, altså bad og økonomi, står som i studentenes prototype.
-   Der finnes det ennå ingen omskriving å følge.
-
-   Hver etappe, hvert spørsmål og hvert svaralternativ har en
-   undertekst. Brukertestene og designkritikken pekte begge på at
-   folk ikke forstår hva vi spør om, og ikke vet hva svaret brukes
-   til. Derfor står «Derfor spør vi» og «Dette brukes til» synlig
-   ved hvert spørsmål, ikke gjemt i et trekkspill.
+   Poengene som flytter kompassnåla, og anbefalingene, er ikke en del
+   av masterfila. De er satt her, og bygger på de samme reglene som
+   før: kommer du ikke inn og ut, veier det tyngst.
    ────────────────────────────────────────────────────────────────── */
 
 /* ═══ Kompasset ════════════════════════════════════════════════════
@@ -55,390 +49,347 @@ const KOMPASS_RETNINGER = {
 };
 
 /* ═══ Etappene ═════════════════════════════════════════════════════
-   Fem etapper i stedet for sju kategorier. Designkritikken sa
-   «mange kategorier» og «enklere spørsmålsreise».
+   Fire steg, ett per fane i masterfila. Navnet er overskriften i A1,
+   uten «STEG n:» og uten store bokstaver. Ingressen er teksten i B1.
    ─────────────────────────────────────────────────────────────────── */
 
 const KOMPASS_ETAPPER = [
   { id: 'bolig',    navn: 'Deg og boligen din',
-    ingress: 'Vi begynner med det som er nærmest: boligen din, hverdagen din, og hva du ser for deg å bruke på en oppgradering.',
+    ingress: 'Vi begynner med boligsituasjonen din.',
     ikon: 'hus' },
   { id: 'inne',     navn: 'Inne i boligen din',
-    ingress: 'Så går vi inn: rommene, avstandene og badet. Det er her de fleste av de konkrete tiltakene ligger.',
+    ingress: 'Nå skal vi se nærmere på hvilke rom du har og tilgangen til disse.',
     ikon: 'rom' },
   { id: 'adkomst',  navn: 'Veien inn til boligen din',
-    ingress: 'Nå ser vi på veien fra veien eller parkeringen og inn døra. Kommer du deg ikke inn og ut, hjelper det lite hva som er gjort inne. Derfor veier dette steget tyngst.',
+    ingress: 'Nå ser vi på hvordan du kommer deg fra veien eller parkeringen og inn inngangsdøren din.',
     ikon: 'dor' },
-  { id: 'naermiljo', navn: 'Nærmiljøet ditt',
-    ingress: 'Til slutt går vi utenfor døra. Å komme seg til butikken, til folk og til det du liker å gjøre, betyr like mye som selve boligen. Det er også det som er vanskeligst å bygge seg ut av.',
+  { id: 'naermiljo', navn: 'Utenfor boligen din',
+    ingress: 'Til slutt ser vi på nærmiljøet ditt. Det er ikke bare avstanden til butikk, aktiviteter og tjenester som betyr noe, men også hvordan du kommer deg dit. Tenk på hva som er viktig for deg, og hvordan dette vil fungere dersom du senere får redusert bevegelighet.',
     ikon: 'kart' }
 ];
 
 
-/* ═══ Spørsmålene ══════════════════════════════════════════════════ */
+/* ═══ Spørsmålene ══════════════════════════════════════════════════
+   Hentet fra «MASTERFIL - Boligkompasset_justert 2.xlsx». Elleve
+   spørsmål, der 1a og 1b står på samme side slik fane 1 sier, og
+   nummereringen er den samme som i arket. Ordlyden er som i arket,
+   med skrivefeil rettet. Merknadene til designerne om bildeeksempler
+   og illustrasjoner, og «IKKE AVKLART», er ikke tatt med i teksten
+   folk leser.
+
+   «popover» er teksten arket kaller Popover. Den står bak Fasadens
+   hjelpetekstknapp, på spørsmålet eller på et svaralternativ.
+
+   Feltene som styrer kompasset, er lagt til her:
+     n  hvor godt svaret taler for at boligen passer, fra -1 til 1
+     e  hva slags arbeid det peker på: negativt er større grep,
+        positivt er små grep
+
+   «vis» på et svaralternativ, og «betinget» på et spørsmål, er de
+   betingelsene arket merker med *BETINGET VIDERE. «under» sier at
+   alternativet hører til et annet alternativ i samme spørsmål, og
+   står innrykket under det.
+   ─────────────────────────────────────────────────────────────────── */
+
+const kpHar = (S, id, v) => Array.isArray(S[id]) && S[id].includes(v);
+
+/* Inngangen er stengt når du må opp en trapp, og bygget ikke har heis.
+   Da veier den tyngre enn alt annet i steget, se kpKursForSteg. */
+const kpInngangStengt = S => kpHar(S, 'adkomst-inngang', 'trapp') && !kpHar(S, 'adkomst-inngang', 'heis');
+const KP_INNGANG_HINDRING = ['trapp', 'terskler', 'dor-tung', 'terreng'];
+const kpInngangHindringer = S => KP_INNGANG_HINDRING.filter(h => kpHar(S, 'adkomst-inngang', h));
 
 const KOMPASS_SPORSMAL = [
 
-  /* ─── Etappe 1, deg og boligen ──────────────────────────────────── */
+  /* ─── Steg 1, deg og boligen din ────────────────────────────────── */
   {
     id: 'bolig',
-    stikkord: 'Trivsel i boforholdet',
-    grep: 'Ta det opp med utleier, eller se på andre boliger',
     etappe: 'bolig',
-    kilde: 'Slått sammen av spørsmål 1 og 2, slik merknaden i arbeidsdokumentet ber om.',
-    tittel: 'Hvordan bor du i dag?',
-    undertekst: 'To korte spørsmål om boligen. Svarene bestemmer hvilke tiltak som er mulige for deg, og hvem du må snakke med for å få dem gjort.',
-    hvorfor: 'Eieform og boligtype avgjør hva du kan gjøre alene, og hva du må avklare med andre.',
-    brukesTil: 'Bor du i et bygg med felles inngang, sender vi deg til styret for det som gjelder inngangen. Leier du, sier vi hva du kan be utleier om.',
+    kilde: 'Fane 1, delspørsmål 1a og 1b på samme side.',
+    tittel: 'Eier eller leier du, og hvordan bor du?',
     type: 'flerfelt',
+    /* Arket: «Kompasset skal ikke vises her eller må ev. kun vise
+       nøytralt». Ingen av feltene flytter nåla, og steget har ingen
+       oppsummering med kompass. */
+    ikkeKompass: true,
     felt: [
       {
-        /* Boligtypen flytter ikke nåla, like lite som eieformen gjør
-           det. Den sier hva som er mulig å gjøre, ikke hvordan du har
-           det. Det er fornøydspørsmålet under som teller. */
-        navn: 'boligtype',
-        ikkeKompass: true,
-        ledetekst: 'Hvilken boligtype bor du i?',
-        hjelp: 'Leilighetsbygg kan ha felles inngang eller flere innganger. Rekkehus kan ha felles inngang, flere felles innganger eller en egen inngang til hver bolig. Tomannsbolig kan ha felles inngang eller egen inngang til hver bolig.',
-        valg: [
-          { v: 'enebolig',   tittel: 'Enebolig',       desc: 'Du eier eller leier hele huset og tomta rundt.', n: 0.2, e: 0 },
-          { v: 'leilighet',  tittel: 'Leilighetsbygg', desc: 'Blokk eller bygård. Inngang, trapp og heis er som regel fellesareal.', n: 0, e: 0.2 },
-          { v: 'rekkehus',   tittel: 'Rekkehus',       desc: 'Flere boliger i rekke. Noen har egen inngang, andre deler inngang.', n: 0.1, e: 0.1 },
-          { v: 'tomannsbolig', tittel: 'Tomannsbolig', desc: 'To boliger i samme hus. Inngangen kan være felles eller egen.', n: 0.1, e: 0.1 }
-        ]
-      },
-      {
-        /* Eieformen flytter ikke nåla. Å leie er ikke et dårligere svar
-           enn å eie. Det er spørsmålet under, om du er fornøyd med
-           ordningen, som sier noe om kursen. */
         navn: 'eieform',
         ikkeKompass: true,
-        ledetekst: 'Eier eller leier du boligen?',
-        hjelp: 'Eier du gjennom borettslag eller sameie, svarer du «Eier».',
+        ledetekst: 'Eier eller leier du i dag?',
+        hjelp: 'Om du eier boligen, har du som regel større mulighet til å gjøre endringer i boligen. I borettslag og sameier er det mulig at endringer må avklares med styret. Leier du, må endringer avklares med utleier.',
         valg: [
-          { v: 'eier',  tittel: 'Eier',  desc: 'Selveier, borettslag eller sameie. Du bestemmer selv over det som er inne i boligen.', n: 0, e: 0 },
-          { v: 'leier', tittel: 'Leier', desc: 'Du leier av kommunen, en stiftelse eller en privat utleier. Da må utleier si ja til større endringer.', n: 0, e: 0 }
+          { v: 'eier',  tittel: 'Eier' },
+          { v: 'leier', tittel: 'Leier' }
         ]
       },
       {
-        navn: 'bolignoyd',
-        ledetekst: 'Hvor fornøyd er du med denne boligsituasjonen?',
-        hjelp: 'Mange er godt fornøyde med å leie. Det passer økonomien, det er lite å vedlikeholde, og noen andre tar seg av det som går i stykker. Andre eier og angrer aldri. Det finnes ikke noe riktig svar her.',
+        navn: 'inngang',
+        ikkeKompass: true,
+        ledetekst: 'Hvordan bor du i dag?',
+        hjelp: 'Noen boliger har egen inngang og adkomstvei, mens andre deler dette. For eksempel kan rekkehus og tomannsboliger ha egen inngang, selv om de deler adkomstvei eller parkering med andre.',
         valg: [
-          { v: 'fornoyd',    tittel: 'Fornøyd',        desc: 'Boforholdet passer deg, og du ser ingen grunn til å endre det.', n: 1, e: 0 },
-          { v: 'delvis',     tittel: 'Delvis fornøyd', desc: 'Det går greit, men det er sider ved boforholdet du gjerne skulle hatt annerledes.', n: 0, e: 1 },
-          { v: 'misfornoyd', tittel: 'Ikke fornøyd',   desc: 'Du trives ikke med boforholdet, og har tenkt at noe burde vært annerledes.', n: -1, e: 0 }
+          { v: 'egen',          tittel: 'I en bolig med eget inngangsparti og egen adkomstveg' },
+          { v: 'deler-adkomst', tittel: 'I en bolig med eget inngangsparti og deler adkomstveg med andre' },
+          { v: 'deler-inngang', tittel: 'I en bolig som deler inngangsparti og adkomstveg med andre' }
         ]
       }
     ]
   },
+
+  /* ─── Steg 2, inne i boligen din ────────────────────────────────── */
   {
-    id: 'hverdag',
-    stikkord: 'Hverdagen din',
-    grep: 'La tiltakene følge det som er blitt tyngre',
-    etappe: 'bolig',
-    kilde: 'Nytt spørsmål. Designkritikken 21. september: «Mangler spørsmål om helse».',
-    ny: true,
-    tittel: 'Er det noe i hverdagen som er blitt tyngre det siste året?',
-    undertekst: 'Kryss av for alt som passer. Vi spør ikke om diagnoser eller sykdom, men om hva som faktisk er blitt tungt, for det er det tiltakene skal løse.',
-    hvorfor: 'To personer på samme alder kan ha helt ulike behov. Alder alene sier lite om hvilke tiltak som haster.',
-    brukesTil: 'Svaret bestemmer rekkefølgen på tiltakene i oppsummeringen. Det lagres sammen med de andre svarene dine, og deles ikke med noen.',
-    kanHoppes: true,
+    id: 'rom',
+    stikkord: 'Rommene på inngangsplanet',
+    grep: 'Samle det du trenger i et døgn på samme plan',
+    etappe: 'inne',
+    kilde: 'Fane 2, spørsmål 2a.',
+    tittel: 'Hvilke rom eller boligfunksjoner har du i samme etasje som inngangsdøren din?',
+    hjelp: 'Med boligfunksjoner mener vi alt som gjør at du klarer deg gjennom et døgn, uten å gå i trapp, om du i en periode har redusert bevegelighet.',
+    popover: 'Om for eksempel badet eller soverommet ligger i en annen etasje, må du bruke trapp i løpet av døgnet. Skulle dette vare i over en uke, vil du også få behov for vaskemaskin, fryser og noe oppbevaringsplass.',
     type: 'flervalg',
     valg: [
-      { v: 'ingen',   tittel: 'Nei, alt går som før', desc: 'Du gjør det du pleier, i det tempoet du pleier.', alene: true },
-      { v: 'litt',    tittel: 'Litt. Noen ting tar lengre tid', desc: 'Trapper, bæring eller husarbeid merkes mer enn før, men går greit.' },
-      { v: 'noe',     tittel: 'Ja. Noe er blitt vanskelig', desc: 'Det er ting du har sluttet med, eller ber om hjelp til.' }
+      { v: 'stue',        tittel: 'Stue' },
+      { v: 'kjokken',     tittel: 'Kjøkken' },
+      { v: 'soverom',     tittel: 'Soverom' },
+      { v: 'bad',         tittel: 'Bad' },
+      { v: 'toalett',     tittel: 'Toalett' },
+      { v: 'vaskemaskin', tittel: 'Vaskemaskin' },
+      { v: 'fryser',      tittel: 'Fryser' },
+      { v: 'oppbevaring', tittel: 'Oppbevaringsplass' }
     ],
-    /* Flere kryss er lov. Da er det tyngste av dem som avgjør, for det
-       er det som bestemmer hva boligen må tåle. */
-    poeng: (verdier) => {
-      const vekt = { ingen: { n: 1, e: 0 }, litt: { n: 0.4, e: 0.3 },
-                     noe: { n: -0.8, e: 0 } };
-      const valgte = (verdier || []).map(v => vekt[v]).filter(Boolean);
-      if (!valgte.length) return { n: 0, e: 0 };
-      return valgte.reduce((tyngst, p) => (p.n < tyngst.n ? p : tyngst));
-    },
-    maks: { n: 1, e: 0.3 }
-  },
-
-  {
-    id: 'investering',
-    etappe: 'bolig',
-    kilde: 'Nytt spørsmål 23. september. Erstatter de fire spørsmålene om økonomi.',
-    tittel: 'Hvor mye ønsker du å investere i å oppgradere boligen?',
-    undertekst: 'Et grovt anslag holder. Du binder deg ikke til noe, og du kan endre svaret senere.',
-    hvorfor: 'De fleste tiltakene finnes i flere størrelser. Vet vi hva du ser for deg å bruke, kan vi peke på dem som er innenfor rekkevidde, i stedet for å ramse opp alt.',
-    brukesTil: 'Beløpet flytter ikke nåla. Kompasset ser bare på boligen. Vi bruker det til å velge hvilke tiltak og ordninger vi viser deg til slutt, og ingenting sjekkes mot bank eller register.',
-    ikkeKompass: true,
-    valg: [
-      { v: '0',       tittel: '0 kroner',                 desc: 'Du vil se hva som finnes, men har ikke tenkt å bruke penger nå.' },
-      { v: '0-50',    tittel: 'Inntil 50 000 kroner',     desc: 'Rekker til håndlister, lys, terskelplater og andre små grep.' },
-      { v: '50-200',  tittel: '50 000 – 200 000 kroner',  desc: 'Rekker til et mindre byggearbeid, for eksempel dører, inngangsparti eller en trygg dusjsone.' },
-      { v: '200-400', tittel: '200 000 – 400 000 kroner', desc: 'Rekker til en baderomsombygging eller et trinnfritt inngangsparti.' },
-      { v: '400-600', tittel: '400 000 – 600 000 kroner', desc: 'Rekker til å endre planløsningen, eller til bad og adkomst samtidig.' },
-      { v: '600+',    tittel: '600 000 kroner eller mer', desc: 'Rekker til å bygge ut, eller til å samle alle de nødvendige rommene på inngangsplanet.' }
-    ]
-  },
-
-  /* ─── Nærmiljøet, som nå er siste steg ──────────────────────────── */
-  {
-    id: 'naermiljo-tilbud',
-    stikkord: 'Tilbud i nærmiljøet',
-    grep: 'Dette kan ikke bygges om. Det teller hvis du en dag vurderer å flytte',
-    etappe: 'naermiljo',
-    kilde: 'Spørsmål 3, omskrevet. Spørsmål 4 og 5 er tatt inn her.',
-    tittel: 'Hva finnes i nærmiljøet ditt?',
-    undertekst: 'Kryss av for det du har innen rimelig avstand hjemmefra. Med rimelig avstand mener vi noe du kommer deg til på egen hånd, uten å måtte planlegge turen.',
-    hvorfor: 'Nærmiljøet er det eneste i denne kartleggingen du ikke kan bygge om. Derfor teller det tungt når vi vurderer om boligen passer for deg videre.',
-    brukesTil: 'Mangler mye rundt deg, sier vi det rett ut i oppsummeringen, og peker på hva som da er verdt å vurdere.',
-    type: 'flervalg',
-    valg: [
-      { v: 'butikk',  tittel: 'Matbutikk',        desc: 'Der du handler til vanlig.' },
-      { v: 'lege',    tittel: 'Lege eller apotek', desc: 'Fastlege, legevakt, tannlege eller apotek.' },
-      { v: 'kafe',    tittel: 'Kafé eller spisested', desc: 'Et sted å sitte og møte folk.' },
-      { v: 'kirke',   tittel: 'Kirke, forsamlingshus eller bibliotek', desc: 'Faste møteplasser med åpningstid.' },
-      { v: 'kultur',  tittel: 'Kino, kultur eller idrett', desc: 'Kino, kulturhus, treningssted eller idrettslag.' },
-      { v: 'tur',     tittel: 'Turområde eller park', desc: 'Sted du går tur, uavhengig av årstid.' },
-      { v: 'ingen',   tittel: 'Ingen av delene', desc: 'Du må bruke bil eller få skyss til alt av dette.', alene: true }
-    ],
-    /* Hvert tilbud du har i nærheten, drar nåla 22,5 grader oppover.
-       Har du ingenting, drar det 45 grader nedover. */
-    graderNed: (verdier) => {
-      const valgt = verdier || [];
-      if (!valgt.length || valgt.includes('ingen')) return 45;
-      return -22.5 * valgt.length;
-    },
-    poeng: (verdier) => {
-      const valgt = verdier || [];
-      if (!valgt.length || valgt.includes('ingen')) return { n: -1, e: 0 };
-      return { n: Math.min(1, valgt.length / 4), e: 0 };
+    /* Det som må finnes for å klare et døgn uten trapp: kjøkken,
+       soverom, og bad eller toalett. Mangler noe av det, må det
+       bygges om eller bygges på. */
+    poeng: v => {
+      const mangler = kpRomSomMangler(v).length;
+      if (!mangler) return { n: v.length >= 6 ? 1 : 0.6, e: 0 };
+      return mangler === 1 ? { n: -0.5, e: -1 } : { n: -1, e: -1 };
     },
     maks: { n: 1, e: 1 }
   },
   {
-    id: 'naermiljo-komme-seg',
-    stikkord: 'Å komme seg dit du vil',
-    grep: 'Sjekk transporttjenesten i kommunen din',
-    etappe: 'naermiljo',
-    kilde: 'Spørsmål 6, omskrevet.',
-    tittel: 'Kommer du deg lett på de aktivitetene og tjenestene du ønsker?',
-    undertekst: 'Tenk på hele turen, ikke bare avstanden. Har du ikke bil, teller buss, tog, taxi eller skyss fra noen du kjenner.',
-    hvorfor: 'Å handle selv, gå i selskap og delta på det du liker, betyr like mye for helsa som selve boligen. Det er lett å undervurdere hvor fort det blir tungt når én ting endrer seg.',
-    brukesTil: 'Svarer du «Nei», peker vi på transporttjenester i kommunen din, og vi vekter nærmiljøet tyngre i kursen.',
+    id: 'bevegelse',
+    stikkord: 'Å komme seg rundt inne',
+    grep: 'Fjern terskler, og gjør de trangeste dørene bredere',
+    etappe: 'inne',
+    kilde: 'Fane 2, spørsmål 3a.',
+    tittel: 'Kommer du deg lett rundt inne i boligen?',
+    hjelp: 'Det er ikke sikkert du merker noe til trapper, terskler og smale dører i dag, men dette kan bli en utfordring hvis du får redusert bevegelighet eller trenger å bruke rullator eller rullestol. Se på boligen din og tenk gjennom hva du har av hindringer og nivåforskjeller.',
+    popover: 'Dette kan du enkelt teste ved å trille en fullpakket koffert med hjul gjennom alle rommene og se hvor det er vanskelig å komme frem.',
     valg: [
-      { v: 'ja',     tittel: 'Ja',     desc: 'Du kommer deg dit du vil, når du vil, uten å måtte be om hjelp.', n: 1, e: 0 },
-      { v: 'delvis', tittel: 'Delvis', desc: 'Du kommer deg dit, men det krever planlegging, godt vær eller at noen kjører deg.', n: 0, e: 0 },
-      { v: 'nei',    tittel: 'Nei',    desc: 'Du lar være å dra fordi det er for tungvint eller for langt.', n: -1, e: 0 }
+      { v: 'ja',     tittel: 'Ja',     n: 1,    e: 0 },
+      { v: 'delvis', tittel: 'Delvis', n: 0,    e: 1 },
+      { v: 'nei',    tittel: 'Nei',    n: -0.7, e: 0.6 }
     ]
   },
   {
-    id: 'naermiljo-hjelp',
-    stikkord: 'Noen å be om hjelp',
-    grep: 'Frivilligsentralen formidler hjelp til praktiske ting',
-    etappe: 'naermiljo',
-    kilde: 'Spørsmål 7, omskrevet.',
-    tittel: 'Har du noen som kan hjelpe deg med praktiske ting?',
-    undertekst: 'Det handler om det dagligdagse: skifte en lyspære, klippe plenen, måke snø, flytte noe tungt eller kjøre deg til butikken.',
-    hvorfor: 'Mange tiltak blir enklere og billigere når noen kan hjelpe til. Har du ingen, må vi peke på tjenester i stedet.',
-    brukesTil: 'Svarer du «Nei», legger vi inn frivilligsentralen og kommunens tjenester i oppsummeringen.',
+    id: 'bad-innhold',
+    stikkord: 'Det som finnes på badet',
+    grep: 'Samle toalett, vask og dusj i ett rom',
+    etappe: 'inne',
+    kilde: 'Fane 2, spørsmål 4a, med 4b når toalett ikke er krysset av.',
+    tittel: 'Hva inneholder badet ditt?',
+    hjelp: 'Badet er et viktig rom for å kunne klare seg selv og bo hjemme så lenge som mulig. Tenk på hvilke funksjoner du har på badet ditt i dag.',
+    type: 'flervalg',
     valg: [
-      { v: 'ja',  tittel: 'Ja',  desc: 'Du har noen å ringe, og du synes det er greit å spørre.', n: 0.8, e: 0, oppfolging: {
-          ledetekst: 'Hvem hjelper deg? Kryss av for alle som passer.',
-          type: 'flervalg',
-          valg: [
-            { v: 'parorende', tittel: 'Familie',   desc: 'Ektefelle, samboer, barn, søsken eller annen familie.' },
-            { v: 'nabo',      tittel: 'Nabo',      desc: 'Noen som bor i nærheten.' },
-            { v: 'venner',    tittel: 'Venner',    desc: 'Folk du kjenner godt, men ikke er i familie med.' },
-            { v: 'vaktmester',tittel: 'Vaktmester eller styret', desc: 'I borettslag, sameie eller hos utleier.' },
-            { v: 'andre',     tittel: 'Andre',     desc: 'Frivillige, menighet, forening eller noen du betaler.' }
-          ]
-        } },
-      { v: 'nei', tittel: 'Nei', desc: 'Du har ingen å spørre, eller du vil helst ikke spørre noen.', n: -0.7, e: 0 }
-    ]
+      { v: 'toalett',     tittel: 'Toalett' },
+      { v: 'vask',        tittel: 'Vask' },
+      { v: 'badekar',     tittel: 'Badekar' },
+      { v: 'dusj',        tittel: 'Dusj' },
+      { v: 'vaskemaskin', tittel: 'Plass til vaskemaskin på badet' }
+    ],
+    /* 4b: bare når det er svart, men ikke krysset av for toalett */
+    betinget: {
+      navn: 'toalett-plassering',
+      naar: S => Array.isArray(S['bad-innhold']) && S['bad-innhold'].length > 0 && !kpHar(S, 'bad-innhold', 'toalett'),
+      ledetekst: 'Hvor ligger toalettet?',
+      hjelp: 'Hvor toalettet ligger i forhold til bad og soverom kan få betydning dersom bevegeligheten din endrer seg. Tenk særlig på om du må gå langt, bruke trapper eller passere andre hindringer for å komme til toalettet.',
+      valg: [
+        { v: 'naborom',      tittel: 'På naborommet' },
+        { v: 'samme-etasje', tittel: 'På samme etasje som badet' },
+        { v: 'annen-etasje', tittel: 'I annen etasje enn badet' }
+      ]
+    },
+    poeng: (v, S) => {
+      const ledd = [];
+      if (v.includes('toalett')) ledd.push({ n: 0.6, e: 0 });
+      else ledd.push({ naborom: { n: -0.2, e: -0.6 }, 'samme-etasje': { n: -0.4, e: -0.6 },
+                       'annen-etasje': { n: -0.9, e: -1 } }[S['toalett-plassering']] || { n: -0.3, e: -0.5 });
+      if (!v.includes('dusj') && !v.includes('badekar')) ledd.push({ n: -0.5, e: -1 });
+      return { n: Math.min(...ledd.map(l => l.n)), e: Math.min(...ledd.map(l => l.e)) };
+    },
+    maks: { n: 1, e: 1 }
+  },
+  {
+    id: 'bad-bruk',
+    stikkord: 'Å bruke badet',
+    grep: 'Dusj uten kant, dør som slår utover, og plass til å snu',
+    etappe: 'inne',
+    kilde: 'Fane 2, spørsmål 5a. Fem av alternativene vises bare etter svaret på 4a eller 5a3.',
+    tittel: 'Hvor enkelt er det for deg å bruke badet ditt om du får redusert bevegelighet?',
+    hjelp: 'Et bad bør ha nok plass til at du kan bevege deg fritt og bruke badet på en trygg måte. Tenk på om det er god plass rundt toalettet, vasken og dusjen. Se også på om du lett kommer deg inn og ut av dusjen/badekaret. Tenk over om badet kan brukes dersom du får problemer med å bevege deg, trenger hjelpemidler eller hjelp fra andre.',
+    undertekst: 'Kryss av for det som passer.',
+    type: 'flervalg',
+    /* «utelukker» tar bort kryss som ikke kan stå samtidig: badet kan
+       ikke både være stort nok og lite. Dørene hører til det lille
+       badet og forsvinner med det. */
+    valg: [
+      { v: 'terskel',      tittel: 'Kan bli vanskelig, baderomsdøren har terskel' },
+      { v: 'stort',        tittel: 'Enkelt, badet er stort nok', utelukker: ['lite', 'dor-innover', 'dor-utover'],
+        popover: 'Større enn 4,5 kvm og plass til alle baderomsfunksjoner, for eksempel toalett, vask og dusj.' },
+      { v: 'lite',         tittel: 'Kan bli vanskelig, badet er lite', utelukker: ['stort'],
+        popover: 'Mindre enn 4,5 kvm og har ikke plass til alle baderomsfunksjoner, for eksempel kan toalett være på eget rom.' },
+      { v: 'dor-innover',  tittel: 'Baderomsdøren slår innover i rommet', utelukker: ['dor-utover'],
+        under: 'lite', vis: S => kpHar(S, 'bad-bruk', 'lite') },
+      { v: 'dor-utover',   tittel: 'Baderomsdøren slår utover i rommet', utelukker: ['dor-innover'],
+        under: 'lite', vis: S => kpHar(S, 'bad-bruk', 'lite') },
+      { v: 'dusj-kant',    tittel: 'Kan bli vanskelig, dusjkabinett eller dusjnisje har en høydeforskjell',
+        vis: S => kpHar(S, 'bad-innhold', 'dusj') },
+      { v: 'dusj-stol',    tittel: 'Kan bli vanskelig, dusjen har ikke plass til dusjstol/-krakk',
+        vis: S => kpHar(S, 'bad-innhold', 'dusj') },
+      { v: 'badekar',      tittel: 'Kan bli vanskelig, bruken av badekaret er blitt en utfordring',
+        vis: S => kpHar(S, 'bad-innhold', 'badekar') },
+      { v: 'usikker',      tittel: 'Usikker', alene: true }
+    ],
+    /* Hvert hinder drar nåla nedover. Terskel, dør og plass til krakk
+       løses med små grep. Et lite bad, en kant inn i dusjen eller et
+       badekar som er blitt vanskelig, krever at badet bygges om. Et bad
+       som er stort nok, og ingen hindringer, taler for boligen. En dør
+       som slår utover er slik den skal være, og teller ikke. */
+    poeng: v => {
+      if (v.includes('usikker')) return { n: 0, e: 0 };
+      const vekt = { terskel: 1, 'dor-innover': 1, 'dusj-stol': 0.5, lite: -1, 'dusj-kant': -0.8, badekar: -0.8 };
+      const hinder = v.filter(x => x in vekt);
+      if (!hinder.length) return { n: v.includes('stort') ? 1 : 0, e: 0 };
+      const e = hinder.reduce((s, x) => s + vekt[x], 0);
+      return { n: -Math.min(1, 0.3 + 0.25 * hinder.length), e: Math.max(-1, Math.min(1, e)) };
+    },
+    maks: { n: 1, e: 1 }
   },
 
-  /* ─── Etappe 3, veien inn ───────────────────────────────────────── */
+  /* ─── Steg 3, veien inn til boligen din ─────────────────────────── */
   {
     id: 'adkomst-frem',
     stikkord: 'Veien fram til døra',
     grep: 'Jevn ut terrenget, og få bedre lys',
     etappe: 'adkomst',
-    kilde: 'Spørsmål 8, omskrevet.',
-    tittel: 'Kommer du deg lett fram til boligen fra offentlig vei?',
-    undertekst: 'Tenk på strekningen fra der bilen, bussen eller drosjen slipper deg av, og fram til inngangsdøra. Gjelder også på vinteren.',
-    hvorfor: 'Denne strekningen glemmes ofte. Er den vanskelig, hjelper det lite at resten av boligen er god.',
-    brukesTil: 'Svarer du «Delvis» eller «Nei», foreslår vi tiltak 1a: justere terrenget ved parkering, gangvei eller inngangsparti.',
+    kilde: 'Fane 3, spørsmål 6a.',
+    tittel: 'Kommer du deg lett fram til boligen din fra offentlig vei?',
+    hjelp: 'Hvor lett adkomsten til boligen din er, avhenger av om du går til fots eller kommer i bil. Veien kan være bratt, lang, glatt om vinteren eller så kan det være andre forhold som gjør adkomsten vanskelig. Tenk over strekningen fra der bilen, bussen eller drosjen slipper deg av, og fram til inngangsdøra.',
     valg: [
-      { v: 'ja',     tittel: 'Ja',     desc: 'Kort vei, jevnt underlag, og du går det uten å tenke over det.', n: 1, e: 0 },
-      { v: 'delvis', tittel: 'Delvis', desc: 'Det går, men det er bratt, ujevnt, langt, eller vanskelig når det er snø og is.', n: -0.3, e: -0.4 },
-      { v: 'nei',    tittel: 'Nei',    desc: 'Trapp, bratt bakke eller lang vei gjør at du vegrer deg eller trenger hjelp.', n: -0.9, e: -0.8 }
+      { v: 'ja',     tittel: 'Ja',     n: 1,    e: 0 },
+      { v: 'delvis', tittel: 'Delvis', n: -0.3, e: 0.8 },
+      { v: 'nei',    tittel: 'Nei',    n: -0.9, e: -0.4 }
     ]
   },
   {
-    id: 'adkomst-oppbevaring',
-    stikkord: 'Plass under tak ved inngangen',
-    grep: 'Sett opp takoverbygg og plass til rullator',
-    etappe: 'adkomst',
-    kilde: 'Spørsmål 9, omskrevet.',
-    tittel: 'Har du plass under tak i inngangspartiet?',
-    undertekst: 'Vi tenker på et takoverbygg eller en bod ved døra, der ting kan stå tørt. For eksempel rullator, sparkstøtting, barnevogn eller handlevogn.',
-    hvorfor: 'Et hjelpemiddel som må stå ute i snø og regn, blir stående ubrukt. Da mister du nytten av det.',
-    brukesTil: 'Svarer du «Delvis» eller «Nei», foreslår vi tiltak 1b og 1c: forbedre inngangspartiet og inngangsdøra.',
-    valg: [
-      { v: 'ja',     tittel: 'Ja',     desc: 'Det er tak og plass nok til at noe kan stå der hele året.', n: 0.5, e: 0 },
-      { v: 'delvis', tittel: 'Delvis', desc: 'Det er litt tak, eller litt plass, men ikke begge deler.', n: 0, e: 0.5 },
-      { v: 'nei',    tittel: 'Nei',    desc: 'Døra går rett ut, uten tak og uten plass ved siden av.', n: -0.2, e: 0.9 }
-    ]
-  },
-  {
-    id: 'adkomst-trinn',
-    stikkord: 'Trinn inn til døra',
-    grep: 'Terskelplate, rampe eller løfteplattform',
-    etappe: 'adkomst',
-    kilde: 'Spørsmål 10. Står som i prototypen. Arbeidsdokumentet har status «Avklar» og ingen omskriving.',
-    tittel: 'Hvor mange trinn er det fra bakken og inn til inngangsdøra?',
-    undertekst: 'Tell trinnene du må opp fra bakkenivå og inn døra. Bor du i blokk med heis fra bakkeplan, teller du trinnene fram til heisen.',
-    hvorfor: 'Antall trinn er det enkeltsvaret som sier mest om hva som skal til for å få trinnfri adkomst.',
-    brukesTil: 'Vi bruker tallet til å si om en terskelplate holder, om en rampe er mulig, eller om det må løfteplattform til. Fra fire trinn og opp lønner det seg å be Hjelpemiddelsentralen om råd.',
-    valg: [
-      { v: '0',      tittel: '0 trinn',        desc: 'Du går rett inn, uten å løfte foten opp på noe. Dette er det beste utgangspunktet.', n: 1, e: 0 },
-      { v: '1',      tittel: '1 trinn',        desc: 'Ett trinn eller en høy terskel. Løses ofte med en terskelplate eller et skråbrett.', n: 0.4, e: 0.9 },
-      { v: '2-3',    tittel: '2–3 trinn',      desc: 'En rampe med slak stigning kan være mulig hvis det er flatt nok utenfor.', n: 0, e: 0.3 },
-      { v: '4-6',    tittel: '4–6 trinn',      desc: 'En rampe blir lang. Løfteplattform eller omlegging av terrenget kan være aktuelt.', n: -0.7, e: -0.7 },
-      { v: '6+',     tittel: 'Mer enn 6 trinn', desc: 'Rampe er sjelden mulig. Da ser vi på løfteplattform, heis eller en annen vei inn.', n: -1, e: -0.5 },
-      { v: 'usikker', tittel: 'Usikker',       desc: 'Du vet ikke, eller det varierer med hvilken dør du bruker. Vi merker dette for videre kartlegging.', n: 0, e: 0 }
-    ]
-  },
-  {
-    id: 'adkomst-hindringer',
-    stikkord: 'Å komme seg inn og ut',
+    id: 'adkomst-inngang',
+    stikkord: 'Å komme seg inn i boligen',
     grep: 'Be kommunen eller Hjelpemiddelsentralen se på inngangen',
     etappe: 'adkomst',
-    kilde: 'Spørsmål 11, omskrevet. Tre alvorlighetsgrader i stedet for «Ja / Delvis / Nei».',
-    tittel: 'Hvor vanskelig er det å komme seg inn i boligen?',
-    undertekst: 'Nå gjelder det selve inngangen: trappa, terrenget rett utenfor, døra, og heisen hvis du bor i blokk.',
-    hvorfor: 'Det er forskjell på tungvint og umulig. De tre nivåene avgjør om vi anbefaler et lite grep, et byggearbeid, eller at du ser på en annen bolig.',
-    brukesTil: 'Svarer du «Veldig vanskelig», er dette det første tiltaket i oppsummeringen din, uansett hva du har svart ellers.',
+    kilde: 'Fane 3, spørsmål 7a. Flervalg.',
+    tittel: 'Hvor lett er det å komme seg inn i boligen din?',
+    hjelp: 'Eneboliger har som regel bare en hovedinngang, mens en leilighet i blokk ofte har to innganger før du er inne i selve leiligheten. I sistnevnte bygg kan det være heis, mens andre kun har trapper. Tenk over om det er bratt terreng, terskler, trapper eller andre hindringer som kan være et problem om du får redusert bevegelighet.',
+    undertekst: 'Kryss av for det som passer.',
+    type: 'flervalg',
     valg: [
-      { v: 'lett',    tittel: 'Lett',            desc: 'Du går inn og ut uten å tenke over det, også med bæreposer i hendene.', n: 1, e: 0 },
-      { v: 'vanskelig', tittel: 'Vanskelig',     desc: 'Du må ta i, holde deg fast, hvile, eller ta det forsiktig. Det går, men det merkes.', n: -0.5, e: -0.5 },
-      { v: 'sveert',  tittel: 'Veldig vanskelig', desc: 'Du trenger hjelp, eller du lar være å gå ut fordi det er for tungt. Blokk uten heis hører hjemme her.', n: -1, e: -0.4 }
+      { v: 'ingen-trinn', tittel: 'Lett, det er ingen trinn eller høye terskler' },
+      { v: 'heis',        tittel: 'Lett, bygget har heis' },
+      { v: 'dor-lett',    tittel: 'Lett, døren er bred og lett å åpne' },
+      { v: 'trapp',       tittel: 'Kan bli vanskelig, jeg må opp en trapp' },
+      { v: 'terskler',    tittel: 'Kan bli vanskelig, det er høye terskler eller nivåforskjeller' },
+      { v: 'dor-tung',    tittel: 'Kan bli vanskelig, døren er vanskelig å åpne' },
+      { v: 'terreng',     tittel: 'Kan bli vanskelig, det er bratt eller ujevnt terreng foran inngangen' }
+    ],
+    /* Bare det som er lett, taler for boligen. Hver hindring drar nåla
+       ned. Trapp og bratt terreng krever større arbeid, terskler og en
+       tung dør løses med små grep. Trapp uten heis drar helt ned. */
+    poeng: (v, S) => {
+      const h = v.filter(x => KP_INNGANG_HINDRING.includes(x));
+      if (!h.length) return { n: 1, e: 0 };
+      const vekt = { trapp: v.includes('heis') ? -0.4 : -1, terreng: -0.6, terskler: 1, 'dor-tung': 1 };
+      const n = kpInngangStengt(S) ? -1 : -Math.min(1, 0.35 + 0.2 * h.length);
+      const e = h.reduce((s, x) => s + vekt[x], 0);
+      return { n, e: Math.max(-1, Math.min(1, e)) };
+    },
+    maks: { n: 1, e: 1 }
+  },
+  {
+    id: 'adkomst-lagring',
+    stikkord: 'Lagringsplass ved inngangen',
+    grep: 'Lag plass under tak til rullator og utstyr',
+    etappe: 'adkomst',
+    kilde: 'Fane 3, spørsmål 8a.',
+    tittel: 'Har du lagringsplass i nærheten av inngangsdøren?',
+    hjelp: 'Vurder om det finnes lagringsplass nær inngangsdøren. Dette kan være en bod, entre, et overbygd område eller plass inne i boligen der hjelpemidler og annet utstyr kan oppbevares tørt og lett tilgjengelig.',
+    popover: 'Tenk på om du har plass til å lagre for eksempel sykkel, rullator, rullestol eller handlevogn.',
+    valg: [
+      { v: 'ja',     tittel: 'Ja',     n: 0.8,  e: 0 },
+      { v: 'delvis', tittel: 'Delvis', n: 0,    e: 1 },
+      { v: 'nei',    tittel: 'Nei',    n: -0.5, e: 0.8 }
     ]
   },
 
-  /* ─── Etappe 4, inne i boligen ──────────────────────────────────── */
+  /* ─── Steg 4, utenfor boligen din ───────────────────────────────── */
   {
-    id: 'inne-rom',
-    stikkord: 'Nødvendige rom på ett plan',
-    grep: 'Endre planløsningen, eller bygg ut',
-    etappe: 'inne',
-    kilde: 'Spørsmål 12, omskrevet. Spørsmål 13 og 14 er tatt inn her.',
-    tittel: 'Har du alle de nødvendige rommene på inngangsplanet?',
-    undertekst: 'Med nødvendige rom mener vi stue, kjøkken, soverom og bad. Altså alt du trenger for å klare deg gjennom et døgn uten å gå i trapp.',
-    hvorfor: 'Dette er det som avgjør om du kan bo i boligen også en periode der trappa er utelukket, for eksempel etter en operasjon.',
-    brukesTil: 'Mangler du rom, foreslår vi tiltak 2a, endre planløsningen, eller 2b, utvide boligen. Er alt på plass, foreslår vi 5c, håndlister i trappa, som et lite grep.',
+    id: 'tjenester',
+    stikkord: 'Service og tjenester i nærheten',
+    grep: 'Dette kan ikke bygges om. Det teller hvis du en dag vurderer å flytte',
+    etappe: 'naermiljo',
+    kilde: 'Fane 4, spørsmål 9a.',
+    tittel: 'Hvor tilgjengelig vil service- og tjenestetilbud være for deg ved redusert bevegelighet?',
+    hjelp: 'Eksempler på tilbud som er viktige for de fleste er matbutikk, apotek, lege, offentlige tjenester og andre steder du er avhengig av i hverdagen. Vurder om du fortsatt vil kunne komme deg dit eller få tilgang til de tilbudene du ønsker, dersom bevegeligheten din blir redusert. I vurderingen kan du gjerne ta hensyn til gangavstand, transportmuligheter, tilgjengelighet, leveringsmuligheter eller digitale alternativer.',
     valg: [
-      { v: 'ja',     tittel: 'Ja, alt er på inngangsplanet', desc: 'Stue, kjøkken, soverom og bad ligger på samme plan som inngangen.', n: 1, e: 0 },
-      { v: 'delvis', tittel: 'Delvis. Noe mangler',          desc: 'For eksempel bad eller soverom i et annet plan. Du må i trapp i løpet av døgnet.', n: -0.5, e: -0.8 },
-      { v: 'nei',    tittel: 'Nei',                          desc: 'Flere av rommene ligger i et annet plan enn inngangen.', n: -0.9, e: -1 }
+      { v: 'god',       tittel: 'God tilgang',              n: 1,    e: 0 },
+      { v: 'noe',       tittel: 'Noe redusert tilgang',     n: 0.3,  e: 0.5 },
+      { v: 'begrenset', tittel: 'Begrenset tilgang',        n: -0.5, e: 0 },
+      { v: 'sterkt',    tittel: 'Sterkt begrenset tilgang', n: -1,   e: 0 },
+      { v: 'usikker',   tittel: 'Usikker',                  n: 0,    e: 0 }
     ]
   },
   {
-    id: 'inne-bevegelse',
-    stikkord: 'Å komme seg rundt inne',
-    grep: 'Fjern terskler og utvid de trangeste dørene',
-    etappe: 'inne',
-    kilde: 'Spørsmål 15, omskrevet. Spørsmål 16 og 17 er tatt inn her.',
-    tittel: 'Kommer du deg lett rundt inne i boligen?',
-    undertekst: 'Tenk på terskler, nivåforskjeller, smale dører og trange ganger. Et enkelt prøve: trill en koffert gjennom alle rommene og se hvor den setter seg fast.',
-    hvorfor: 'Terskler og smale dører merkes lite i dag, men avgjør alt den dagen du må bruke rullator eller krykker.',
-    brukesTil: 'Svarer du «Delvis» eller «Nei», foreslår vi tiltak 3a, fjerne terskler, og 3b, større døråpning eller flytte dør.',
+    id: 'aktiviteter',
+    stikkord: 'Å delta på det du ønsker',
+    grep: 'Sjekk transporttjenesten i kommunen din',
+    etappe: 'naermiljo',
+    kilde: 'Fane 4, spørsmål 10a.',
+    tittel: 'Hvor lett vil det være for deg å delta på de aktivitetene du ønsker ved redusert bevegelighet?',
+    hjelp: 'Tenk på aktiviteter og møteplasser som er viktige for deg, for eksempel kulturtilbud, idrett, frivillige aktiviteter, tros- og livssynstilbud, bibliotek, natur- og parkområder, kafé eller å bare kunne treffe familie og venner. I vurderingen kan du gjerne ta hensyn til gangavstand, tilgjengelighet og transportmuligheter.',
     valg: [
-      { v: 'ja',     tittel: 'Ja',     desc: 'Ingen terskler eller trange steder stopper deg, heller ikke med noe i hendene.', n: 0.9, e: 0 },
-      { v: 'delvis', tittel: 'Delvis', desc: 'Noen terskler eller trange steder, som du kommer forbi når du passer på.', n: -0.2, e: 0.7 },
-      { v: 'nei',    tittel: 'Nei',    desc: 'Terskler, smale dører eller trange ganger gjør at du må ta omveier eller be om hjelp.', n: -0.6, e: -0.3 }
+      { v: 'lett',      tittel: 'Lett',            n: 1,    e: 0 },
+      { v: 'noe',       tittel: 'Noe vanskelig',   n: 0.3,  e: 0.5 },
+      { v: 'vanskelig', tittel: 'Vanskelig',       n: -0.5, e: 0 },
+      { v: 'svaert',    tittel: 'Svært vanskelig', n: -1,   e: 0 },
+      { v: 'usikker',   tittel: 'Usikker',         n: 0,    e: 0 }
     ]
   },
   {
-    id: 'bad-samme-rom',
-    stikkord: 'Bad og toalett samlet',
-    grep: 'Slå sammen bad og toalett til ett rom',
-    etappe: 'inne',
-    kilde: 'Spørsmål 18. Står som i prototypen. Arbeidsdokumentet gjør denne ferdig på dag 2.',
-    tittel: 'Er bad og toalett i samme rom?',
-    undertekst: 'Noen boliger har toalettet for seg selv, og dusj eller badekar i et annet rom.',
-    hvorfor: 'Ligger toalett og bad vegg i vegg i hvert sitt rom, kan de slås sammen til ett bad med god plass. Det er ofte det rimeligste store grepet.',
-    brukesTil: 'Svarer du «Nei», ser vi på tiltak 4c: bygge om eller utvide badet.',
+    id: 'hjelp',
+    stikkord: 'Noen som kan hjelpe deg',
+    grep: 'Frivilligsentralen formidler hjelp til praktiske ting',
+    etappe: 'naermiljo',
+    kilde: 'Fane 4, spørsmål 11a.',
+    tittel: 'Har du noen som kan hjelpe deg med praktiske oppgaver om du trenger det?',
+    hjelp: 'Noen praktiske oppgaver kan være handling, transport, snømåking, hagearbeid, flytting av tunge gjenstander eller enkle oppgaver i hjemmet. Tenk over om du har familie, venner, naboer eller andre som kan hjelpe deg med praktiske oppgaver dersom bevegeligheten din blir redusert for en periode.',
     valg: [
-      { v: 'ja',  tittel: 'Ja, alt er på samme bad', desc: 'Toalett, vask og dusj eller badekar i ett rom.', n: 0.5, e: 0 },
-      { v: 'nei', tittel: 'Nei, det er delt',        desc: 'Toalettet ligger for seg selv, i et eget rom.', n: -0.2, e: -0.6 }
-    ]
-  },
-  {
-    id: 'bad-plass',
-    stikkord: 'Plass foran toalett og vask',
-    grep: 'Bygg om eller utvid badet',
-    etappe: 'inne',
-    kilde: 'Spørsmål 19. Står som i prototypen.',
-    tittel: 'Er det god plass foran toalett og vask?',
-    undertekst: 'Regn omtrent 1,5 meter fritt gulv foran, som er det som trengs for å snu med rullator eller rullestol, eller for at noen skal kunne hjelpe deg.',
-    hvorfor: 'Trangt bad er den vanligste grunnen til at folk må flytte fra en bolig de ellers trives i.',
-    brukesTil: 'Svarer du «Nei», foreslår vi tiltak 4c: bygge om eller utvide badet for plass til det nødvendige.',
-    valg: [
-      { v: 'ja',  tittel: 'Ja',  desc: 'Du kan snu rundt foran toalettet uten å måtte gå ut av rommet.', n: 0.9, e: 0 },
-      { v: 'nei', tittel: 'Nei', desc: 'Det er trangt. To personer får ikke plass samtidig.', n: -0.7, e: -1 }
-    ]
-  },
-  {
-    id: 'bad-dusj',
-    stikkord: 'Trinnfri dusj',
-    grep: 'Lag en dusjsone uten kant',
-    etappe: 'inne',
-    kilde: 'Spørsmål 20. Står som i prototypen.',
-    tittel: 'Kommer du lett inn i dusjen, uten kant eller terskel?',
-    undertekst: 'En dusj i nisje uten kant er det beste. Dusjkabinett med kant, og særlig badekar, er det vanskeligste.',
-    hvorfor: 'Å gå over en kant på vått gulv er en av de vanligste måtene å falle på hjemme.',
-    brukesTil: 'Svarer du «Nei» eller «Usikker», foreslår vi tiltak 4b: en trygg og trinnfri dusjsone.',
-    valg: [
-      { v: 'ja',      tittel: 'Ja',      desc: 'Du går rett inn på flatt gulv.', n: 0.8, e: 0 },
-      { v: 'usikker', tittel: 'Usikker', desc: 'Du er ikke sikker på hvor høy kanten er. Vi tar det med som noe å måle.', n: 0, e: 0 },
-      { v: 'nei',     tittel: 'Nei',     desc: 'Du må over en kant, opp i et dusjkabinett eller over kanten på et badekar.', n: -0.3, e: -0.7 }
-    ]
-  },
-  {
-    id: 'bad-stol',
-    stikkord: 'Plass til krakk i dusjen',
-    grep: 'Endre plasseringen av baderomsfunksjonene',
-    etappe: 'inne',
-    kilde: 'Spørsmål 21. Står som i prototypen.',
-    tittel: 'Er det plass til en stol eller krakk inne i dusjen?',
-    undertekst: 'Tenk på om en vanlig dusjkrakk får stå der, og om du får plass til å sitte på den.',
-    hvorfor: 'Å kunne sitte mens du dusjer er ofte det som avgjør om du greier å stelle deg selv.',
-    brukesTil: 'Svarer du «Nei», ser vi på tiltak 4a, ny plassering av baderomsfunksjonene, og 4c, utvide badet.',
-    valg: [
-      { v: 'ja',      tittel: 'Ja',      desc: 'En krakk får stå der uten å være i veien.', n: 0.7, e: 0 },
-      { v: 'usikker', tittel: 'Usikker', desc: 'Du har ikke prøvd. Vi tar det med som noe å måle.', n: 0, e: 0 },
-      { v: 'nei',     tittel: 'Nei',     desc: 'Det er for trangt. En krakk sperrer dusjen.', n: -0.4, e: -0.8 }
-    ]
-  },
-  {
-    id: 'bad-dor',
-    stikkord: 'Baderomsdøra',
-    grep: 'Snu døra så den slår utover',
-    etappe: 'inne',
-    kilde: 'Spørsmål 22. Står som i prototypen.',
-    tittel: 'Er badet lite, med en dør som slår innover?',
-    undertekst: 'Se på døra. Slår den inn i baderommet, eller ut i gangen?',
-    hvorfor: 'Faller noen på et lite bad, kan kroppen sperre en dør som slår innover. Da kommer ingen inn for å hjelpe.',
-    brukesTil: 'Svarer du «Ja», foreslår vi tiltak 3b, snu eller flytte døra. Det er et lite og rimelig grep med stor virkning.',
-    valg: [
-      { v: 'ja',      tittel: 'Ja',      desc: 'Lite bad, og døra slår innover.', n: -0.2, e: 0.9 },
-      { v: 'usikker', tittel: 'Usikker', desc: 'Du må se etter. Vi tar det med som noe å sjekke.', n: 0, e: 0 },
-      { v: 'nei',     tittel: 'Nei',     desc: 'Døra slår utover, eller badet er stort nok til at det ikke er noe problem.', n: 0.6, e: 0 }
+      { v: 'ja',     tittel: 'Ja',     n: 1,    e: 0 },
+      { v: 'delvis', tittel: 'Delvis', n: 0.2,  e: 0.5 },
+      { v: 'nei',    tittel: 'Nei',    n: -0.6, e: 0.5 }
     ]
   }
 ];
+
+/* Rommene du trenger for å klare et døgn uten trapp, og som ikke
+   ligger på inngangsplanet. Bad eller toalett holder. */
+function kpRomSomMangler(valgt) {
+  const v = valgt || [];
+  const mangler = [];
+  if (!v.includes('kjokken')) mangler.push('kjøkken');
+  if (!v.includes('soverom')) mangler.push('soverom');
+  if (!v.includes('bad') && !v.includes('toalett')) mangler.push('bad eller toalett');
+  return mangler;
+}
 
 /* ═══ Støtteordningene ═════════════════════════════════════════════ */
 
@@ -506,34 +457,26 @@ const KOMPASS_ANBEFALINGER = [
   {
     id: 'inngang-tung',
     prioritet: 1, storrelse: 'stor', etappe: 'adkomst',
-    naar: S => S['adkomst-hindringer'] === 'sveert',
+    naar: kpInngangStengt,
     tittel: 'Få gjort noe med inngangen først',
     tekst: 'Alt annet kan vente. Kommer du ikke inn og ut på egen hånd, blir du sittende inne, og da hjelper ikke et nytt bad. Be kommunen eller Hjelpemiddelsentralen komme hjem til deg og se på inngangen. Det er gratis, og de kommer med en løsning du kan regne på.',
-    hvorfor: S => 'Du svarte at det er veldig vanskelig å komme seg inn i boligen.',
+    hvorfor: S => 'Du svarte at du må opp en trapp for å komme inn, og bygget har ikke heis.',
     tiltak: ['1a', '1b', '1c'],
     ordninger: ['hjelpemiddel', 'aldersvennlig', 'navrampe', 'komtilskudd']
   },
   {
-    id: 'trinn-mange',
+    id: 'inngang-vanskelig',
     prioritet: 2, storrelse: 'stor', etappe: 'adkomst',
-    naar: S => S['adkomst-trinn'] === '4-6' || S['adkomst-trinn'] === '6+',
-    tittel: 'Trinnfri vei inn, uten trapp',
-    tekst: 'Med så mange trinn blir en rampe lang, og ofte for bratt til å være trygg. Da ser man heller på løfteplattform, på å legge om terrenget, eller på en annen inngang til boligen. Dette må regnes på av fagfolk før du bestemmer deg.',
-    hvorfor: S => 'Du svarte at det er ' + (S['adkomst-trinn'] === '6+' ? 'mer enn 6 trinn' : '4–6 trinn') + ' fra bakken og inn til inngangsdøra.',
+    naar: S => !kpInngangStengt(S) && kpInngangHindringer(S).length > 0,
+    tittel: 'Gjør inngangen trinnfri',
+    tekst: 'Ett trinn løses ofte med en terskelplate eller et skråbrett. Med flere trinn kan en rampe med slak stigning være mulig, hvis det er flatt nok utenfor. Regn med at rampa blir omtrent en meter lang per ti centimeter høyde. Er det mange trinn, ser man heller på løfteplattform eller på å legge om terrenget.',
+    hvorfor: S => {
+      const t = { trapp: 'du må opp en trapp', terskler: 'det er høye terskler eller nivåforskjeller',
+                  'dor-tung': 'døren er vanskelig å åpne', terreng: 'det er bratt eller ujevnt terreng foran inngangen' };
+      return 'Du svarte at ' + kpInngangHindringer(S).map(h => t[h]).join(', og at ') + '.';
+    },
     tiltak: ['1a', '1b', '1c'],
-    ordninger: ['hjelpemiddel', 'aldersvennlig', 'navrampe', 'startlaan']
-  },
-  {
-    id: 'trinn-faa',
-    prioritet: 6, storrelse: 'liten', etappe: 'adkomst',
-    naar: S => S['adkomst-trinn'] === '1' || S['adkomst-trinn'] === '2-3',
-    tittel: 'Fjern trinnet ved døra',
-    tekst: S => S['adkomst-trinn'] === '1'
-      ? 'Ett trinn løses ofte med en terskelplate eller et skråbrett. Det er rimelig, det krever ingen søknad, og du merker det med én gang du kommer hjem med handleposer.'
-      : 'Med to eller tre trinn kan en rampe med slak stigning være mulig, hvis det er flatt nok utenfor. Regn med at rampa blir omtrent en meter lang per ti centimeter høyde.',
-    hvorfor: S => 'Du svarte at det er ' + (S['adkomst-trinn'] === '1' ? 'ett trinn' : '2–3 trinn') + ' inn til inngangsdøra.',
-    tiltak: ['1a', '1c'],
-    ordninger: ['aldersvennlig', 'navrampe']
+    ordninger: ['hjelpemiddel', 'aldersvennlig', 'navrampe']
   },
   {
     id: 'vei-frem',
@@ -543,20 +486,20 @@ const KOMPASS_ANBEFALINGER = [
     tekst: 'Strekningen fra parkeringen eller veien og fram til døra blir ofte glemt. Den kan jevnes ut, få fast dekke, bedre lys og et rekkverk å holde i. Om vinteren er det denne strekningen som avgjør om du kommer deg ut i det hele tatt.',
     hvorfor: S => S['adkomst-frem'] === 'nei'
       ? 'Du svarte nei på om du kommer deg lett fram til boligen fra offentlig vei.'
-      : 'Du svarte at du delvis kommer deg fram til boligen fra offentlig vei.',
+      : 'Du svarte at du delvis kommer deg lett fram til boligen fra offentlig vei.',
     tiltak: ['1a'],
     ordninger: ['aldersvennlig', 'komtilskudd']
   },
   {
-    id: 'inngangsparti',
+    id: 'lagring',
     prioritet: 7, storrelse: 'liten', etappe: 'adkomst',
-    naar: S => S['adkomst-oppbevaring'] === 'nei' || S['adkomst-oppbevaring'] === 'delvis',
-    tittel: 'Lag plass under tak ved inngangen',
-    tekst: 'Et takoverbygg og en halv kvadratmeter ved siden av døra er nok. Da kan rullator, handlevogn eller sparkstøtting stå tørt, og du slipper å dra dem inn og ut. Et hjelpemiddel som står ute i snøen, blir liggende ubrukt.',
-    hvorfor: S => S['adkomst-oppbevaring'] === 'nei'
-      ? 'Du svarte at du ikke har plass under tak i inngangspartiet.'
-      : 'Du svarte at du delvis har plass under tak i inngangspartiet.',
-    tiltak: ['1b', '1c'],
+    naar: S => S['adkomst-lagring'] === 'nei' || S['adkomst-lagring'] === 'delvis',
+    tittel: 'Lag plass til utstyret ved inngangen',
+    tekst: 'En bod, et takoverbygg eller en halv kvadratmeter ved døra er ofte nok. Da kan rullator, handlevogn eller sykkel stå tørt, og du slipper å dra dem inn og ut. Et hjelpemiddel som står ute i snøen, blir stående ubrukt.',
+    hvorfor: S => S['adkomst-lagring'] === 'nei'
+      ? 'Du svarte at du ikke har lagringsplass i nærheten av inngangsdøren.'
+      : 'Du svarte at du delvis har lagringsplass i nærheten av inngangsdøren.',
+    tiltak: ['1b'],
     ordninger: ['aldersvennlig']
   },
 
@@ -564,14 +507,16 @@ const KOMPASS_ANBEFALINGER = [
   {
     id: 'bad-ombygging',
     prioritet: 4, storrelse: 'stor', etappe: 'inne',
-    naar: S => S['bad-plass'] === 'nei' || S['bad-stol'] === 'nei',
+    naar: S => kpHar(S, 'bad-bruk', 'lite')
+               || ['naborom', 'samme-etasje', 'annen-etasje'].includes(S['toalett-plassering']),
     tittel: 'Bygg om badet mens du kan velge selv',
     tekst: 'Trangt bad er den vanligste enkeltgrunnen til at folk må flytte fra en bolig de ellers trives i. Et bad som bygges om nå, kan planlegges i ro, og du får den løsningen du vil ha. Ligger toalettet i et eget rom vegg i vegg, er det ofte det rimeligste grepet å slå dem sammen.',
     hvorfor: S => {
       const g = [];
-      if (S['bad-plass'] === 'nei') g.push('det ikke er god plass foran toalett og vask');
-      if (S['bad-stol'] === 'nei') g.push('det ikke er plass til en krakk i dusjen');
-      if (S['bad-samme-rom'] === 'nei') g.push('toalettet ligger i et eget rom');
+      if (kpHar(S, 'bad-bruk', 'lite')) g.push('du har et lite bad');
+      const t = { naborom: 'toalettet ligger på naborommet', 'samme-etasje': 'toalettet ligger i et annet rom i samme etasje',
+                  'annen-etasje': 'toalettet ligger i en annen etasje enn badet' }[S['toalett-plassering']];
+      if (t) g.push(t);
       return 'Du svarte at ' + g.join(', og at ') + '.';
     },
     tiltak: ['4a', '4c'],
@@ -580,23 +525,42 @@ const KOMPASS_ANBEFALINGER = [
   {
     id: 'dusjsone',
     prioritet: 5, storrelse: 'stor', etappe: 'inne',
-    naar: S => S['bad-dusj'] === 'nei' || S['bad-dusj'] === 'usikker',
+    naar: S => kpHar(S, 'bad-bruk', 'dusj-kant') || kpHar(S, 'bad-bruk', 'badekar')
+               || (Array.isArray(S['bad-innhold']) && S['bad-innhold'].length > 0
+                   && !kpHar(S, 'bad-innhold', 'dusj') && !kpHar(S, 'bad-innhold', 'badekar')),
     tittel: 'Lag en dusjsone uten kant',
-    tekst: 'En dusj i nisje uten kant, med sluk i gulvet og et håndtak å holde i, fjerner ett av de stedene folk faller oftest. Skal badet uansett pusses opp en gang, er dette grepet å ta da.',
-    hvorfor: S => S['bad-dusj'] === 'nei'
-      ? 'Du svarte at du må over en kant for å komme inn i dusjen.'
-      : 'Du svarte at du er usikker på om det er kant inn til dusjen. Mål høyden, så vet du det.',
+    tekst: 'En dusj i nisje uten kant, med sluk i gulvet, et håndtak å holde i og et klappsete på veggen, fjerner ett av de stedene folk faller oftest. Skal badet uansett pusses opp en gang, er dette grepet å ta da.',
+    hvorfor: S => kpHar(S, 'bad-bruk', 'dusj-kant')
+      ? 'Du svarte at dusjkabinettet eller dusjnisjen har en høydeforskjell.'
+      : kpHar(S, 'bad-bruk', 'badekar')
+        ? 'Du svarte at bruken av badekaret er blitt en utfordring.'
+        : 'Du krysset ikke av for dusj eller badekar på badet.',
     tiltak: ['4b'],
     ordninger: ['aldersvennlig', 'komtilskudd']
   },
   {
+    id: 'dusjstol',
+    prioritet: 8, storrelse: 'liten', etappe: 'inne',
+    naar: S => kpHar(S, 'bad-bruk', 'dusj-stol'),
+    tittel: 'Få plass til å sitte i dusjen',
+    tekst: 'Et klappsete på veggen tar ingen plass når det er slått opp, og det gjør dusjen trygg også den dagen du ikke klarer å stå lenge. Sett opp et støttehåndtak ved siden av samtidig.',
+    hvorfor: S => 'Du svarte at dusjen ikke har plass til dusjstol eller krakk.',
+    tiltak: ['5c', '5d'],
+    ordninger: ['aldersvennlig']
+  },
+  {
     id: 'bad-dor',
     prioritet: 8, storrelse: 'liten', etappe: 'inne',
-    naar: S => S['bad-dor'] === 'ja',
-    tittel: 'Snu baderomsdøra så den slår utover',
-    tekst: 'Faller noen på et lite bad, kan kroppen sperre en dør som slår innover. Da kommer ingen inn for å hjelpe. Å snu døra, eller bytte til en skyvedør, er et lite arbeid med stor virkning, og det kan gjøres uten å røre resten av badet.',
-    hvorfor: S => 'Du svarte at badet er lite og at døra slår innover.',
-    tiltak: ['3b'],
+    naar: S => kpHar(S, 'bad-bruk', 'dor-innover') || kpHar(S, 'bad-bruk', 'terskel'),
+    tittel: 'Gjør baderomsdøra enkel å komme gjennom',
+    tekst: 'Faller noen på et lite bad, kan kroppen sperre en dør som slår innover. Da kommer ingen inn for å hjelpe. Å snu døra, eller bytte til en skyvedør, er et lite arbeid med stor virkning. En terskel kan ofte tas bort eller skråes ned samtidig.',
+    hvorfor: S => {
+      const g = [];
+      if (kpHar(S, 'bad-bruk', 'dor-innover')) g.push('baderomsdøren slår innover i rommet');
+      if (kpHar(S, 'bad-bruk', 'terskel')) g.push('baderomsdøren har terskel');
+      return 'Du svarte at ' + g.join(', og at ') + '.';
+    },
+    tiltak: ['3a', '3b'],
     ordninger: ['aldersvennlig']
   },
 
@@ -604,65 +568,61 @@ const KOMPASS_ANBEFALINGER = [
   {
     id: 'rom-plan',
     prioritet: 4, storrelse: 'stor', etappe: 'inne',
-    naar: S => S['inne-rom'] === 'nei' || S['inne-rom'] === 'delvis',
+    naar: S => Array.isArray(S.rom) && S.rom.length > 0 && kpRomSomMangler(S.rom).length > 0,
     tittel: 'Samle det nødvendige på inngangsplanet',
     tekst: 'Klarer du deg gjennom et døgn uten å gå i trapp, kan du bli boende også i en periode der trappa er utelukket, for eksempel etter en operasjon. Noen ganger holder det å bytte om på rommene du har. Andre ganger må det bygges på. Er det plass på tomta, er påbygg ofte enklere enn folk tror.',
-    hvorfor: S => S['inne-rom'] === 'nei'
-      ? 'Du svarte at flere av de nødvendige rommene ligger i et annet plan enn inngangen.'
-      : 'Du svarte at noen av de nødvendige rommene mangler på inngangsplanet.',
+    hvorfor: S => 'Du krysset ikke av for ' + kpRomSomMangler(S.rom).join(' eller ') + ' i samme etasje som inngangsdøren.',
     tiltak: ['2a', '2b'],
     ordninger: ['aldersvennlig', 'startlaan', 'husbanklaan', 'komtilskudd']
   },
   {
     id: 'terskler',
     prioritet: 6, storrelse: 'liten', etappe: 'inne',
-    naar: S => S['inne-bevegelse'] === 'delvis' || S['inne-bevegelse'] === 'nei',
+    naar: S => S.bevegelse === 'delvis' || S.bevegelse === 'nei',
     tittel: 'Fjern terskler og utvid de trangeste dørene',
     tekst: 'Terskler kan ofte tas bort eller skråes ned på en dag. Døråpninger bør være minst 86 centimeter fri bredde for at en rullator skal komme gjennom uten å skrape. Begynn med de dørene du bruker mest: bad, soverom og ut.',
-    hvorfor: S => S['inne-bevegelse'] === 'nei'
-      ? 'Du svarte at terskler eller trange steder gjør at du må ta omveier inne.'
-      : 'Du svarte at det er noen terskler eller trange steder inne.',
-    tiltak: ['3a', '3b'],
+    hvorfor: S => S.bevegelse === 'nei'
+      ? 'Du svarte at du ikke kommer deg lett rundt inne i boligen.'
+      : 'Du svarte at du delvis kommer deg lett rundt inne i boligen.',
+    tiltak: ['3a', '3b', '3c'],
     ordninger: ['aldersvennlig', 'komtilskudd']
   },
   {
     id: 'trapp',
     prioritet: 7, storrelse: 'liten', etappe: 'inne',
-    naar: S => S['inne-rom'] === 'delvis' || S['inne-rom'] === 'nei'
-               || (S['hverdag'] || []).includes('noe') || (S['hverdag'] || []).includes('litt'),
+    naar: S => (Array.isArray(S.rom) && S.rom.length > 0 && kpRomSomMangler(S.rom).length > 0)
+               || kpHar(S, 'adkomst-inngang', 'trapp'),
     tittel: 'Håndlist på begge sider i trappa',
     tekst: 'Håndlist på begge sider, hele veien opp og ned, og et par centimeter forbi øverste og nederste trinn. Merk forkanten på trinnene med en stripe i en farge som skiller seg ut. Det koster lite, og det er blant de mest effektive fallforebyggende tiltakene som finnes.',
-    hvorfor: S => (S['inne-rom'] === 'delvis' || S['inne-rom'] === 'nei')
-      ? 'Du svarte at du må bruke trappa i løpet av døgnet.'
-      : 'Du svarte at noe i hverdagen er blitt tyngre.',
+    hvorfor: S => (Array.isArray(S.rom) && kpRomSomMangler(S.rom).length)
+      ? 'Du må bruke trapp i løpet av døgnet, fordi noe av det du trenger ligger i en annen etasje.'
+      : 'Du svarte at du må opp en trapp for å komme inn i boligen.',
     tiltak: ['5c', '5d'],
     ordninger: ['aldersvennlig']
   },
 
-  /* ── 4. Nærmiljø og folk rundt deg ─────────────────────────────── */
+  /* ── 4. Utenfor boligen og folk rundt deg ──────────────────────── */
   {
     id: 'naermiljo-tynt',
     prioritet: 3, storrelse: 'stor', etappe: 'naermiljo',
-    naar: S => {
-      const t = S['naermiljo-tilbud'];
-      const tynt = !t || !t.length || t.includes('ingen') || t.length <= 1;
-      return tynt || S['naermiljo-komme-seg'] === 'nei';
-    },
+    naar: S => ['begrenset', 'sterkt'].includes(S.tjenester) || ['vanskelig', 'svaert'].includes(S.aktiviteter),
     tittel: 'Nærmiljøet er det eneste du ikke kan bygge om',
-    tekst: 'Du kan gjøre boligen din så god du vil, men du kan ikke flytte butikken nærmere. Når det er langt til alt, og transporten er tungvint, blir hverdagen liten selv i en velfungerende bolig. Snakk med kommunen om transporttjeneste, og la dette veie tungt hvis du en dag vurderer å flytte.',
-    hvorfor: S => S['naermiljo-komme-seg'] === 'nei'
-      ? 'Du svarte at du ikke kommer deg lett på de aktivitetene og tjenestene du ønsker.'
-      : 'Du krysset av for lite eller ingenting i nærmiljøet ditt.',
+    tekst: 'Du kan gjøre boligen din så god du vil, men du kan ikke flytte butikken nærmere. Når det er langt til alt, og transporten er tungvint, blir hverdagen liten selv i en velfungerende bolig. Snakk med kommunen om transporttjeneste og levering, og la dette veie tungt hvis du en dag vurderer å flytte.',
+    hvorfor: S => ['begrenset', 'sterkt'].includes(S.tjenester)
+      ? 'Du svarte at du vil ha ' + (S.tjenester === 'sterkt' ? 'sterkt begrenset' : 'begrenset') + ' tilgang til service og tjenester ved redusert bevegelighet.'
+      : 'Du svarte at det vil være ' + (S.aktiviteter === 'svaert' ? 'svært vanskelig' : 'vanskelig') + ' å delta på aktivitetene du ønsker ved redusert bevegelighet.',
     tiltak: [],
     ordninger: ['ergoterapeut', 'bostotte']
   },
   {
     id: 'ingen-hjelp',
     prioritet: 8, storrelse: 'liten', etappe: 'naermiljo',
-    naar: S => S['naermiljo-hjelp'] === 'nei',
+    naar: S => S.hjelp === 'nei' || S.hjelp === 'delvis',
     tittel: 'Skaff deg noen å ringe før du trenger det',
     tekst: 'Frivilligsentralen i kommunen din formidler hjelp til snømåking, plenklipping, småreparasjoner og skyss. Mange kommuner har også besøksvenn. Det koster ingenting, og det er lettere å ta kontakt før noe har skjedd enn etterpå.',
-    hvorfor: S => 'Du svarte at du ikke har noen å spørre om praktiske ting.',
+    hvorfor: S => S.hjelp === 'nei'
+      ? 'Du svarte at du ikke har noen som kan hjelpe deg med praktiske oppgaver.'
+      : 'Du svarte at du delvis har noen som kan hjelpe deg med praktiske oppgaver.',
     tiltak: [],
     ordninger: ['ergoterapeut']
   },
@@ -693,12 +653,12 @@ const KOMPASS_ANBEFALINGER = [
   {
     id: 'fellesareal',
     prioritet: 5, storrelse: 'liten', etappe: 'bolig',
-    naar: S => (S.boligtype === 'leilighet' || S.boligtype === 'rekkehus' || S.boligtype === 'tomannsbolig')
-              && (S['adkomst-hindringer'] === 'vanskelig' || S['adkomst-hindringer'] === 'sveert'
+    naar: S => (S.inngang === 'deler-inngang' || S.inngang === 'deler-adkomst')
+              && (kpInngangHindringer(S).length > 0
                   || S['adkomst-frem'] === 'nei' || S['adkomst-frem'] === 'delvis'),
-    tittel: 'Ta inngangen opp med styret',
-    tekst: 'Inngang, trapp, heis og uteområde er som regel fellesareal. Det betyr at du ikke kan endre det alene, men også at du ikke skal betale for det alene. Be styret ta det opp på neste generalforsamling eller sameiermøte. Borettslag og sameier kan søke egne ordninger for tilgjengelighet.',
-    hvorfor: S => 'Du svarte at du bor i ' + ({ leilighet: 'et leilighetsbygg', rekkehus: 'rekkehus', tomannsbolig: 'tomannsbolig' }[S.boligtype]) + ', og at veien inn er vanskelig.',
+    tittel: 'Ta inngangen opp med styret eller naboene',
+    tekst: 'Inngangsparti, trapp, heis og adkomstvei som du deler med andre, kan du ikke endre alene. Men du skal heller ikke betale for det alene. Bor du i borettslag eller sameie, be styret ta det opp på neste generalforsamling eller sameiermøte. De kan søke egne ordninger for tilgjengelighet.',
+    hvorfor: S => 'Du svarte at du ' + (S.inngang === 'deler-inngang' ? 'deler inngangsparti og adkomstveg' : 'deler adkomstveg') + ' med andre, og at veien inn er vanskelig.',
     tiltak: ['1b'],
     ordninger: ['husbanklaan', 'komtilskudd']
   }

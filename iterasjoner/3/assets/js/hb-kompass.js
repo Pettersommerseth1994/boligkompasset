@@ -146,18 +146,25 @@ const KP_RETNINGSORD = {
   S: 'mot sør', SV: 'mot sørvest', V: 'mot vest', NV: 'mot nordvest'
 };
 const KP_RETNINGSFORKLARING = {
-  N: 'Dette svaret taler for at du kan bli boende.',
-  NØ: 'Dette svaret taler for at du kan bli boende, med noen små grep.',
+  N: 'Det taler for at du kan bli boende.',
+  NØ: 'Det taler for at du kan bli boende, med noen små grep.',
   Ø: 'Dette løses med et lite grep.',
   SØ: 'Her er det noe som må gjøres, men ikke noe stort.',
-  S: 'Dette er et av de svarene som er tunge å bygge bort.',
-  SV: 'Dette krever enten et stort arbeid, eller en annen bolig.',
+  S: 'Det er et av de svarene som er tunge å bygge bort.',
+  SV: 'Det krever enten et stort arbeid, eller en annen bolig.',
   V: 'Her må det bygges om.',
   NV: 'Ett større arbeid, men ellers står boligen støtt.',
-  MIDT: 'Dette svaret flyttet ikke kursen nevneverdig.'
+  MIDT: 'Dette svaret trekker verken den ene eller den andre veien.'
 };
 
 /* ═══ Kompasset som figur ═════════════════════════════════════════ */
+
+function kpKompassTekst(kurs) {
+  const info = KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT;
+  return 'Kompass. Nåla peker '
+       + (kurs.retning === 'MIDT' ? 'mot midten' : KP_RETNINGSORD[kurs.retning])
+       + '. Kursen er «' + info.navn + '».';
+}
 
 function kpKompassSvg(kurs, opt = {}) {
   const stort = !!opt.stort;
@@ -166,8 +173,9 @@ function kpKompassSvg(kurs, opt = {}) {
   const vb = stort ? '0 0 300 200' : '0 0 200 200';
   const cx = stort ? 150 : 100, cy = 100, r = stort ? 60 : 78;
 
-  const felt = (d, aktiv) =>
-    `<path class="kp-kompass__felt${aktiv ? ' kp-kompass__felt--aktiv' : ''}" d="${d}" fill="${aktiv ? 'var(--hb-green-600)' : 'var(--hb-slate-400)'}"/>`;
+  const felt = (d, navn, aktiv) =>
+    `<path class="kp-kompass__felt${aktiv ? ' kp-kompass__felt--aktiv' : ''}" data-kv="${navn}" d="${d}"
+           fill="${aktiv ? 'var(--hb-green-600)' : 'var(--hb-slate-400)'}"/>`;
 
   /* Kvadranten nåla peker inn i, tonet litt sterkere */
   const kv = kurs.r > 0.24
@@ -205,17 +213,18 @@ function kpKompassSvg(kurs, opt = {}) {
   const info = KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT;
 
   return `
-<svg class="kp-kompass" viewBox="${vb}" role="img"
-     aria-label="Kompass. Nåla peker ${kurs.r < 0.24 ? 'mot midten' : KP_RETNINGSORD[kurs.retning]}. Kursen er «${info.navn}».">
-  ${felt(bue(0, 90), kv === 'nø')}${felt(bue(90, 180), kv === 'sø')}
-  ${felt(bue(180, 270), kv === 'sv')}${felt(bue(270, 360), kv === 'nv')}
+<svg class="kp-kompass" viewBox="${vb}" role="img" data-kompass
+     aria-label="${kpKompassTekst(kurs)}">
+  ${felt(bue(0, 90), 'nø', kv === 'nø')}${felt(bue(90, 180), 'sø', kv === 'sø')}
+  ${felt(bue(180, 270), 'sv', kv === 'sv')}${felt(bue(270, 360), 'nv', kv === 'nv')}
   <circle class="kp-kompass__rose" cx="${cx}" cy="${cy}" r="${r}"/>
   <circle class="kp-kompass__ring" cx="${cx}" cy="${cy}" r="${(r * 0.66).toFixed(1)}"/>
   <circle class="kp-kompass__ring" cx="${cx}" cy="${cy}" r="${(r * 0.33).toFixed(1)}"/>
   <line class="kp-kompass__akse" x1="${cx}" y1="${cy - r}" x2="${cx}" y2="${cy + r}"/>
   <line class="kp-kompass__akse" x1="${cx - r}" y1="${cy}" x2="${cx + r}" y2="${cy}"/>
   ${merker}
-  <g class="kp-kompass__naal" style="transform:rotate(${vinkel.toFixed(1)}deg) scale(${skala.toFixed(2)});transform-origin:${cx}px ${cy}px">
+  <g class="kp-kompass__naal" data-naal
+     style="transform-origin:${cx}px ${cy}px; transform:rotate(${vinkel.toFixed(1)}deg) scale(${skala.toFixed(2)})">
     <path class="kp-kompass__naal-nord" d="M${cx} ${cy - r + 6} L${cx + 9} ${cy + 6} L${cx} ${cy} L${cx - 9} ${cy + 6} Z"/>
     <path class="kp-kompass__naal-sor"  d="M${cx} ${cy + r - 20} L${cx + 7} ${cy - 4} L${cx} ${cy} L${cx - 7} ${cy - 4} Z"/>
   </g>
@@ -231,10 +240,16 @@ const kpEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 
 function kpHvorforBoks(sp) {
   return `
-  <dl class="kp-hvorfor">
-    <dt>Derfor spør vi</dt><dd>${sp.hvorfor}</dd>
-    <dt>Dette brukes svaret til</dt><dd>${sp.brukesTil}</dd>
-  </dl>`;
+  <div class="kp-forklaring">
+    <div class="kp-forklaring__boks kp-forklaring__boks--sporsmal">
+      <h2 class="kp-forklaring__tittel">Derfor spør vi</h2>
+      <p>${sp.hvorfor}</p>
+    </div>
+    <div class="kp-forklaring__boks kp-forklaring__boks--bruk">
+      <h2 class="kp-forklaring__tittel">Dette brukes svaret til</h2>
+      <p>${sp.brukesTil}</p>
+    </div>
+  </div>`;
 }
 
 function kpValgHtml(navn, valg, type, gjeldende) {
@@ -545,20 +560,24 @@ function kpEtappeHtml(f) {
 
 /* ═══ Peilingen, kompasset mens du svarer ═════════════════════════ */
 
+function kpUtslagHtml(u) {
+  if (!u) return '';
+  return `<span class="kp-peiling__utslag" data-vei="${u.vei}">
+      <span data-ikon="${u.vei === 'ingen' ? 'info' : 'pil'}"></span>${u.tekst}
+    </span>`;
+}
+
 function kpPeilingHtml(kurs) {
   const info = KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT;
-  const u = kpSisteUtslag;
   return `
 <div class="kp-peiling" style="margin-top:var(--space-5)" id="peiling">
   <div>${kpKompassSvg(kurs)}</div>
   <div>
     <p class="hb-small hb-muted" style="margin:0 0 2px">Kursen din nå</p>
-    <p class="kp-peiling__kurs">${info.navn}</p>
-    <p class="kp-peiling__tekst">${info.tekst}</p>
-    ${u ? `<span class="kp-peiling__utslag" data-vei="${u.vei}">
-        <span data-ikon="${u.vei === 'ingen' ? 'info' : 'pil'}"></span>${u.tekst}
-      </span>` : ''}
-    <p class="hb-small hb-muted" style="margin:var(--space-2) 0 0">
+    <p class="kp-peiling__kurs" data-kurs-navn>${info.navn}</p>
+    <p class="kp-peiling__tekst" data-kurs-tekst>${info.tekst}</p>
+    <span data-utslag>${kpUtslagHtml(kpSisteUtslag)}</span>
+    <p class="hb-small hb-muted" style="margin:var(--space-2) 0 0" data-kurs-teller>
       Basert på ${kurs.svart} av ${kurs.totalt} spørsmål som teller for kursen.
       Den kan snu helt til du er ferdig.
     </p>
@@ -594,7 +613,6 @@ function kpSporsmalHtml(f) {
 <div class="kp-sporsmal">
   <h1 class="hb-h2">${sp.tittel}</h1>
   <p class="kp-sporsmal__under">${sp.undertekst}</p>
-  ${sp.ny ? `<p class="hb-small" style="margin:-8px 0 var(--space-3)"><span class="hb-tag hb-tag--new">Nytt spørsmål</span></p>` : ''}
   ${kpHvorforBoks(sp)}
 
   <form id="sporsmalsform" novalidate>
@@ -636,13 +654,111 @@ function kpOppfolgingHtml(sp) {
    framdriftsteller som kan gå i utakt, fordi alt ligger framme.
    ─────────────────────────────────────────────────────────────────── */
 
+/* Fargekodene på fanene. En rolig trapp fra mørk grønn til blågrå,
+   med små steg mellom, slik at de fem etappene skiller seg fra
+   hverandre uten å skrike. Alle fra Husbankens palett. Fargen er
+   aldri eneste kjennetegn, navnet står alltid ved siden av. */
+const KP_TABFARGE = ['#2B4715', '#4A7729', '#73A54B', '#4D7B95', '#335162'];
+
+function kpEtappeStatus(e) {
+  const sp = KOMPASS_SPORSMAL.filter(x => x.etappe === e.id);
+  return { svart: sp.filter(kpBesvart).length, totalt: sp.length };
+}
+
+function kpTabberHtml() {
+  return `
+<nav class="kp-tabs kp-utskrift-skjul" aria-labelledby="tabs-tittel">
+  <p class="kp-tabs__tittel" id="tabs-tittel">Hopp til etappe</p>
+  <ol>
+    ${KOMPASS_ETAPPER.map((e, i) => {
+      const st = kpEtappeStatus(e);
+      return `
+    <li>
+      <a class="kp-tab" href="#etappe-${e.id}" data-tab="${e.id}"
+         style="--tab-farge:${KP_TABFARGE[i]}">
+        <span class="kp-tab__nr">${i + 1}</span>
+        <span class="kp-tab__navn">${e.navn}</span>
+        <span class="kp-tab__tall" data-tabtall="${e.id}">${st.svart}/${st.totalt}</span>
+      </a>
+    </li>`;
+    }).join('')}
+  </ol>
+</nav>`;
+}
+
+/* Fanene følger med når du blar, og teller opp når du svarer. */
+function kpInitTabber() {
+  const tabber = [...document.querySelectorAll('.kp-tab')];
+  if (!tabber.length) return;
+
+  const merk = id => tabber.forEach(t =>
+    t.setAttribute('aria-current', t.dataset.tab === id ? 'true' : 'false'));
+  merk(KOMPASS_ETAPPER[0].id);
+
+  const seksjoner = KOMPASS_ETAPPER
+    .map(e => document.getElementById('etappe-' + e.id))
+    .filter(Boolean);
+  if (!seksjoner.length) return;
+
+  /* Den aktive etappen er den siste som har passert en tenkt linje et
+     stykke ned på skjermen. En observatør ga feil svar her: flere
+     seksjoner er synlige samtidig, og da traff den alltid den øverste.
+     Denne regner det ut direkte, og blir aldri hengende etter. */
+  const linje = () => Math.min(180, window.innerHeight * 0.25);
+
+  const oppdater = () => {
+    const grense = linje();
+    let valgt = seksjoner[0];
+    seksjoner.forEach(sek => {
+      if (sek.getBoundingClientRect().top <= grense) valgt = sek;
+    });
+    /* Helt nederst på siden vinner den siste, ellers blir den aldri aktiv */
+    if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 4) {
+      valgt = seksjoner[seksjoner.length - 1];
+    }
+    merk(valgt.id.replace('etappe-', ''));
+  };
+
+  if (kpInitTabber._av) kpInitTabber._av();
+
+  /* Strupes med klokke, ikke med requestAnimationFrame. Bildeoppdatering
+     stopper når fanen ligger i bakgrunnen, og da ble merkingen hengende
+     igjen på feil etappe når man kom tilbake. */
+  let planlagt = 0;
+  const paa = () => {
+    if (planlagt) return;
+    planlagt = setTimeout(() => { planlagt = 0; oppdater(); }, 80);
+  };
+  window.addEventListener('scroll', paa, { passive: true });
+  window.addEventListener('resize', paa, { passive: true });
+  kpInitTabber._av = () => {
+    clearTimeout(planlagt);
+    window.removeEventListener('scroll', paa);
+    window.removeEventListener('resize', paa);
+    kpInitTabber._av = null;
+  };
+  kpInitTabber._merk = merk;
+  oppdater();
+}
+
+function kpOppdaterTabber() {
+  KOMPASS_ETAPPER.forEach(e => {
+    const el = document.querySelector(`[data-tabtall="${e.id}"]`);
+    if (!el) return;
+    const st = kpEtappeStatus(e);
+    el.textContent = st.svart + '/' + st.totalt;
+    el.closest('.kp-tab').dataset.ferdig = String(st.svart === st.totalt);
+  });
+}
+
 function kpListeHtml() {
   let nr = 0;
   const etapper = KOMPASS_ETAPPER.map((e, i) => {
     const sp = KOMPASS_SPORSMAL.filter(s => s.etappe === e.id);
     return `
-    <section class="kp-liste__etappe" id="etappe-${e.id}">
-      <h2 class="hb-h2">${i + 1}. ${e.navn}</h2>
+    <section class="kp-liste__etappe" id="etappe-${e.id}"
+             style="--etappe-farge:${KP_TABFARGE[i]}" aria-labelledby="tittel-${e.id}">
+      <h2 class="hb-h2" id="tittel-${e.id}">${i + 1}. ${e.navn}</h2>
       <p style="max-width:58ch">${e.ingress}</p>
       ${sp.map(s => {
         nr++;
@@ -676,19 +792,17 @@ function kpListeHtml() {
 
   return `
 <section class="hb-section" style="padding-top:var(--space-4)">
-  <div class="hb-shell">
+  <div class="hb-shell hb-shell--wide">
     <h1 class="kp-h1 kp-h1--smal">Boligkompasset, alle spørsmålene</h1>
     <p class="kp-ingress">
       Alle 20 spørsmålene på én side. Svar på det du kan, hopp over det du er
       usikker på, og trykk «Se oppsummeringen» nederst. Svarene lagres etter
       hvert som du gir dem.
     </p>
-    <p class="kp-utskrift-skjul">
-      <button type="button" class="kp-bytt" data-bytt="kompass">
-        <span data-ikon="pil"></span>Bytt til kompasset, ett spørsmål om gangen
-      </button>
-    </p>
-    <form id="listeform">${etapper}</form>
+    <div class="kp-liste__oppsett">
+      ${kpTabberHtml()}
+      <form id="listeform" class="kp-liste__innhold">${etapper}</form>
+    </div>
     <div class="kp-nav" style="margin-top:var(--space-6)">
       <button type="button" class="hb-btn hb-btn--tertiary" data-til-start>Tilbake til starten</button>
       <span class="kp-nav__hoyre">
@@ -1034,6 +1148,7 @@ function kpSvarlisteHtml() {
    ─────────────────────────────────────────────────────────────────── */
 
 function kpTegnLagring(tilstand) {
+  kpOppdaterTabber();
   const el = document.getElementById('kp-lagring');
   if (!el) return;
   const inne = kpInnlogget();
@@ -1098,6 +1213,8 @@ function kpTegn() {
   kpIkoner(rot);
   kpTegnLagring();
   hbInitTrekkspill(rot);
+  if (kpModus === 'liste') kpInitTabber();
+  else if (kpInitTabber._av) kpInitTabber._av();
   const h = rot.querySelector('h1') || rot.querySelector('h2');
   if (h && kpModus !== 'start') { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
   window.scrollTo({ top: 0, behavior: 'auto' });
@@ -1112,14 +1229,51 @@ function kpIkoner(rot) {
   rot.querySelectorAll('[data-avatar]').forEach(e => { e.outerHTML = HB_AVATAR; });
 }
 
-/* Bare nåla og teksten ved siden av, uten å tegne hele skjermen på
-   nytt. Da mister ikke radioknappen fokus når du svarer. */
+/* Nåla og teksten oppdateres på stedet, ikke ved å tegne boksen på
+   nytt. Byttet vi ut hele boksen, ville nettleseren lage et nytt
+   SVG-element som er ferdig rotert fra første bilde, og da hopper nåla
+   i stedet for å svinge. Her endrer vi bare transform på den samme
+   noden, så CSS-overgangen på 700 ms får gå. */
 function kpOppdaterPeiling() {
   const kurs = kpBeregnKurs();
   const boks = document.getElementById('peiling');
   if (!boks) return;
-  boks.outerHTML = kpPeilingHtml(kurs);
-  kpIkoner(document.getElementById('kompasset'));
+
+  const info = KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT;
+  const vinkel = (Math.atan2(kurs.x, kurs.y) * 180 / Math.PI) || 0;
+  const skala = 0.52 + 0.48 * (kurs.r || 0);
+
+  const naal = boks.querySelector('[data-naal]');
+  if (naal) naal.style.transform = `rotate(${vinkel.toFixed(1)}deg) scale(${skala.toFixed(2)})`;
+
+  const svg = boks.querySelector('[data-kompass]');
+  if (svg) svg.setAttribute('aria-label', kpKompassTekst(kurs));
+
+  /* Kvadranten nåla peker inn i, tonet litt sterkere */
+  const kv = kurs.r > 0.24
+    ? (kurs.y >= 0 ? (kurs.x >= 0 ? 'nø' : 'nv') : (kurs.x >= 0 ? 'sø' : 'sv'))
+    : null;
+  boks.querySelectorAll('[data-kv]').forEach(f => {
+    const aktiv = f.dataset.kv === kv;
+    f.classList.toggle('kp-kompass__felt--aktiv', aktiv);
+    f.setAttribute('fill', aktiv ? 'var(--hb-green-600)' : 'var(--hb-slate-400)');
+  });
+
+  const sett = (velger, tekst) => {
+    const el = boks.querySelector(velger);
+    if (el) el.textContent = tekst;
+  };
+  sett('[data-kurs-navn]', info.navn);
+  sett('[data-kurs-tekst]', info.tekst);
+  sett('[data-kurs-teller]',
+       `Basert på ${kurs.svart} av ${kurs.totalt} spørsmål som teller for kursen. `
+       + 'Den kan snu helt til du er ferdig.');
+
+  const utslag = boks.querySelector('[data-utslag]');
+  if (utslag) {
+    utslag.innerHTML = kpUtslagHtml(kpSisteUtslag);
+    kpIkoner(utslag);
+  }
 }
 
 /* ═══ Svar ════════════════════════════════════════════════════════ */
@@ -1129,22 +1283,32 @@ function kpSettSvar(navn, verdi, sp, felt) {
   S[navn] = verdi;
   const etter = kpBeregnKurs();
 
-  /* Hva dette ene svaret gjorde med kursen */
+  /* Hva dette ene svaret betyr.
+
+     Her sto det før «Svaret trakk kompasset mot sør», som var galt å
+     skrive. Ett svar er én stemme blant mange, og nåla viser summen.
+     Et sørlig svar kan derfor godt ende med at nåla fortsatt peker
+     nord, bare litt kortere. Da lyver teksten om det som står rett
+     ved siden av. Nå sier den hva svaret teller for, og den sier fra
+     bare når kursen faktisk skiftet navn. */
   if (sp && !sp.ikkeKompass) {
     const p = kpPoengFor(sp, felt);
     if (p) {
       const r = kpRetning(p.e, p.n, 0.22);
+      const skiftet = foer.antall > 0 && foer.retning !== etter.retning;
+      const skifte = skiftet
+        ? ' Kursen din er nå «' + (KOMPASS_RETNINGER[etter.retning] || KOMPASS_RETNINGER.MIDT).navn + '».'
+        : '';
       kpSisteUtslag = r === 'MIDT'
-        ? { vei: 'ingen', tekst: KP_RETNINGSFORKLARING.MIDT }
+        ? { vei: 'ingen', tekst: KP_RETNINGSFORKLARING.MIDT + skifte }
         : { vei: (p.n < 0 ? 'sor' : 'nord'),
-            tekst: 'Svaret trakk kompasset ' + KP_RETNINGSORD[r] + '. ' + KP_RETNINGSFORKLARING[r] };
+            tekst: 'Dette svaret teller ' + KP_RETNINGSORD[r] + '. ' + KP_RETNINGSFORKLARING[r] + skifte };
     } else {
       kpSisteUtslag = null;
     }
   }
   kpLagre();
   kpOppdaterPeiling();
-  void foer; void etter;
 }
 
 function kpLesSkjema(rot) {
@@ -1313,6 +1477,41 @@ function kpKlikk(ev) {
     const aapen = t.getAttribute('aria-expanded') === 'true';
     t.setAttribute('aria-expanded', String(!aapen));
     p.hidden = aapen;
+  }
+  else if (d.tab) {
+    /* Vi ruller selv i stedet for å la lenka gjøre det. Nettleserens
+       eget ankerhopp oppførte seg ujevnt over de lange avstandene her,
+       og vi trenger dessuten å legge på plass til fanerada som ligger
+       fast øverst på smal skjerm. */
+    ev.preventDefault();
+    const maal = document.getElementById('etappe-' + d.tab);
+    if (!maal) return;
+    const fanerad = document.querySelector('.kp-tabs');
+    const smal = window.matchMedia('(max-width: 899px)').matches;
+    const fast = smal && fanerad ? fanerad.getBoundingClientRect().height + 12 : 24;
+    const rolig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const mot = Math.max(0, maal.getBoundingClientRect().top + window.scrollY - fast);
+    const fra = window.scrollY;
+    /* «auto» ville betydd «gjør som CSS sier», og CSS sier smooth.
+       Skal vi hoppe, må det stå «instant». */
+    window.scrollTo({ top: mot, behavior: rolig ? 'instant' : 'smooth' });
+
+    /* Myk rulling drives av bildeoppdateringene, og de står stille når
+       fanen ligger i bakgrunnen eller maskinen sparer strøm. Kommer
+       rullingen ikke i gang, hopper vi i stedet. Da skjer det alltid
+       noe når man trykker på en fane. */
+    if (!rolig) {
+      setTimeout(() => {
+        if (Math.abs(window.scrollY - fra) < 4 && Math.abs(mot - fra) > 4) {
+          window.scrollTo({ top: mot, behavior: 'instant' });
+        }
+      }, 600);
+    }
+
+    if (kpInitTabber._merk) kpInitTabber._merk(d.tab);
+    history.replaceState(null, '', '#etappe-' + d.tab);
+    maal.setAttribute('tabindex', '-1');
+    maal.focus({ preventScroll: true });
   }
   else if (d.kurs) {
     const k = KOMPASS_RETNINGER[d.kurs];

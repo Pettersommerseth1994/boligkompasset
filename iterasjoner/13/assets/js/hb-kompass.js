@@ -411,7 +411,41 @@ function kpStartHtml() {
       </div>
     </div>` : ''}
 
-    <div class="hb-cardgrid hb-cardgrid--3" style="margin-bottom:var(--space-6)">
+    <h2 class="hb-h3">Velg hvordan du vil svare</h2>
+    <p style="max-width:56ch">
+      Spørsmålene er de samme, svarene lagres på samme sted, og du får samme
+      oppsummering.
+    </p>
+    <div class="kp-modus" style="margin-top:var(--space-4)">
+      <div class="kp-modus__kort kp-modus__kort--anbefalt">
+        <span class="kp-modus__merke">Anbefalt</span>
+        <h3 class="hb-h4">Med kompasset</h3>
+        <p>
+          Ett spørsmål om gangen, i ${KOMPASS_ETAPPER.length} steg. Under hvert spørsmål ser du
+          kompassnåla flytte seg, og du får vite hva svaret ditt betydde.
+          Litt som en valgomat.
+        </p>
+        <p><strong>${KOMPASS_ETAPPER.length} steg · ${kpAntallSporsmal()} spørsmål · 5–10 minutter</strong></p>
+        <button type="button" class="hb-btn hb-btn--primary hb-btn--block" data-start="kompass">
+          Start kartleggingen <span data-ikon="pil"></span>
+        </button>
+      </div>
+      <div class="kp-modus__kort">
+        <span class="kp-modus__merke" style="background:var(--hb-slate-100);color:var(--fg-subtle)">Rett på sak</span>
+        <h3 class="hb-h4">Som en enkel liste</h3>
+        <p>
+          Alle ${kpAntallSporsmal()} spørsmålene under hverandre på én side. Ingen animasjon,
+          ingen kompassnål. Bla nedover, svar, og trykk «Se oppsummeringen»
+          til slutt. Enklest hvis du bruker skjermleser eller forstørring.
+        </p>
+        <p><strong>Én side · ${kpAntallSporsmal()} spørsmål</strong></p>
+        <button type="button" class="hb-btn hb-btn--secondary hb-btn--block" data-start="liste">
+          Ta spørsmålene i en liste
+        </button>
+      </div>
+    </div>
+
+    <div class="hb-cardgrid hb-cardgrid--3" style="margin:var(--space-7) 0 var(--space-6)">
       <div class="hb-card">
         <h2 class="hb-h4">Hvem er det for?</h2>
         <p class="hb-small">
@@ -457,40 +491,6 @@ function kpStartHtml() {
         <div>
           <div class="kp-kompass-stort" id="start-kompass">${kpKompassSvg(kurs)}</div>
         </div>
-      </div>
-    </div>
-
-    <h2 class="hb-h3">Velg hvordan du vil svare</h2>
-    <p style="max-width:56ch">
-      Spørsmålene er de samme, svarene lagres på samme sted, og du får samme
-      oppsummering.
-    </p>
-    <div class="kp-modus" style="margin-top:var(--space-4)">
-      <div class="kp-modus__kort kp-modus__kort--anbefalt">
-        <span class="kp-modus__merke">Anbefalt</span>
-        <h3 class="hb-h4">Med kompasset</h3>
-        <p>
-          Ett spørsmål om gangen, i ${KOMPASS_ETAPPER.length} steg. Under hvert spørsmål ser du
-          kompassnåla flytte seg, og du får vite hva svaret ditt betydde.
-          Litt som en valgomat.
-        </p>
-        <p><strong>${KOMPASS_ETAPPER.length} steg · ${kpAntallSporsmal()} spørsmål · 5–10 minutter</strong></p>
-        <button type="button" class="hb-btn hb-btn--primary hb-btn--block" data-start="kompass">
-          Start kartleggingen <span data-ikon="pil"></span>
-        </button>
-      </div>
-      <div class="kp-modus__kort">
-        <span class="kp-modus__merke" style="background:var(--hb-slate-100);color:var(--fg-subtle)">Rett på sak</span>
-        <h3 class="hb-h4">Som en enkel liste</h3>
-        <p>
-          Alle ${kpAntallSporsmal()} spørsmålene under hverandre på én side. Ingen animasjon,
-          ingen kompassnål. Bla nedover, svar, og trykk «Se oppsummeringen»
-          til slutt. Enklest hvis du bruker skjermleser eller forstørring.
-        </p>
-        <p><strong>Én side · ${kpAntallSporsmal()} spørsmål</strong></p>
-        <button type="button" class="hb-btn hb-btn--secondary hb-btn--block" data-start="liste">
-          Ta spørsmålene i en liste
-        </button>
       </div>
     </div>
 
@@ -1203,7 +1203,7 @@ function kpOppsummeringHtml() {
 
     <details class="kp-svardetaljer kp-utskrift-skjul">
       <summary>Se alle svarene dine</summary>
-      <ul class="kp-svarliste">${kpSvarlisteHtml()}</ul>
+      <div class="hb-summary hb-summary--flat">${kpSvarlisteHtml()}</div>
     </details>
 
   </div>
@@ -1398,35 +1398,55 @@ function kpOkonomiHtml() {
   </div>`;
 }
 
+/* Svarene settes opp som oppsummeringen i søknaden: én bolk per steg,
+   med «Endre» under overskriften, og etikett over verdi med hårstrek
+   mellom. Den gamle varianten la «Endre» på egen linje til høyre i
+   hver rad, og på mobil ble det en trapp av lenker uten sammenheng
+   med teksten over. */
+
+const KP_BLYANT = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+  + '<path d="M4 20h4L19 9l-4-4L4 16v4Z" fill="none" stroke="currentColor" '
+  + 'stroke-width="1.8" stroke-linejoin="round"/>'
+  + '<path d="M14.5 5.5 18.5 9.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+
+function kpSvarRader(sp) {
+  const tekstFor = (valg, v) => (valg.find(o => o.v === v) || {}).tittel || v;
+  if (sp.type === 'flerfelt') {
+    return sp.felt.map(f => ({
+      sp: f.ledetekst,
+      svar: S[f.navn] ? tekstFor(f.valg, S[f.navn]) : null
+    }));
+  }
+  const v = S[sp.id];
+  if (sp.type === 'flervalg') {
+    return [{ sp: sp.tittel,
+              svar: Array.isArray(v) && v.length ? v.map(x => tekstFor(sp.valg, x)).join(', ') : null }];
+  }
+  return [{ sp: sp.tittel, svar: v && v !== 'hoppet' ? tekstFor(sp.valg, v) : null }];
+}
+
 function kpSvarlisteHtml() {
-  const rader = [];
-  KOMPASS_SPORSMAL.forEach(sp => {
-    const tekstFor = (valg, v) => (valg.find(o => o.v === v) || {}).tittel || v;
-    if (sp.type === 'flerfelt') {
-      sp.felt.forEach(f => rader.push({
-        id: sp.id, sp: f.ledetekst,
-        svar: S[f.navn] ? tekstFor(f.valg, S[f.navn]) : 'Ikke besvart'
-      }));
-    } else if (sp.type === 'flervalg') {
-      const v = S[sp.id];
-      rader.push({
-        id: sp.id, sp: sp.tittel,
-        svar: Array.isArray(v) && v.length ? v.map(x => tekstFor(sp.valg, x)).join(', ') : 'Ikke besvart'
-      });
-    } else {
-      const v = S[sp.id];
-      rader.push({
-        id: sp.id, sp: sp.tittel,
-        svar: v === 'hoppet' ? 'Hoppet over' : v ? tekstFor(sp.valg, v) : 'Ikke besvart'
-      });
-    }
-  });
-  return rader.map(r => `
-    <li>
-      <span class="kp-svarliste__sp">${r.sp}</span>
-      <span class="kp-svarliste__sv">${kpEsc(r.svar)}</span>
-      <button type="button" class="kp-hopp kp-utskrift-skjul" data-endre="${r.id}">Endre</button>
-    </li>`).join('');
+  return KOMPASS_ETAPPER.map(e => {
+    const sporsmal = KOMPASS_SPORSMAL.filter(x => x.etappe === e.id);
+    if (!sporsmal.length) return '';
+    const rader = [].concat(...sporsmal.map(kpSvarRader));
+    return `
+    <div class="hb-summary__group">
+      <div class="hb-summary__head">
+        <h3>${e.navn}</h3>
+        <button type="button" class="hb-summary__edit kp-utskrift-skjul" data-endre="${sporsmal[0].id}">
+          ${KP_BLYANT}Endre
+        </button>
+      </div>
+      <dl>
+        ${rader.map(r => `
+        <div>
+          <dt>${r.sp}</dt>
+          <dd${r.svar ? '' : ' class="hb-muted"'}>${r.svar ? kpEsc(r.svar) : 'Ikke besvart'}</dd>
+        </div>`).join('')}
+      </dl>
+    </div>`;
+  }).join('');
 }
 
 /* ═══ Snarveien nederst ═══════════════════════════════════════════

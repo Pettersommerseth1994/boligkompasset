@@ -411,7 +411,41 @@ function kpStartHtml() {
       </div>
     </div>` : ''}
 
-    <div class="hb-cardgrid hb-cardgrid--3" style="margin-bottom:var(--space-6)">
+    <h2 class="hb-h3">Velg hvordan du vil svare</h2>
+    <p style="max-width:56ch">
+      Spørsmålene er de samme, svarene lagres på samme sted, og du får samme
+      oppsummering.
+    </p>
+    <div class="kp-modus" style="margin-top:var(--space-4)">
+      <div class="kp-modus__kort kp-modus__kort--anbefalt">
+        <span class="kp-modus__merke">Anbefalt</span>
+        <h3 class="hb-h4">Med kompasset</h3>
+        <p>
+          Ett spørsmål om gangen, i ${KOMPASS_ETAPPER.length} steg. Under hvert spørsmål ser du
+          kompassnåla flytte seg, og du får vite hva svaret ditt betydde.
+          Litt som en valgomat.
+        </p>
+        <p><strong>${KOMPASS_ETAPPER.length} steg · ${kpAntallSporsmal()} spørsmål · 5–10 minutter</strong></p>
+        <button type="button" class="hb-btn hb-btn--primary hb-btn--block" data-start="kompass">
+          Start kartleggingen <span data-ikon="pil"></span>
+        </button>
+      </div>
+      <div class="kp-modus__kort">
+        <span class="kp-modus__merke" style="background:var(--hb-slate-100);color:var(--fg-subtle)">Rett på sak</span>
+        <h3 class="hb-h4">Som en enkel liste</h3>
+        <p>
+          Alle ${kpAntallSporsmal()} spørsmålene under hverandre på én side. Ingen animasjon,
+          ingen kompassnål. Bla nedover, svar, og trykk «Se oppsummeringen»
+          til slutt. Enklest hvis du bruker skjermleser eller forstørring.
+        </p>
+        <p><strong>Én side · ${kpAntallSporsmal()} spørsmål</strong></p>
+        <button type="button" class="hb-btn hb-btn--secondary hb-btn--block" data-start="liste">
+          Ta spørsmålene i en liste
+        </button>
+      </div>
+    </div>
+
+    <div class="hb-cardgrid hb-cardgrid--3" style="margin:var(--space-7) 0 var(--space-6)">
       <div class="hb-card">
         <h2 class="hb-h4">Hvem er det for?</h2>
         <p class="hb-small">
@@ -457,40 +491,6 @@ function kpStartHtml() {
         <div>
           <div class="kp-kompass-stort" id="start-kompass">${kpKompassSvg(kurs)}</div>
         </div>
-      </div>
-    </div>
-
-    <h2 class="hb-h3">Velg hvordan du vil svare</h2>
-    <p style="max-width:56ch">
-      Spørsmålene er de samme, svarene lagres på samme sted, og du får samme
-      oppsummering.
-    </p>
-    <div class="kp-modus" style="margin-top:var(--space-4)">
-      <div class="kp-modus__kort kp-modus__kort--anbefalt">
-        <span class="kp-modus__merke">Anbefalt</span>
-        <h3 class="hb-h4">Med kompasset</h3>
-        <p>
-          Ett spørsmål om gangen, i ${KOMPASS_ETAPPER.length} steg. Under hvert spørsmål ser du
-          kompassnåla flytte seg, og du får vite hva svaret ditt betydde.
-          Litt som en valgomat.
-        </p>
-        <p><strong>${KOMPASS_ETAPPER.length} steg · ${kpAntallSporsmal()} spørsmål · 5–10 minutter</strong></p>
-        <button type="button" class="hb-btn hb-btn--primary hb-btn--block" data-start="kompass">
-          Start kartleggingen <span data-ikon="pil"></span>
-        </button>
-      </div>
-      <div class="kp-modus__kort">
-        <span class="kp-modus__merke" style="background:var(--hb-slate-100);color:var(--fg-subtle)">Rett på sak</span>
-        <h3 class="hb-h4">Som en enkel liste</h3>
-        <p>
-          Alle ${kpAntallSporsmal()} spørsmålene under hverandre på én side. Ingen animasjon,
-          ingen kompassnål. Bla nedover, svar, og trykk «Se oppsummeringen»
-          til slutt. Enklest hvis du bruker skjermleser eller forstørring.
-        </p>
-        <p><strong>Én side · ${kpAntallSporsmal()} spørsmål</strong></p>
-        <button type="button" class="hb-btn hb-btn--secondary hb-btn--block" data-start="liste">
-          Ta spørsmålene i en liste
-        </button>
       </div>
     </div>
 
@@ -549,6 +549,12 @@ const KP_ETAPPEFIG = {
   rom: '<rect x="10" y="14" width="76" height="72" rx="4" fill="none" stroke="currentColor" stroke-width="5"/><path d="M48 14v72M10 52h38" fill="none" stroke="currentColor" stroke-width="5"/>',
   krone: '<circle cx="48" cy="50" r="34" fill="none" stroke="currentColor" stroke-width="5"/><path d="M60 38c-3-4-8-6-12-6-7 0-11 4-11 9 0 10 23 6 23 16 0 5-5 9-12 9-5 0-10-2-13-6M48 24v52" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>'
 };
+
+/* Overtittel over H1, i stedet for en halvsetning bak et kolon. Den ligger
+   inni overskrifta, ikke som et eget avsnitt over, slik at skjermleseren
+   får med seg begge delene, og i samme rekkefølge som øyet ser dem. */
+const kpTittel = (over, tittel) =>
+  `<h1 class="hb-h2 kp-tittel"><span class="kp-tittel__over">${over}</span> ${tittel}</h1>`;
 
 function kpEtappeHtml(f) {
   return `
@@ -634,7 +640,7 @@ function kpEtappeSluttHtml(f) {
     const svart = sp.filter(kpBesvart).length;
     return `
 <div class="kp-sporsmal">
-  <h1 class="hb-h2">${f.e.navn}: hva vi gjør med svarene</h1>
+  ${kpTittel('Hva vi gjør med svarene', f.e.navn)}
   <p class="kp-sporsmal__under">
     Dette steget flytter ikke nåla. Kompasset ser bare på boligen.
   </p>
@@ -652,7 +658,7 @@ function kpEtappeSluttHtml(f) {
 
   return `
 <div class="kp-sporsmal">
-  <h1 class="hb-h2">${f.e.navn}: slik ser det ut</h1>
+  ${kpTittel('Slik ser det ut', f.e.navn)}
   <p class="kp-sporsmal__under">
     Her står nåla slik svarene i dette steget samlet sett peker. Neste steg
     begynner på null igjen.
@@ -1351,13 +1357,13 @@ const KP_INVESTERING = {
                raad: 'Du oppga at du ikke har tenkt å bruke penger nå. Da er de enkle grepene over stedet å begynne: lys, håndlister og terskler koster lite, og flere av dem kan du gjøre selv. Resten kan vente til det passer.',
                ordninger: [] },
   '0-50':    { navn: 'inntil 50 000 kroner',
-               raad: 'Med det beløpet kommer du langt på de enkle grepene, og du kan ta ett av de mindre byggearbeidene. Husk at tilskuddet krever at du oppgraderer for minst 40 000 kroner.',
+               raad: 'Med det beløpet kommer du langt på de enkle grepene, og du kan ta ett av de mindre byggearbeidene. Flere av ordningene under har en nedre grense for hvor lite arbeidet kan være, så sjekk vilkårene før du deler opp jobben.',
                ordninger: ['aldersvennlig', 'komtilskudd'] },
   '50-200':  { navn: '50 000 – 200 000 kroner',
-               raad: 'Det rekker til et mindre byggearbeid. Med tilskuddet på toppen kan du komme et godt stykke lenger enn beløpet alene tilsier.',
+               raad: 'Det rekker til et mindre byggearbeid. Med et tilskudd eller lån på toppen kan du komme et godt stykke lenger enn beløpet alene tilsier.',
                ordninger: ['aldersvennlig', 'komtilskudd', 'startlaan'] },
   '200-400': { navn: '200 000 – 400 000 kroner',
-               raad: 'Det rekker til et av de store tiltakene, typisk badet eller inngangen. Snakk med banken om rekkefølgen: tilskudd søkes før arbeidet settes i gang.',
+               raad: 'Det rekker til et av de store tiltakene, typisk badet eller inngangen. Snakk med banken om rekkefølgen, og husk at de fleste tilskudd må være søkt om før arbeidet settes i gang.',
                ordninger: ['aldersvennlig', 'startlaan', 'husbanklaan', 'komtilskudd'] },
   '400-600': { navn: '400 000 – 600 000 kroner',
                raad: 'Det rekker til flere store tiltak samtidig, eller til å endre planløsningen. På dette nivået lønner det seg å få en fagperson til å se på helheten før du begynner.',
@@ -1391,10 +1397,7 @@ function kpOkonomiHtml() {
       til å velge hvilke tiltak og ordninger vi viser deg.
     </p>
     <p style="margin:var(--space-2) 0 0">${valgt.raad}</p>
-    <p class="hb-small hb-muted" style="margin:var(--space-2) 0 0">
-      Tilskuddet dekker 25 prosent av det du oppgraderer for, opptil 75 000
-      kroner. Ingenting er sjekket mot bank eller register.
-    </p>
+
   </div>`;
 }
 

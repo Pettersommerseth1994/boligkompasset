@@ -179,7 +179,7 @@ body {
 .hb-h5, h5.hb { font: 600 var(--text-sm)/var(--lh-sm) var(--font-sans); color: var(--fg-default); margin: 0 0 var(--space-2); }
 .hb-h6, h6.hb { font: 600 var(--text-xs)/var(--lh-xs) var(--font-sans); color: var(--fg-default); margin: 0 0 var(--space-2); text-transform: uppercase; letter-spacing: 0.04em; }
 
-.hb-ingress { font: 300 var(--text-lg)/var(--lh-lg) var(--font-heading); color: var(--fg-default); }
+.hb-ingress { font: 400 var(--text-lg)/var(--lh-lg) var(--font-heading); color: var(--fg-default); }
 .hb-body    { font: 400 var(--text-base)/var(--lh-base) var(--font-sans); color: var(--fg-default); }
 .hb-small   { font: 400 var(--text-sm)/var(--lh-sm) var(--font-sans); color: var(--fg-default); }
 .hb-label   { font: 600 var(--text-base)/var(--lh-base) var(--font-sans); color: var(--fg-default); }

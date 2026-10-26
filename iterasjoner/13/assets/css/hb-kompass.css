@@ -242,7 +242,7 @@
 .kp-etappe-kort__nr {
   display: inline-block;
   font: 600 var(--text-xs)/1 var(--font-sans);
-  text-transform: uppercase; letter-spacing: .08em;
+  letter-spacing: 0;
   color: var(--hb-green-800);
   background: var(--hb-green-100);
   border-radius: var(--radius-pill);
@@ -478,7 +478,7 @@
 .kp-modus__kort--anbefalt { border-color: var(--hb-green-700); }
 .kp-modus__merke {
   align-self: flex-start;
-  font: 600 12px/1 var(--font-sans); text-transform: uppercase; letter-spacing: .07em;
+  font: 600 12px/1 var(--font-sans); letter-spacing: 0;
   background: var(--hb-green-100); color: var(--hb-green-800);
   border-radius: var(--radius-pill); padding: 6px 12px;
 }
@@ -487,12 +487,16 @@
 .kp-modus__kort .hb-btn { margin-top: auto; }
 
 .kp-bytt {
-  display: inline-flex; align-items: flex-start; gap: 8px;
+  display: inline-flex; align-items: center; gap: 8px;
   text-align: left;
   background: none; border: 0; cursor: pointer; padding: 6px 0;
   color: var(--fg-link); text-decoration: underline;
   font: 400 var(--text-sm)/var(--lh-sm) var(--font-sans);
 }
+/* Ikonet ligger i en inline span, og den setter seg på grunnlinja.
+   Uten dette står pila lavere enn teksten ved siden av. */
+.kp-bytt > span { display: inline-flex; align-items: center; }
+.kp-bytt svg { display: block; }
 
 /* ═══ Listemodus ══════════════════════════════════════════════════
    Etappene har hver sin fane i margen, som seksjonene i OneNote. Du
@@ -605,7 +609,7 @@
 @media (min-width: 720px) {
   .kp-resultat__topp { grid-template-columns: 330px 1fr; padding: var(--space-6) var(--space-5); }
 }
-.kp-resultat__kurs { font: 600 var(--text-xs)/1 var(--font-sans); text-transform: uppercase; letter-spacing: .1em; color: var(--hb-green-800); margin: 0 0 var(--space-2); }
+.kp-resultat__kurs { font: 600 var(--text-xs)/1 var(--font-sans); color: var(--hb-green-800); margin: 0 0 var(--space-2); }
 .kp-resultat__navn { font: 600 var(--text-2xl)/var(--lh-2xl) var(--font-display); margin: 0 0 var(--space-3); letter-spacing: -0.01em; }
 .kp-resultat__tekst { margin: 0; max-width: 46ch; }
 .kp-resultat__bunn { padding: var(--space-4); }
@@ -642,7 +646,7 @@
 .kp-tiltak__fig { flex: 0 0 auto; width: 56px; height: 56px; }
 .kp-tiltak__rang {
   display: inline-block; font: 600 var(--text-xs)/1 var(--font-sans);
-  text-transform: uppercase; letter-spacing: .07em; color: var(--fg-subtle);
+  letter-spacing: 0; color: var(--fg-subtle);
   margin-bottom: 4px;
 }
 .kp-tiltak__kort h3 { margin: 0; }
@@ -681,14 +685,38 @@
 .kp-ordning h4 { margin: 0 0 2px; font-size: var(--text-base); }
 .kp-ordning p { margin: 0 0 4px; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--fg-subtle); }
 
-.kp-svarliste { list-style: none; margin: 0; padding: 0; }
-.kp-svarliste li {
-  display: grid; gap: 2px; padding-block: var(--space-3);
-  border-bottom: 1px solid var(--hb-slate-200);
+/* Svarene, satt opp som oppsummeringen i søknaden. Flat variant av
+   hb-summary: ingen ramme rundt, ingen grå topp, bare hårstreker.
+   «Endre» står under overskriften, ikke ute til høyre, for på mobil
+   ble den stående for seg selv uten sammenheng med teksten over. */
+
+.hb-summary--flat { border: 0; border-radius: 0; }
+.hb-summary--flat .hb-summary__group { padding-top: var(--space-4); }
+.hb-summary--flat .hb-summary__group + .hb-summary__group { border-top: 0; }
+.hb-summary--flat .hb-summary__head {
+  display: block;
+  background: none;
+  padding: 0 0 var(--space-2);
 }
-@media (min-width: 640px) { .kp-svarliste li { grid-template-columns: 1fr 1fr auto; gap: var(--space-3); align-items: baseline; } }
-.kp-svarliste__sp { color: var(--fg-subtle); font-size: var(--text-sm); }
-.kp-svarliste__sv { font-weight: 600; }
+.hb-summary--flat .hb-summary__head h3 {
+  font: 600 var(--text-lg)/var(--lh-lg) var(--font-heading);
+  margin: 0;
+}
+.hb-summary--flat .hb-summary__edit {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 0; min-height: 0;
+}
+.hb-summary--flat .hb-summary__edit svg { width: 18px; height: 18px; }
+.hb-summary--flat dl { padding: 0; }
+.hb-summary--flat dl > div {
+  border-top: 1px solid var(--hb-slate-200);
+  padding: var(--space-3) 0;
+}
+.hb-summary--flat dt {
+  font: 600 var(--text-sm)/var(--lh-sm) var(--font-sans);
+  color: var(--fg-default);
+}
+.hb-summary--flat dd { margin: 2px 0 0; font-weight: 400; }
 
 .kp-neste { display: grid; gap: var(--space-3); }
 @media (min-width: 720px) { .kp-neste { grid-template-columns: 1fr 1fr; } }

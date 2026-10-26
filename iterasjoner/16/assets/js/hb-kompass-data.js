@@ -64,7 +64,7 @@ const KOMPASS_ETAPPER = [
     ingress: 'Vi begynner med det som er nærmest: boligen din, hverdagen din, og hva du ser for deg å bruke på en oppgradering.',
     ikon: 'hus' },
   { id: 'inne',     navn: 'Inne i boligen din',
-    ingress: 'Så går vi inn: rommene, avstandene og badet. Det er her de fleste tiltakene i det nye tilskuddet ligger.',
+    ingress: 'Så går vi inn: rommene, avstandene og badet. Det er her de fleste av de konkrete tiltakene ligger.',
     ikon: 'rom' },
   { id: 'adkomst',  navn: 'Veien inn til boligen din',
     ingress: 'Nå ser vi på veien fra veien eller parkeringen og inn døra. Kommer du deg ikke inn og ut, hjelper det lite hva som er gjort inne. Derfor veier dette steget tyngst.',
@@ -268,7 +268,7 @@ const KOMPASS_SPORSMAL = [
     tittel: 'Kommer du deg lett fram til boligen fra offentlig vei?',
     undertekst: 'Tenk på strekningen fra der bilen, bussen eller drosjen slipper deg av, og fram til inngangsdøra. Gjelder også på vinteren.',
     hvorfor: 'Denne strekningen glemmes ofte. Er den vanskelig, hjelper det lite at resten av boligen er god.',
-    brukesTil: 'Svarer du «Delvis» eller «Nei», foreslår vi tiltak 1a i det nye tilskuddet: justere terrenget ved parkering, gangvei eller inngangsparti.',
+    brukesTil: 'Svarer du «Delvis» eller «Nei», foreslår vi tiltak 1a: justere terrenget ved parkering, gangvei eller inngangsparti.',
     valg: [
       { v: 'ja',     tittel: 'Ja',     desc: 'Kort vei, jevnt underlag, og du går det uten å tenke over det.', n: 1, e: 0 },
       { v: 'delvis', tittel: 'Delvis', desc: 'Det går, men det er bratt, ujevnt, langt, eller vanskelig når det er snø og is.', n: -0.3, e: -0.4 },
@@ -445,7 +445,7 @@ const KOMPASS_SPORSMAL = [
 const KOMPASS_ORDNINGER = {
   aldersvennlig: {
     navn: 'Tilskudd til aldersvennlig oppgradering',
-    kort: 'Nytt i 2026. Dekker 25 prosent av det du oppgraderer for, opptil 75 000 kroner. Tilskudd er penger du får, ikke et lån.',
+    kort: 'Dekker 25 prosent av det du oppgraderer for, opptil 75 000 kroner. Tilskudd er penger du får, ikke et lån.',
     lenke: 'https://pettersommerseth1994.github.io/husbanken/tilskudd.html', lenketekst: 'Se hva du kan få'
   },
   startlaan: {
@@ -704,7 +704,7 @@ const KOMPASS_ANBEFALINGER = [
   }
 ];
 
-/* ═══ Tiltakskatalogen i det nye tilskuddet ════════════════════════
+/* ═══ Tiltakskatalogen ═══════════════════════════════════════════
    Ordlyden er hentet fra arket «Eksempler på tiltak» i
    arbeidsdokumentet.
    ─────────────────────────────────────────────────────────────────── */

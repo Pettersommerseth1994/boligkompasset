@@ -70,7 +70,13 @@
 @media (prefers-reduced-motion: reduce) {
   .kp-kompass__naal { transition: none; }
 }
+/* Nåla sier det samme som etikettene: grønn når den peker opp, mot en
+   kurs man vil ha, rød når den peker ned. Grå før man har svart, så
+   den ikke påstår en retning. */
 .kp-kompass__naal-nord { fill: var(--hb-green-700); }
+.kp-kompass[data-vei="ned"] .kp-kompass__naal-nord { fill: var(--hb-red-700); }
+.kp-kompass[data-tom="1"] .kp-kompass__naal-nord { fill: var(--hb-slate-300); }
+.kp-kompass[data-tom="1"] .kp-kompass__naal-sor  { fill: var(--hb-slate-200); }
 .kp-kompass__naal-sor  { fill: var(--hb-slate-300); }
 .kp-kompass__nav       { fill: var(--hb-slate-700); }
 
@@ -82,7 +88,7 @@
   fill: var(--fg-default);
   letter-spacing: 0;
 }
-.kp-kompass__etikett--n { fill: var(--hb-green-800); }
+.kp-kompass__etikett--n { fill: var(--hb-green-700); }
 .kp-kompass__etikett--s { fill: var(--hb-red-700); }
 
 /* Kompasset i bunnen av skjermen mens man svarer */
@@ -317,32 +323,81 @@
 }
 .kp-nav__hoyre { display: flex; gap: var(--space-2); align-items: center; margin-left: auto; }
 
-/* ═══ Lagringslinja ═══════════════════════════════════════════════
-   Designkritikken: «Lagres dette fortløpende? Da burde det stå
-   nederst». Den står nederst, den oppdaterer seg ved hvert svar,
-   og den sier forskjellen på innlogget og ikke.
+/* ═══ Snarveien nederst ═══════════════════════════════════════════
+   Bare for prototypen. Den skal se ut som et verktøy, ikke som en del
+   av tjenesten, og den kommer aldri med i utskriften.
+
+   Lagringslinja som sto her før, er tatt ut. Svarene lagres fortsatt
+   ved hvert eneste valg, det blir bare ikke annonsert.
    ─────────────────────────────────────────────────────────────────── */
 
-.kp-lagring {
-  border-top: 1px solid var(--hb-slate-200);
+.kp-snarvei {
+  border-top: 1px dashed var(--hb-slate-300);
   background: var(--hb-slate-50);
   padding-block: var(--space-3);
-  margin-top: var(--space-6);
+  margin-top: var(--space-7);
 }
-.kp-lagring__rad {
+.kp-snarvei .hb-shell {
   display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4);
   align-items: center; justify-content: space-between;
 }
-.kp-lagring__status { display: flex; gap: var(--space-2); align-items: flex-start; font-size: var(--text-sm); line-height: var(--lh-sm); margin: 0; }
-.kp-lagring__prikk {
-  flex: 0 0 auto; width: 11px; height: 11px; border-radius: 50%;
-  background: var(--hb-green-600); margin-top: 7px;
+.kp-snarvei__tekst {
+  margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm);
+  color: var(--fg-subtle); max-width: 52ch;
 }
-.kp-lagring[data-tilstand="lokal"] .kp-lagring__prikk { background: var(--hb-slate-400); }
-.kp-lagring[data-tilstand="lagrer"] .kp-lagring__prikk { background: var(--hb-blue-600); animation: kp-puls 900ms ease-in-out infinite; }
-@keyframes kp-puls { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
-.kp-lagring__knapper { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.kp-lagring .hb-btn { min-height: 44px; padding: 8px var(--space-3); font-size: var(--text-sm); }
+.kp-snarvei .hb-btn { min-height: 44px; padding: 8px var(--space-3); font-size: var(--text-sm); }
+
+/* ═══ Etappeoppsummeringen ════════════════════════════════════════ */
+
+.kp-peiling--stor { background: var(--hb-green-100); border-color: var(--hb-green-400); }
+
+/* ═══ Kompass per etappe i oppsummeringen ═════════════════════════ */
+
+.kp-etappekort { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+@media (min-width: 560px) { .kp-etappekort { grid-template-columns: 1fr 1fr; } }
+.kp-etappekort__kort {
+  display: flex; gap: var(--space-3); align-items: center;
+  border: 1px solid var(--hb-slate-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  background: #fff;
+}
+.kp-etappekort__rose { flex: 0 0 auto; width: 92px; }
+.kp-etappekort__tekst { min-width: 0; flex: 1; }
+.kp-etappekort__navn { margin: 0; font-size: var(--text-sm); color: var(--fg-subtle); }
+.kp-etappekort__kurs { margin: 0 0 6px; font-weight: 600; line-height: 1.3; }
+.kp-etappekort__dom { margin: 6px 0 0; font-size: 13px; color: var(--fg-subtle); }
+
+/* ═══ Kompasset du vrir selv ══════════════════════════════════════ */
+
+.kp-egen {
+  border: 2px solid var(--hb-green-700);
+  border-radius: var(--radius-lg);
+  background: #fff;
+  padding: var(--space-4);
+  margin-top: var(--space-4);
+  display: grid; gap: var(--space-4);
+  justify-items: center; text-align: center;
+}
+@media (min-width: 640px) {
+  .kp-egen {
+    grid-template-columns: 300px 1fr;
+    justify-items: stretch; text-align: left;
+    align-items: center; gap: var(--space-5);
+  }
+}
+.kp-egen__rose { width: 100%; max-width: 320px; cursor: grab; touch-action: none; }
+.kp-egen__rose:active { cursor: grabbing; }
+.kp-egen__rose .kp-kompass__naal { transition: transform var(--duration-fast) var(--ease-out); }
+.kp-egen__merke {
+  display: block; margin-top: var(--space-4);
+  font: 600 var(--text-sm)/1.3 var(--font-sans);
+}
+.kp-egen__skyv {
+  width: 100%; margin-top: var(--space-2);
+  accent-color: var(--hb-green-700);
+  height: 32px;
+}
 
 /* ═══ Modusvelger ═════════════════════════════════════════════════ */
 
@@ -578,8 +633,8 @@
   @page { size: A4; margin: 16mm 14mm; }
 
   .hb-protobar, .hb-topbar, .hb-contextbar, .hb-menubar, .hb-footer,
-  .hb-skiplink, .kp-framdrift, .kp-lagring, .kp-bytt, .kp-mer,
-  .kp-utskrift-skjul, .hb-totop { display: none !important; }
+  .hb-skiplink, .kp-framdrift, .kp-snarvei, .kp-bytt, .kp-mer,
+  .kp-utskrift-skjul, .hb-totop, .kp-egen { display: none !important; }
 
   body { background: #fff; font-size: 11pt; line-height: 1.5; }
   .hb-section { padding: 0 !important; }

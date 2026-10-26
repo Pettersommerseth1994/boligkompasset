@@ -177,7 +177,7 @@ p:last-child { margin-bottom: 0; }
   h1 { font-size: var(--text-4xl); line-height: var(--lh-4xl); }
 }
 
-.hb-lead { font: 300 var(--text-lg)/var(--lh-lg) var(--font-heading); color: var(--fg-default); }
+.hb-lead { font: 400 var(--text-lg)/var(--lh-lg) var(--font-heading); color: var(--fg-default); }
 .hb-muted { color: var(--fg-subtle); }
 .hb-small { font-size: var(--text-sm); line-height: var(--lh-sm); }
 .hb-num { font-variant-numeric: tabular-nums; }

@@ -70,8 +70,11 @@
 @media (prefers-reduced-motion: reduce) {
   .kp-kompass__naal { transition: none; }
 }
+/* Nåla sier det samme som etikettene: grønn når den peker opp, mot en
+   kurs man vil ha, rød når den peker ned. Grå før man har svart, så
+   den ikke påstår en retning. */
 .kp-kompass__naal-nord { fill: var(--hb-green-700); }
-/* Ingen svar ennå: nåla står nøytral, så den ikke påstår en retning */
+.kp-kompass[data-vei="ned"] .kp-kompass__naal-nord { fill: var(--hb-red-700); }
 .kp-kompass[data-tom="1"] .kp-kompass__naal-nord { fill: var(--hb-slate-300); }
 .kp-kompass[data-tom="1"] .kp-kompass__naal-sor  { fill: var(--hb-slate-200); }
 .kp-kompass__naal-sor  { fill: var(--hb-slate-300); }
@@ -85,7 +88,7 @@
   fill: var(--fg-default);
   letter-spacing: 0;
 }
-.kp-kompass__etikett--n { fill: var(--hb-green-800); }
+.kp-kompass__etikett--n { fill: var(--hb-green-700); }
 .kp-kompass__etikett--s { fill: var(--hb-red-700); }
 
 /* Kompasset i bunnen av skjermen mens man svarer */

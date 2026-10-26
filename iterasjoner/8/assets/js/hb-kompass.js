@@ -14,7 +14,6 @@ let S = {};              // svarene
 let KP_FLYT = [];        // skjermene i kompassmodus
 let kpPos = 0;           // hvor i flyten vi er
 let kpModus = 'kompass'; // 'kompass' | 'liste'
-let kpSisteUtslag = null;
 
 /* ═══ Lagring ═════════════════════════════════════════════════════
    Svarene skrives ved hvert eneste valg. Linja nederst på skjermen
@@ -29,17 +28,7 @@ function kpLes() {
 function kpLagre() {
   S.endret = new Date().toISOString();
   try { localStorage.setItem(KP_LAGER, JSON.stringify(S)); } catch { /* privat modus */ }
-  kpTegnLagring('lagrer');
-  clearTimeout(kpLagre._t);
-  kpLagre._t = setTimeout(() => kpTegnLagring(), 700);
-}
-function kpInnlogget() {
-  try { return !!(JSON.parse(localStorage.getItem('hb-soknad-aldersvennlig')) || {}).innlogget; }
-  catch { return false; }
-}
-function kpBrukernavn() {
-  try { return (JSON.parse(localStorage.getItem('hb-soknad-aldersvennlig')) || {}).navn || 'deg'; }
-  catch { return 'deg'; }
+  kpOppdaterTabber();
 }
 const kpKlokke = iso => {
   const d = iso ? new Date(iso) : new Date();
@@ -86,14 +75,18 @@ function kpEnheter() {
   return ut;
 }
 
-function kpBeregnKurs() {
+/* Regner ut en kurs. Uten argument gjelder den alle svarene. Med en
+   etappe-id gjelder den bare den etappen, slik at hver kategori kan
+   få sin egen peiling. */
+function kpBeregnKurs(etappeId) {
+  const enheter = kpEnheter().filter(u => !etappeId || u.sp.etappe === etappeId);
   let sx = 0, sy = 0, antall = 0;
-  kpEnheter().forEach(({ sp, felt }) => {
+  enheter.forEach(({ sp, felt }) => {
     const p = kpPoengFor(sp, felt);
     if (!p) return;
     sx += p.e; sy += p.n; antall++;
   });
-  if (!antall) return { x: 0, y: 0, r: 0, retning: 'MIDT', antall: 0 };
+  if (!antall) return { x: 0, y: 0, r: 0, retning: 'MIDT', antall: 0, tom: true };
 
   /* Nord–sør og øst–vest måler to ulike ting, og skalaene er ikke
      like tette. Gode svar gir ikke utslag øst–vest i det hele tatt,
@@ -112,20 +105,22 @@ function kpBeregnKurs() {
 
      Den andre: nærmiljøet kan ikke bygges om. Er det tomt rundt deg,
      og du ikke kommer deg noe sted, hjelper ingen ombygging. */
+  const gjelder = id => !etappeId || etappeId === id;
   const stengtAdkomst = S['adkomst-hindringer'] === 'sveert' || S['adkomst-trinn'] === '6+';
   const tomtNaermiljo = (!S['naermiljo-tilbud'] || !S['naermiljo-tilbud'].length
                          || (S['naermiljo-tilbud'] || []).includes('ingen'))
                         && S['naermiljo-komme-seg'] === 'nei';
-  if (stengtAdkomst) y = Math.min(y, -0.35);
-  if (tomtNaermiljo) y = Math.min(y, -0.3);
+  if (stengtAdkomst && gjelder('adkomst')) y = Math.min(y, -0.35);
+  if (tomtNaermiljo && gjelder('naermiljo')) y = Math.min(y, -0.3);
 
   let r = Math.hypot(x, y);
   if (r > 1) { x /= r; y /= r; r = 1; }
 
   /* Nåla er kort i starten og vokser etter hvert som du svarer.
      Kompasset skal se ut som det famler litt før det har nok å gå på. */
-  const konf = Math.min(1, 0.42 + 0.58 * (antall / kpEnheter().length));
-  const kompassSp = KOMPASS_SPORSMAL.filter(sp => !sp.ikkeKompass);
+  const konf = Math.min(1, 0.42 + 0.58 * (antall / enheter.length));
+  const kompassSp = KOMPASS_SPORSMAL
+    .filter(sp => !sp.ikkeKompass && (!etappeId || sp.etappe === etappeId));
   return {
     x: x * konf, y: y * konf, r: r * konf,
     retning: kpRetning(x, y, 0.24),
@@ -133,6 +128,30 @@ function kpBeregnKurs() {
     svart: kompassSp.filter(kpBesvart).length,
     totalt: kompassSp.length
   };
+}
+
+/* Nåla under spørsmålene summerer svarene i steget man står i, og
+   begynner på null igjen når et nytt steg starter. Den la sammen alt
+   før, gjennom hele kartleggingen, og da flyttet den seg bare noen få
+   grader per svar. Nå er utslaget stort nok til å se, og summen
+   gjelder noe avgrenset man er midt inne i. */
+function kpKursForSteg(etappeId) {
+  const enheter = kpEnheter().filter(u => u.sp.etappe === etappeId);
+  let sx = 0, sy = 0, antall = 0;
+  enheter.forEach(({ sp, felt }) => {
+    const p = kpPoengFor(sp, felt);
+    if (!p) return;
+    sx += p.e; sy += p.n; antall++;
+  });
+  if (!antall) return { x: 0, y: 0, r: 0, retning: 'MIDT', tom: true, antall: 0 };
+
+  /* Full lengde. Innenfor ett steg er det ingen usikkerhet å vise
+     fram, bare en retning. */
+  let x = (sx / antall) * 1.6;
+  let y = (sy / antall) * 1.15;
+  let r = Math.hypot(x, y);
+  if (r > 1) { x /= r; y /= r; r = 1; }
+  return { x, y, r, retning: kpRetning(x, y, 0.2), tom: false, antall };
 }
 
 function kpRetning(x, y, grense = 0.18) {
@@ -161,7 +180,16 @@ const KP_RETNINGSFORKLARING = {
 
 /* ═══ Kompasset som figur ═════════════════════════════════════════ */
 
+/* Grønn nål i øvre halvdel, rød i nedre. Fargen skal si det samme
+   som etikettene: opp er en kurs man vil ha, ned er en man bør se
+   nærmere på. */
+const kpNaalVei = kurs =>
+  /* Litt slingringsmonn, ellers gjør cos(270°) = -1.8e-16 at nåla blir
+     rød på strek vest. Den vannrette aksen er nøytral, ikke negativ. */
+  kurs.tom ? 'tom' : (kurs.y >= -1e-6 ? 'opp' : 'ned');
+
 function kpKompassTekst(kurs) {
+  if (kurs.tom) return 'Kompass. Nåla står i ro, i påvente av svar.';
   return kurs.retning === 'MIDT'
     ? 'Kompass. Nåla står nær midten. Kursen er «' + kpKursnavn('MIDT') + '».'
     : 'Kompass. Nåla peker mot «' + kpKursnavn(kurs.retning) + '».';
@@ -172,13 +200,14 @@ function kpKompassTekst(kurs) {
    forklare retningene et annet sted. Nå står navnet på kursen rett i
    rosa, i samme rose på forsiden, under spørsmålene og i
    oppsummeringen. */
-function kpKompassSvg(kurs) {
+function kpKompassSvg(kurs, opt = {}) {
+  const liten = !!opt.liten;
   const vinkel = (Math.atan2(kurs.x, kurs.y) * 180 / Math.PI) || 0;
   const skala = 0.52 + 0.48 * (kurs.r || 0);
   /* Bredden er satt av den lengste etiketten, «Ombygging», ikke av
      rosa. Blir boksen smalere, skjæres den av i kanten. */
-  const vb = '0 0 316 210';
-  const cx = 158, cy = 103, r = 70;
+  const vb = liten ? '0 0 200 200' : '0 0 316 210';
+  const cx = liten ? 100 : 158, cy = liten ? 100 : 103, r = liten ? 88 : 70;
 
   const felt = (d, navn, aktiv) =>
     `<path class="kp-kompass__felt${aktiv ? ' kp-kompass__felt--aktiv' : ''}" data-kv="${navn}" d="${d}"
@@ -204,16 +233,17 @@ function kpKompassSvg(kurs) {
 
   /* Bare kursnavnene. Himmelretningene sa ingenting om boligen, og de
      tok plassen til det som faktisk betyr noe. */
-  const etiketter = `
+  const etiketter = liten ? '' : `
     <text class="kp-kompass__etikett kp-kompass__etikett--n" x="${cx}" y="24" text-anchor="middle">Rett kurs</text>
     <text class="kp-kompass__etikett kp-kompass__etikett--s" x="${cx}" y="192" text-anchor="middle">Ny kurs</text>
     <text class="kp-kompass__etikett" x="${cx + r + 8}" y="108" text-anchor="start">Små grep</text>
-    <text class="kp-kompass__etikett" x="${cx - r - 8}" y="108" text-anchor="end">Ombygging</text>`;
+    <text class="kp-kompass__etikett" x="${cx - r - 8}" y="108" text-anchor="end">Større grep</text>`;
 
   const info = KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT;
 
   return `
 <svg class="kp-kompass" viewBox="${vb}" role="img" data-kompass
+     data-tom="${kurs.tom ? '1' : '0'}" data-vei="${kpNaalVei(kurs)}"
      aria-label="${kpKompassTekst(kurs)}">
   ${felt(bue(0, 90), 'nø', kv === 'nø')}${felt(bue(90, 180), 'sø', kv === 'sø')}
   ${felt(bue(180, 270), 'sv', kv === 'sv')}${felt(bue(270, 360), 'nv', kv === 'nv')}
@@ -278,6 +308,7 @@ function kpByggFlyt() {
   KOMPASS_ETAPPER.forEach((e, i) => {
     KP_FLYT.push({ t: 'etappe', e, nr: i + 1 });
     KOMPASS_SPORSMAL.filter(s => s.etappe === e.id).forEach(sp => KP_FLYT.push({ t: 'sp', sp, e }));
+    KP_FLYT.push({ t: 'etappeslutt', e, nr: i + 1 });
   });
   KP_FLYT.push({ t: 'slutt' });
 }
@@ -419,11 +450,11 @@ function kpStartHtml() {
         <span class="kp-modus__merke">Anbefalt</span>
         <h3 class="hb-h4">Med kompasset</h3>
         <p>
-          Ett spørsmål om gangen, i fem etapper. Under hvert spørsmål ser du
+          Ett spørsmål om gangen, i fem steg. Under hvert spørsmål ser du
           kompassnåla flytte seg, og du får vite hva svaret ditt betydde.
           Litt som en valgomat.
         </p>
-        <p><strong>5 etapper · 20 spørsmål · 5–10 minutter</strong></p>
+        <p><strong>5 steg · 20 spørsmål · 5–10 minutter</strong></p>
         <button type="button" class="hb-btn hb-btn--primary hb-btn--block" data-start="kompass">
           Start kartleggingen <span data-ikon="pil"></span>
         </button>
@@ -443,30 +474,6 @@ function kpStartHtml() {
       </div>
     </div>
 
-    <div class="hb-guide" style="margin-top:var(--space-6)">
-      <span data-avatar></span>
-      <h3 class="hb-h4">Før du begynner</h3>
-      <ul style="margin:0;padding-left:1.2em">
-        <li>Gå gjerne rundt i boligen mens du svarer. Svarene blir bedre av at du ser etter.</li>
-        <li>Ha et målebånd i nærheten. To–tre av spørsmålene blir lettere da.</li>
-        <li>Du kan ta pause når som helst. Svarene lagres etter hvert som du gir dem.</li>
-        <li>Er du usikker, velg «Usikker». Det er et like godt svar som de andre, og vi tar det med videre.</li>
-      </ul>
-      <fieldset style="border:0;padding:0;margin:var(--space-4) 0 0">
-        <legend class="hb-field__label" style="padding:0">Hvem svarer du for?</legend>
-        <span class="hb-field__help">Det endrer bare hvordan vi skriver oppsummeringen til slutt.</span>
-        <label class="hb-choice">
-          <input type="radio" name="svarerFor" value="meg" ${S.svarerFor !== 'annen' ? 'checked' : ''}>
-          <span class="hb-choice__text"><span class="hb-choice__title">Meg selv</span>
-          <span class="hb-choice__desc">Du bor i boligen du svarer om.</span></span>
-        </label>
-        <label class="hb-choice">
-          <input type="radio" name="svarerFor" value="annen" ${S.svarerFor === 'annen' ? 'checked' : ''}>
-          <span class="hb-choice__text"><span class="hb-choice__title">Noen jeg er pårørende til</span>
-          <span class="hb-choice__desc">Du hjelper en forelder, ektefelle eller annen med å svare.</span></span>
-        </label>
-      </fieldset>
-    </div>
 
   </div>
 </section>`;
@@ -482,8 +489,7 @@ function kpFramdriftHtml() {
   const f = KP_FLYT[kpPos];
   const totalt = kpAntallSporsmal();
   const nr = kpSporsmalNr(kpPos);
-  const etappeNr = f.t === 'etappe' ? f.nr
-    : f.t === 'slutt' ? KOMPASS_ETAPPER.length
+  const etappeNr = f.t === 'slutt' ? KOMPASS_ETAPPER.length
     : KOMPASS_ETAPPER.findIndex(e => e.id === f.e.id) + 1;
   const pst = f.t === 'slutt' ? 100 : Math.round((nr / totalt) * 100);
 
@@ -492,10 +498,12 @@ function kpFramdriftHtml() {
   <div class="hb-shell">
     <div class="kp-framdrift__topp">
       <span class="kp-framdrift__etappe">
-        Etappe ${etappeNr} av ${KOMPASS_ETAPPER.length}${f.t !== 'slutt' ? ' · ' + (f.e ? f.e.navn : KOMPASS_ETAPPER[f.nr - 1].navn) : ' · Oppsummering'}
+        Steg ${etappeNr} av ${KOMPASS_ETAPPER.length}${f.t === 'slutt' ? ' · Oppsummering' : ' · ' + f.e.navn}
       </span>
       <span class="kp-framdrift__teller">
-        ${f.t === 'sp' ? `Spørsmål ${nr} av ${totalt}` : f.t === 'slutt' ? `${totalt} av ${totalt} spørsmål` : `${nr} av ${totalt} spørsmål besvart`}
+        ${f.t === 'sp' ? `Spørsmål ${nr} av ${totalt}`
+          : f.t === 'slutt' ? `${totalt} av ${totalt} spørsmål`
+          : `${nr} av ${totalt} spørsmål besvart`}
       </span>
     </div>
     <div class="kp-framdrift__spor">
@@ -523,21 +531,20 @@ const KP_ETAPPEFIG = {
 };
 
 function kpEtappeHtml(f) {
-  const kurs = kpBeregnKurs();
   return `
 <div class="kp-sporsmal">
   <div class="kp-etappe-kort">
     <svg class="kp-etappe-kort__fig" viewBox="0 0 96 96" aria-hidden="true" style="color:var(--hb-green-700)">
       ${KP_ETAPPEFIG[f.e.ikon] || ''}
     </svg>
-    <span class="kp-etappe-kort__nr">Etappe ${f.nr} av ${KOMPASS_ETAPPER.length}</span>
+    <span class="kp-etappe-kort__nr">Steg ${f.nr} av ${KOMPASS_ETAPPER.length}</span>
     <h1 class="hb-h2">${f.e.navn}</h1>
     <p>${f.e.ingress}</p>
     ${f.e.frivillig ? `
     <div class="hb-note" style="margin-top:var(--space-4);text-align:left">
       <span class="hb-note__icon" data-ikon="info"></span>
       <p style="margin:0">
-        Denne etappen er frivillig. Hopper du over den, får du fortsatt kurs og
+        Dette steget er frivillig. Hopper du over det, får du fortsatt kurs og
         tiltak. Du får bare ikke vite hvilke låne- og tilskuddsordninger som
         passer best for akkurat din situasjon.
       </p>
@@ -545,7 +552,7 @@ function kpEtappeHtml(f) {
   </div>
 
   <div class="kp-nav">
-    ${kpPos > 0 ? '<button type="button" class="hb-btn hb-btn--tertiary" data-forrige>Forrige</button>' : ''}
+    ${kpPos > 0 ? '<button type="button" class="hb-btn hb-btn--secondary" data-forrige>Forrige</button>' : ''}
     <span class="kp-nav__hoyre">
       ${f.e.frivillig ? '<button type="button" class="hb-btn hb-btn--tertiary" data-hopp-etappe>Hopp over økonomien</button>' : ''}
       <button type="button" class="hb-btn hb-btn--primary" data-neste>
@@ -554,18 +561,101 @@ function kpEtappeHtml(f) {
     </span>
   </div>
 
-  ${kurs.antall ? kpPeilingHtml(kurs) : ''}
+</div>`;
+}
+
+/* ═══ Etappeoppsummeringen ════════════════════════════════════════
+   Her, og bare her, legges svarene sammen underveis. Etter hver
+   etappe stopper vi opp og viser hva den etappen samlet peker mot.
+   ─────────────────────────────────────────────────────────────────── */
+
+function kpEtappeTelling(etappeId) {
+  let god = 0, midt = 0, tung = 0;
+  kpEnheter().filter(u => u.sp.etappe === etappeId).forEach(({ sp, felt }) => {
+    const p = kpPoengFor(sp, felt);
+    if (!p) return;
+    if (p.n > 0.33) god++; else if (p.n < -0.33) tung++; else midt++;
+  });
+  return { god, midt, tung, sum: god + midt + tung };
+}
+
+function kpEtappeSetning(e, tall) {
+  if (!tall.sum) return 'Du svarte ikke på noe i dette steget, så det teller ikke med i kursen.';
+  const ord = n => ['ingen', 'ett', 'to', 'tre', 'fire', 'fem', 'seks', 'sju'][n] || String(n);
+  const deler = [];
+  if (tall.god) deler.push(`${ord(tall.god)} taler for at boligen passer for deg`);
+  if (tall.tung) deler.push(`${ord(tall.tung)} peker på en hindring`);
+  if (tall.midt) deler.push(`${ord(tall.midt)} trekker ingen vei`);
+  const liste = deler.length > 1
+    ? deler.slice(0, -1).join(', ') + ' og ' + deler[deler.length - 1]
+    : deler[0];
+  return `Av ${ord(tall.sum)} svar som teller i dette steget, ${liste}.`;
+}
+
+function kpEtappeSluttHtml(f) {
+  const kurs = kpBeregnKurs(f.e.id);
+  const tall = kpEtappeTelling(f.e.id);
+  const info = KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT;
+  const sisteEtappe = f.nr === KOMPASS_ETAPPER.length;
+  const navigasjon = `
+  <div class="kp-nav">
+    <button type="button" class="hb-btn hb-btn--secondary" data-forrige>Forrige</button>
+    <span class="kp-nav__hoyre">
+      <button type="button" class="hb-btn hb-btn--primary" data-neste>
+        ${sisteEtappe ? 'Se hele oppsummeringen' : 'Videre til neste steg'} <span data-ikon="pil"></span>
+      </button>
+    </span>
+  </div>`;
+
+  /* Etappen om økonomi har ingen spørsmål som teller i kompasset. Et
+     kompass her ville påstått en kurs som ikke finnes. */
+  if (!kpEnheter().some(u => u.sp.etappe === f.e.id)) {
+    const sp = KOMPASS_SPORSMAL.filter(x => x.etappe === f.e.id);
+    const svart = sp.filter(kpBesvart).length;
+    return `
+<div class="kp-sporsmal">
+  <h1 class="hb-h2">${f.e.navn}: hva vi gjør med svarene</h1>
+  <p class="kp-sporsmal__under">
+    Dette steget flytter ikke nåla. Kompasset ser bare på boligen.
+  </p>
+  <div class="hb-panel hb-panel--filled">
+    <p style="margin:0">
+      Du svarte på ${svart} av ${sp.length} spørsmål om økonomi. Det vi bruker
+      dem til, er å velge hvilke lån og tilskudd vi viser deg i oppsummeringen.
+      Ingenting er kontrollert mot bank, skatt eller andre registre, og
+      ingenting av det påvirker kursen.
+    </p>
+  </div>
+  ${navigasjon}
+</div>`;
+  }
+
+  return `
+<div class="kp-sporsmal">
+  <h1 class="hb-h2">${f.e.navn}: slik ser det ut</h1>
+  <p class="kp-sporsmal__under">
+    Her står nåla slik svarene i dette steget samlet sett peker. Neste steg
+    begynner på null igjen.
+  </p>
+
+  <div class="kp-peiling kp-peiling--stor">
+    <div class="kp-peiling__hoved">
+      <div class="kp-peiling__rose">${kpKompassSvg(kurs)}</div>
+      <div>
+        <p class="hb-small hb-muted" style="margin:0 0 2px">Dette steget peker mot</p>
+        <p class="kp-peiling__kurs">${info.navn}</p>
+        <p class="kp-peiling__tekst">${info.tekst}</p>
+        <p class="hb-small" style="margin:var(--space-3) 0 0">${kpEtappeSetning(f.e, tall)}</p>
+      </div>
+    </div>
+    ${kpNokkelHtml(kurs.retning)}
+  </div>
+
+  ${navigasjon}
 </div>`;
 }
 
 /* ═══ Peilingen, kompasset mens du svarer ═════════════════════════ */
-
-function kpUtslagHtml(u) {
-  if (!u) return '';
-  return `<span class="kp-peiling__utslag" data-vei="${u.vei}">
-      <span data-ikon="${u.vei === 'ingen' ? 'info' : 'pil'}"></span>${u.tekst}
-    </span>`;
-}
 
 /* Nøkkelen til de fire retningene. Den står under kompasset hver
    eneste gang det vises, for man skal aldri måtte huske hva en kurs
@@ -599,20 +689,38 @@ function kpNokkelHtml(retning) {
   </div>`;
 }
 
+/* Nåla under spørsmålet viser bare dette ene svaret, ikke summen av
+   alt du har svart. En sum som endrer seg litt for hvert svar er
+   umulig å lese noe ut av. Her starter nåla på null og grått, og
+   peker rett på det du nettopp valgte. Summen kommer etter hver
+   etappe, og til slutt. */
+function kpPeilingTekster(kurs) {
+  if (kurs.tom) {
+    return { over: 'Så langt i dette steget', navn: 'Ikke svart ennå',
+             tekst: 'Velg et alternativ, så viser nåla hvilken vei det peker.' };
+  }
+  if (kurs.retning === 'MIDT') {
+    return { over: 'Så langt i dette steget', navn: 'Trekker ingen vei',
+             tekst: KP_RETNINGSFORKLARING.MIDT };
+  }
+  return { over: 'Så langt i dette steget peker det mot',
+           navn: kpKursnavn(kurs.retning),
+           tekst: KP_RETNINGSFORKLARING[kurs.retning] };
+}
+
 function kpPeilingHtml(kurs) {
-  const info = KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT;
+  const t = kpPeilingTekster(kurs);
   return `
 <div class="kp-peiling" style="margin-top:var(--space-5)" id="peiling">
   <div class="kp-peiling__hoved">
     <div class="kp-peiling__rose">${kpKompassSvg(kurs)}</div>
     <div>
-      <p class="hb-small hb-muted" style="margin:0 0 2px">Kursen din nå</p>
-      <p class="kp-peiling__kurs" data-kurs-navn>${info.navn}</p>
-      <p class="kp-peiling__tekst" data-kurs-tekst>${info.tekst}</p>
-      <span data-utslag>${kpUtslagHtml(kpSisteUtslag)}</span>
-      <p class="hb-small hb-muted" style="margin:var(--space-2) 0 0" data-kurs-teller>
-        Basert på ${kurs.svart} av ${kurs.totalt} spørsmål som teller for kursen.
-        Den kan snu helt til du er ferdig.
+      <p class="hb-small hb-muted" style="margin:0 0 2px" data-kurs-over>${t.over}</p>
+      <p class="kp-peiling__kurs" data-kurs-navn>${t.navn}</p>
+      <p class="kp-peiling__tekst" data-kurs-tekst>${t.tekst}</p>
+      <p class="hb-small hb-muted" style="margin:var(--space-2) 0 0">
+        Nåla summerer svarene i dette steget, og begynner på null når
+        neste steg starter. Den samlede kursen får du til slutt.
       </p>
     </div>
   </div>
@@ -624,7 +732,7 @@ function kpPeilingHtml(kurs) {
 
 function kpSporsmalHtml(f) {
   const sp = f.sp;
-  const kurs = kpBeregnKurs();
+  const kurs = kpKursForSteg(f.e.id);
 
   let felterHtml;
   if (sp.type === 'flerfelt') {
@@ -654,14 +762,8 @@ function kpSporsmalHtml(f) {
     ${felterHtml}
   </form>
 
-  <div class="hb-error" id="kp-feil" hidden></div>
-
-  ${sp.kanHoppes ? `<p style="margin-top:var(--space-3)">
-      <button type="button" class="kp-hopp" data-hopp>Jeg vil ikke svare på dette. Hopp over spørsmålet.</button>
-    </p>` : ''}
-
   <div class="kp-nav">
-    <button type="button" class="hb-btn hb-btn--tertiary" data-forrige>Forrige</button>
+    <button type="button" class="hb-btn hb-btn--secondary" data-forrige>Forrige</button>
     <span class="kp-nav__hoyre">
       <button type="button" class="hb-btn hb-btn--primary" data-neste>
         ${kpSporsmalNr(kpPos) === kpAntallSporsmal() ? 'Se oppsummeringen' : 'Neste'} <span data-ikon="pil"></span>
@@ -703,7 +805,7 @@ function kpEtappeStatus(e) {
 function kpTabberHtml() {
   return `
 <nav class="kp-tabs kp-utskrift-skjul" aria-labelledby="tabs-tittel">
-  <p class="kp-tabs__tittel" id="tabs-tittel">Hopp til etappe</p>
+  <p class="kp-tabs__tittel" id="tabs-tittel">Hopp til steg</p>
   <ol>
     ${KOMPASS_ETAPPER.map((e, i) => {
       const st = kpEtappeStatus(e);
@@ -818,8 +920,6 @@ function kpListeHtml() {
           <p style="margin:0 0 var(--space-3);max-width:58ch">${s.undertekst}</p>
           ${kpHvorforBoks(s)}
           ${felter}
-          ${s.kanHoppes ? `<p style="margin:var(--space-2) 0 0">
-            <button type="button" class="kp-hopp" data-hopp-liste="${s.id}">Hopp over dette spørsmålet</button></p>` : ''}
         </div>`;
       }).join('')}
     </section>`;
@@ -868,36 +968,47 @@ function kpOversikt() {
       if (p.n > 0.33) god++; else if (p.n < -0.33) tung++; else midt++;
     });
     const sum = god + midt + tung;
+    const kurs = kpBeregnKurs(e.id);
     const dom = !sum ? 'Ikke besvart'
       : tung === 0 && god >= midt ? 'Fungerer godt'
       : tung >= god ? 'Her ligger hindringene'
       : 'Noe å se på';
-    return { navn: e.navn, god, midt, tung, sum, dom };
+    return { navn: e.navn, god, midt, tung, sum, dom, kurs };
   });
 }
 
+/* Ett kompass per etappe, ved siden av stolpen. Nåla underveis viste
+   bare ett spørsmål om gangen, så her er stedet der man ser hvor hver
+   kategori endte. */
 function kpOversiktHtml() {
   const rader = kpOversikt();
   return `
-  <h3 class="hb-h3">Slik står det til, etappe for etappe</h3>
+  <h3 class="hb-h3">Slik står det til, steg for steg</h3>
   <p style="max-width:58ch">
-    Én stolpe per etappe. Grønt er svar som taler for at du kan bli boende.
-    Oransje er svar som peker på en hindring. Grått er de svarene som verken
-    trekker den ene eller den andre veien.
+    Ett kompass per steg, med den kursen steget endte på. Stolpen
+    under viser fordelingen av svar: grønt taler for at boligen passer for
+    deg, oransje peker på en hindring, og grått trekker ingen vei.
   </p>
-  <ul class="kp-oversikt" style="margin-top:var(--space-4)">
-    ${rader.map(r => `
-    <li class="kp-oversikt__rad">
-      <span class="kp-oversikt__navn">${r.navn}</span>
-      <span class="kp-oversikt__spor" role="img"
-            aria-label="${r.navn}: ${r.god} svar som fungerer godt, ${r.midt} midt på treet, ${r.tung} som peker på en hindring.">
-        ${r.sum ? `
-        <span class="kp-oversikt__seg kp-oversikt__seg--god"  style="width:${(r.god / r.sum * 100).toFixed(1)}%"></span>
-        <span class="kp-oversikt__seg kp-oversikt__seg--midt" style="width:${(r.midt / r.sum * 100).toFixed(1)}%"></span>
-        <span class="kp-oversikt__seg kp-oversikt__seg--tung" style="width:${(r.tung / r.sum * 100).toFixed(1)}%"></span>` : ''}
-      </span>
-      <span class="kp-oversikt__dom">${r.dom}</span>
-    </li>`).join('')}
+  <ul class="kp-etappekort" style="margin-top:var(--space-4)">
+    ${rader.map(r => {
+      const info = KOMPASS_RETNINGER[r.kurs.retning] || KOMPASS_RETNINGER.MIDT;
+      return `
+    <li class="kp-etappekort__kort">
+      <div class="kp-etappekort__rose">${kpKompassSvg(r.kurs, { liten: true })}</div>
+      <div class="kp-etappekort__tekst">
+        <p class="kp-etappekort__navn">${r.navn}</p>
+        <p class="kp-etappekort__kurs">${r.sum ? info.navn : 'Ikke besvart'}</p>
+        <span class="kp-oversikt__spor" role="img"
+              aria-label="${r.navn}: ${r.god} svar som fungerer godt, ${r.midt} midt på treet, ${r.tung} som peker på en hindring.">
+          ${r.sum ? `
+          <span class="kp-oversikt__seg kp-oversikt__seg--god"  style="width:${(r.god / r.sum * 100).toFixed(1)}%"></span>
+          <span class="kp-oversikt__seg kp-oversikt__seg--midt" style="width:${(r.midt / r.sum * 100).toFixed(1)}%"></span>
+          <span class="kp-oversikt__seg kp-oversikt__seg--tung" style="width:${(r.tung / r.sum * 100).toFixed(1)}%"></span>` : ''}
+        </span>
+        <p class="kp-etappekort__dom">${r.dom}</p>
+      </div>
+    </li>`;
+    }).join('')}
   </ul>
   <p class="kp-tegnforklaring">
     <span><i style="background:var(--hb-green-600)"></i>Fungerer godt</span>
@@ -994,6 +1105,8 @@ function kpOppsummeringHtml() {
       </div>
     </div>
 
+    ${kpEgenKursHtml()}
+
     ${store.length ? `
     <h2 class="hb-h2" style="margin-top:var(--space-7)">Dette bør du ta først</h2>
     <p style="max-width:58ch">
@@ -1086,6 +1199,140 @@ function kpOppsummeringHtml() {
 </section>`;
 }
 
+/* ═══ Kompasset du vrir selv ══════════════════════════════════════
+   Kompasset over er regnet ut av svarene. Men den som bor der, vet
+   noe et regnestykke ikke får tak i. Her kan man vri nåla dit man
+   selv føler at man står, og se de to ved siden av hverandre.
+
+   Nåla kan dras med mus eller finger, og skyvekontrollen under gjør
+   det samme med tastatur. Målgruppen er 62+, og en sirkel man må
+   treffe er ikke nok alene.
+   ─────────────────────────────────────────────────────────────────── */
+
+function kpEgenKursHtml() {
+  const grader = Number.isFinite(S.egenKurs) ? S.egenKurs : 0;
+  const kurs = kpKursAvGrader(grader);
+  const regnet = kpBeregnKurs();
+
+  return `
+  <h2 class="hb-h2" style="margin-top:var(--space-7)">Vri kompasset selv</h2>
+  <p style="max-width:58ch">
+    Kompasset over er regnet ut fra svarene dine. Men du vet noe vi ikke
+    vet: hvordan det faktisk er å bo der. Vri nåla dit du selv føler at du
+    står, så ser du de to ved siden av hverandre.
+  </p>
+
+  <div class="kp-egen" id="kp-egen">
+    <div class="kp-egen__rose" data-egen-rose>
+      ${kpKompassSvg(kurs)}
+    </div>
+    <div>
+      <p class="hb-small hb-muted" style="margin:0 0 2px">Du peker mot</p>
+      <p class="kp-peiling__kurs" data-egen-navn>${kpKursnavn(kurs.retning)}</p>
+      <p class="kp-peiling__tekst" data-egen-tekst>${(KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT).tekst}</p>
+
+      <label class="kp-egen__merke" for="egen-kurs">Vri kompasset</label>
+      <input class="kp-egen__skyv" id="egen-kurs" type="range"
+             min="0" max="345" step="15" value="${grader}"
+             aria-describedby="egen-avlest">
+      <p class="hb-small" id="egen-avlest" aria-live="polite" data-egen-avlest>
+        ${kpEgenSammenlikning(kurs.retning, regnet.retning)}
+      </p>
+      <p style="margin:var(--space-3) 0 0">
+        <button type="button" class="kp-hopp" data-egen-nullstill>Sett nåla tilbake til vår utregning</button>
+      </p>
+    </div>
+  </div>`;
+}
+
+function kpKursAvGrader(grader) {
+  const rad = grader * Math.PI / 180;
+  return { x: Math.sin(rad), y: Math.cos(rad), r: 1, retning: kpRetning(Math.sin(rad), Math.cos(rad), 0.2) };
+}
+
+function kpEgenSammenlikning(egen, regnet) {
+  if (egen === regnet) {
+    return 'Du og kompasset er enige. Det er et godt utgangspunkt for å snakke med kommunen eller familien.';
+  }
+  return `Kompasset vårt peker mot «${kpKursnavn(regnet)}», du peker mot «${kpKursnavn(egen)}». `
+       + 'Begge deler er verdt å ta med videre. Det du selv kjenner på, veier tungt i et slikt valg.';
+}
+
+function kpInitEgenKurs() {
+  const boks = document.getElementById('kp-egen');
+  if (!boks) return;
+  const rose = boks.querySelector('[data-egen-rose]');
+  const skyv = boks.querySelector('#egen-kurs');
+  const svg = rose.querySelector('svg');
+  const naal = rose.querySelector('[data-naal]');
+
+  const tegn = grader => {
+    S.egenKurs = ((grader % 360) + 360) % 360;
+    const kurs = kpKursAvGrader(S.egenKurs);
+    naal.style.transform = `rotate(${S.egenKurs}deg) scale(1)`;
+    svg.setAttribute('aria-label', kpKompassTekst(kurs));
+    svg.dataset.tom = '0';
+    svg.dataset.vei = kpNaalVei(kurs);
+    boks.querySelector('[data-egen-navn]').textContent = kpKursnavn(kurs.retning);
+    boks.querySelector('[data-egen-tekst]').textContent =
+      (KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT).tekst;
+    boks.querySelector('[data-egen-avlest]').textContent =
+      kpEgenSammenlikning(kurs.retning, kpBeregnKurs().retning);
+    const kv = kurs.y >= 0 ? (kurs.x >= 0 ? 'nø' : 'nv') : (kurs.x >= 0 ? 'sø' : 'sv');
+    rose.querySelectorAll('[data-kv]').forEach(f => {
+      const aktiv = f.dataset.kv === kv;
+      f.classList.toggle('kp-kompass__felt--aktiv', aktiv);
+      f.setAttribute('fill', aktiv ? 'var(--hb-green-600)' : 'var(--hb-slate-400)');
+    });
+    kpLagre();
+  };
+
+  skyv.addEventListener('input', () => tegn(Number(skyv.value)));
+
+  /* Dra i nåla. Vinkelen regnes fra midten av rosa, ikke av elementet,
+     for rosa sitter til venstre i en boks som er bredere enn den. */
+  let drar = false;
+  const vinkelFra = ev => {
+    const b = svg.getBoundingClientRect();
+    const vb = svg.viewBox.baseVal;
+    const mx = b.left + b.width * (158 / vb.width);
+    const my = b.top + b.height * (103 / vb.height);
+    const g = Math.atan2(ev.clientX - mx, my - ev.clientY) * 180 / Math.PI;
+    return Math.round(((g % 360) + 360) % 360 / 15) * 15;
+  };
+  const flytt = ev => {
+    if (!drar) return;
+    ev.preventDefault();
+    const g = vinkelFra(ev);
+    skyv.value = g % 360;
+    tegn(g);
+  };
+  svg.addEventListener('pointerdown', ev => {
+    drar = true;
+    svg.setPointerCapture(ev.pointerId);
+    flytt(ev);
+  });
+  svg.addEventListener('pointermove', flytt);
+  svg.addEventListener('pointerup', () => { drar = false; });
+  svg.addEventListener('pointercancel', () => { drar = false; });
+
+  boks.querySelector('[data-egen-nullstill]').addEventListener('click', () => {
+    const k = kpBeregnKurs();
+    const g = Math.round((((Math.atan2(k.x, k.y) * 180 / Math.PI) % 360) + 360) % 360 / 15) * 15;
+    skyv.value = g % 360;
+    tegn(g);
+  });
+
+  if (!Number.isFinite(S.egenKurs)) {
+    const k = kpBeregnKurs();
+    const g = Math.round((((Math.atan2(k.x, k.y) * 180 / Math.PI) % 360) + 360) % 360 / 15) * 15;
+    skyv.value = g % 360;
+    tegn(g);
+  } else {
+    tegn(S.egenKurs);
+  }
+}
+
 function kpOkonomiHtml() {
   const svart = ['ok-eier', 'ok-laan', 'ok-sparing', 'ok-maaned'].some(k => S[k]);
   if (!svart) {
@@ -1175,46 +1422,65 @@ function kpSvarlisteHtml() {
     </li>`).join('');
 }
 
-/* ═══ Lagringslinja nederst ═══════════════════════════════════════
-   Designkritikken: «Lagres dette fortløpende/automatisk? Da burde
-   det stå nederst.» Den står nederst på hver eneste skjerm, den
-   oppdaterer seg ved hvert svar, og den sier rett ut hva forskjellen
-   på innlogget og ikke innlogget er.
+/* ═══ Snarveien nederst ═══════════════════════════════════════════
+   Bare for prototypen. Fyller ut tilfeldige svar og hopper rett til
+   oppsummeringen, så man slipper å klikke seg gjennom 20 spørsmål
+   hver gang man skal se på den siste siden.
+
+   Lagringslinja som sto her før, er tatt ut. Svarene lagres fortsatt
+   ved hvert eneste valg, den ble bare ikke lenger annonsert.
    ─────────────────────────────────────────────────────────────────── */
 
-function kpTegnLagring(tilstand) {
+function kpTegnBunn() {
   kpOppdaterTabber();
-  const el = document.getElementById('kp-lagring');
+  const el = document.getElementById('kp-bunn-verktoy');
   if (!el) return;
-  const inne = kpInnlogget();
-  const antall = KOMPASS_SPORSMAL.filter(kpBesvart).length;
-  el.dataset.tilstand = tilstand || (inne ? 'sky' : 'lokal');
-
-  const status = tilstand === 'lagrer'
-    ? '<strong>Lagrer …</strong>'
-    : inne
-      ? `<strong>Lagret automatisk kl. ${kpKlokke(S.endret)}.</strong>
-         Du er logget inn som ${kpBrukernavn()}, og svarene ligger hos Husbanken.
-         Du finner dem igjen på telefonen, nettbrettet eller en annen maskin.`
-      : `<strong>Lagret i denne nettleseren${S.endret ? ' kl. ' + kpKlokke(S.endret) : ''}.</strong>
-         Svarene ligger bare på denne maskinen, og forsvinner hvis du tømmer nettleseren.
-         Logger du inn, lagrer vi dem hos Husbanken i stedet.`;
-
   el.innerHTML = `
   <div class="hb-shell">
-    <div class="kp-lagring__rad">
-      <p class="kp-lagring__status">
-        <span class="kp-lagring__prikk" aria-hidden="true"></span>
-        <span>${status}
-          <span class="hb-muted">${antall} av ${kpAntallSporsmal()} spørsmål er besvart.</span>
-        </span>
-      </p>
-      <span class="kp-lagring__knapper">
-        ${inne ? '' : '<a class="hb-btn hb-btn--secondary" href="https://pettersommerseth1994.github.io/husbanken/logg-inn.html?retur=boligkompasset.html">Logg inn</a>'}
-        <button type="button" class="hb-btn hb-btn--tertiary" data-pause>Lagre og fortsett senere</button>
-      </span>
-    </div>
+    <p class="kp-snarvei__tekst">
+      <strong>Snarvei for prototypen.</strong>
+      Fyller ut tilfeldige svar på alle 20 spørsmålene og går rett til oppsummeringen.
+    </p>
+    <button type="button" class="hb-btn hb-btn--secondary" data-tilfeldig>
+      Fyll ut tilfeldig og vis oppsummeringen
+    </button>
   </div>`;
+}
+
+/* Tilfeldige, men gyldige svar. Flervalg får ett til tre kryss, og
+   «ingen av delene» får stå alene slik reglene ellers krever. */
+function kpFyllTilfeldig() {
+  const trekk = liste => liste[Math.floor(Math.random() * liste.length)];
+  S = { startet: true, svarerFor: 'meg' };
+
+  const settFelt = (sp, felt) => {
+    const valg = felt ? felt.valg : sp.valg;
+    const navn = felt ? felt.navn : sp.id;
+    if (!felt && sp.type === 'flervalg') {
+      const alene = valg.filter(v => v.alene);
+      if (alene.length && Math.random() < 0.25) { S[navn] = [trekk(alene).v]; return; }
+      const vanlige = valg.filter(v => !v.alene);
+      const antall = 1 + Math.floor(Math.random() * Math.min(3, vanlige.length));
+      S[navn] = [...vanlige].sort(() => Math.random() - 0.5).slice(0, antall).map(v => v.v);
+      return;
+    }
+    const valgt = trekk(valg);
+    S[navn] = valgt.v;
+    if (valgt.oppfolging) {
+      const o = valgt.oppfolging.valg;
+      S[navn + '-opp'] = [trekk(o).v];
+    }
+  };
+
+  KOMPASS_SPORSMAL.forEach(sp => {
+    if (sp.type === 'flerfelt') sp.felt.forEach(f => settFelt(sp, f));
+    else settFelt(sp, null);
+  });
+
+  kpLagre();
+  kpModus = 'oppsummering';
+  kpPos = KP_FLYT.length - 1;
+  kpTegn();
 }
 
 /* ═══ Tegning ═════════════════════════════════════════════════════ */
@@ -1240,16 +1506,19 @@ function kpTegn() {
     frem.innerHTML = kpFramdriftHtml();
     rot.innerHTML = `<section class="hb-section" style="padding-top:var(--space-5)">
       <div class="hb-shell">
-        ${f.t === 'etappe' ? kpEtappeHtml(f) : kpSporsmalHtml(f)}
+        ${f.t === 'etappe' ? kpEtappeHtml(f)
+          : f.t === 'etappeslutt' ? kpEtappeSluttHtml(f)
+          : kpSporsmalHtml(f)}
       </div>
     </section>`;
   }
 
   kpIkoner(rot);
-  kpTegnLagring();
+  kpTegnBunn();
   hbInitTrekkspill(rot);
   if (kpModus === 'liste') kpInitTabber();
   else if (kpInitTabber._av) kpInitTabber._av();
+  if (kpModus === 'oppsummering') kpInitEgenKurs();
   const h = rot.querySelector('h1') || rot.querySelector('h2');
   if (h && kpModus !== 'start') { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
   window.scrollTo({ top: 0, behavior: 'auto' });
@@ -1269,12 +1538,11 @@ function kpIkoner(rot) {
    SVG-element som er ferdig rotert fra første bilde, og da hopper nåla
    i stedet for å svinge. Her endrer vi bare transform på den samme
    noden, så CSS-overgangen på 700 ms får gå. */
-function kpOppdaterPeiling() {
-  const kurs = kpBeregnKurs();
+function kpOppdaterPeiling(kurs) {
   const boks = document.getElementById('peiling');
   if (!boks) return;
 
-  const info = KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT;
+  const t = kpPeilingTekster(kurs);
   const vinkel = (Math.atan2(kurs.x, kurs.y) * 180 / Math.PI) || 0;
   const skala = 0.52 + 0.48 * (kurs.r || 0);
 
@@ -1282,7 +1550,11 @@ function kpOppdaterPeiling() {
   if (naal) naal.style.transform = `rotate(${vinkel.toFixed(1)}deg) scale(${skala.toFixed(2)})`;
 
   const svg = boks.querySelector('[data-kompass]');
-  if (svg) svg.setAttribute('aria-label', kpKompassTekst(kurs));
+  if (svg) {
+    svg.setAttribute('aria-label', kpKompassTekst(kurs));
+    svg.dataset.tom = kurs.tom ? '1' : '0';
+    svg.dataset.vei = kpNaalVei(kurs);
+  }
 
   /* Kvadranten nåla peker inn i, tonet litt sterkere */
   const kv = kurs.r > 0.24
@@ -1298,17 +1570,9 @@ function kpOppdaterPeiling() {
     const el = boks.querySelector(velger);
     if (el) el.textContent = tekst;
   };
-  sett('[data-kurs-navn]', info.navn);
-  sett('[data-kurs-tekst]', info.tekst);
-  sett('[data-kurs-teller]',
-       `Basert på ${kurs.svart} av ${kurs.totalt} spørsmål som teller for kursen. `
-       + 'Den kan snu helt til du er ferdig.');
-
-  const utslag = boks.querySelector('[data-utslag]');
-  if (utslag) {
-    utslag.innerHTML = kpUtslagHtml(kpSisteUtslag);
-    kpIkoner(utslag);
-  }
+  sett('[data-kurs-over]', t.over);
+  sett('[data-kurs-navn]', t.navn);
+  sett('[data-kurs-tekst]', t.tekst);
 
   boks.querySelectorAll('.kp-nokkel__rad').forEach((rad, i) => {
     if (KP_NOKKEL[i].kode === kurs.retning) rad.setAttribute('data-naa', 'true');
@@ -1318,38 +1582,10 @@ function kpOppdaterPeiling() {
 
 /* ═══ Svar ════════════════════════════════════════════════════════ */
 
-function kpSettSvar(navn, verdi, sp, felt) {
-  const foer = kpBeregnKurs();
+function kpSettSvar(navn, verdi, sp) {
   S[navn] = verdi;
-  const etter = kpBeregnKurs();
-
-  /* Hva dette ene svaret betyr.
-
-     Her sto det før «Svaret trakk kompasset mot sør», som var galt å
-     skrive. Ett svar er én stemme blant mange, og nåla viser summen.
-     Et sørlig svar kan derfor godt ende med at nåla fortsatt peker
-     nord, bare litt kortere. Da lyver teksten om det som står rett
-     ved siden av. Nå sier den hva svaret teller for, og den sier fra
-     bare når kursen faktisk skiftet navn. */
-  if (sp && !sp.ikkeKompass) {
-    const p = kpPoengFor(sp, felt);
-    if (p) {
-      const r = kpRetning(p.e, p.n, 0.22);
-      const skiftet = foer.antall > 0 && foer.retning !== etter.retning;
-      const skifte = skiftet
-        ? ' Kursen din er nå «' + kpKursnavn(etter.retning) + '».'
-        : '';
-      kpSisteUtslag = r === 'MIDT'
-        ? { vei: 'ingen', tekst: KP_RETNINGSFORKLARING.MIDT + skifte }
-        : { vei: (p.n < 0 ? 'sor' : 'nord'),
-            tekst: 'Dette svaret teller mot «' + kpKursnavn(r) + '». '
-                   + KP_RETNINGSFORKLARING[r] + skifte };
-    } else {
-      kpSisteUtslag = null;
-    }
-  }
   kpLagre();
-  kpOppdaterPeiling();
+  if (sp) kpOppdaterPeiling(kpKursForSteg(sp.etappe));
 }
 
 function kpLesSkjema(rot) {
@@ -1403,8 +1639,6 @@ function kpLesSkjema(rot) {
         gammel.remove();
       }
     }
-    const feil = document.getElementById('kp-feil');
-    if (feil) feil.hidden = true;
   });
 }
 
@@ -1418,22 +1652,11 @@ function kpGaaTil(pos) {
   kpTegn();
 }
 
+/* Man kommer videre uansett. Et ubesvart spørsmål teller ikke i
+   kursen, og oppsummeringen sier hvor mange som står åpne. Å stoppe
+   folk på et spørsmål de ikke vil svare på, er verre enn å mangle
+   svaret. */
 function kpNeste() {
-  const f = KP_FLYT[kpPos];
-  if (f.t === 'sp' && !kpBesvart(f.sp) && S[f.sp.id] !== 'hoppet') {
-    const feil = document.getElementById('kp-feil');
-    if (feil) {
-      feil.textContent = f.sp.type === 'flerfelt'
-        ? 'Du må svare på begge spørsmålene før du går videre.'
-        : f.sp.type === 'flervalg'
-          ? 'Kryss av for minst ett alternativ. Har du ingenting av dette i nærheten, velger du «Ingen av delene».'
-          : 'Velg ett av alternativene før du går videre.' + (f.sp.kanHoppes ? ' Du kan også hoppe over spørsmålet.' : '');
-      feil.hidden = false;
-      feil.setAttribute('tabindex', '-1');
-      feil.focus({ preventScroll: false });
-    }
-    return;
-  }
   kpGaaTil(kpPos + 1);
 }
 
@@ -1447,7 +1670,6 @@ function kpNullstill() {
   if (!confirm('Vil du slette svarene og begynne på nytt? Dette kan ikke angres.')) return;
   S = {};
   try { localStorage.removeItem(KP_LAGER); } catch { /* ignorer */ }
-  kpSisteUtslag = null;
   kpPos = 0;
   kpModus = 'start';
   kpTegn();
@@ -1490,11 +1712,12 @@ function kpKlikk(ev) {
   else if (d.nullstill !== undefined) kpNullstill();
   else if (d.neste !== undefined) kpNeste();
   else if (d.forrige !== undefined) kpGaaTil(kpPos - 1);
-  else if (d.hopp !== undefined) { S[KP_FLYT[kpPos].sp.id] = 'hoppet'; kpLagre(); kpGaaTil(kpPos + 1); }
-  else if (d.hoppListe) { S[d.hoppListe] = 'hoppet'; kpLagre(); kpTegnLagring(); t.textContent = 'Hoppet over. Trykk for å svare likevel.'; }
   else if (d.hoppEtappe !== undefined) {
+    /* Forbi både spørsmålene og oppsummeringen av etappen. En
+       oppsummering av noe man har hoppet over, sier ingenting. */
     const e = KP_FLYT[kpPos].e;
-    const siste = KP_FLYT.map((f, i) => f.t === 'sp' && f.e.id === e.id ? i : -1).filter(i => i >= 0).pop();
+    const siste = KP_FLYT.map((f, i) => (f.t === 'sp' || f.t === 'etappeslutt') && f.e && f.e.id === e.id ? i : -1)
+                         .filter(i => i >= 0).pop();
     kpGaaTil(siste + 1);
   }
   else if (d.bytt) {
@@ -1507,12 +1730,8 @@ function kpKlikk(ev) {
   else if (d.endre) kpTilSporsmal(d.endre);
   else if (d.skrivUt !== undefined) window.print();
   else if (d.tilSoknad !== undefined) kpTilSoknad();
-  else if (d.pause !== undefined) {
-    kpLagre();
-    alert(kpInnlogget()
-      ? 'Svarene dine er lagret hos Husbanken. Du kan lukke siden nå, og fortsette der du slapp neste gang du logger inn.'
-      : 'Svarene dine er lagret i denne nettleseren. Du kan lukke siden nå, og fortsette der du slapp neste gang du åpner Boligkompasset på denne maskinen.');
-  }
+
+  else if (d.tilfeldig !== undefined) kpFyllTilfeldig();
   else if (d.mer) {
     const p = document.getElementById(d.mer);
     const aapen = t.getAttribute('aria-expanded') === 'true';

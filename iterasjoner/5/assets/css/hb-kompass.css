@@ -75,14 +75,14 @@
 .kp-kompass__nav       { fill: var(--hb-slate-700); }
 
 .kp-kompass__etikett {
-  font: 600 13px/1 var(--font-sans);
+  font: 600 15px/1 var(--font-sans);
   fill: var(--fg-subtle);
   text-transform: uppercase;
   letter-spacing: .08em;
 }
 .kp-kompass__etikett--n { fill: var(--hb-green-700); }
 .kp-kompass__etikett--s { fill: var(--hb-red-700); }
-.kp-kompass__under { font: 400 12px/1 var(--font-sans); fill: var(--fg-subtle); }
+.kp-kompass__under { font: 400 13px/1 var(--font-sans); fill: var(--fg-subtle); }
 
 /* Kompasset i bunnen av skjermen mens man svarer */
 .kp-peiling {
@@ -90,22 +90,59 @@
   border-radius: var(--radius-lg);
   background: var(--hb-slate-50);
   padding: var(--space-3);
-  display: grid;
-  grid-template-columns: 1fr;
-  justify-items: center;
-  text-align: center;
+}
+.kp-peiling__hoved {
+  display: grid; grid-template-columns: 1fr;
+  justify-items: center; text-align: center;
   gap: var(--space-3);
 }
-.kp-peiling > div:first-child { width: 150px; }
-@media (min-width: 520px) {
-  .kp-peiling {
-    grid-template-columns: 132px 1fr;
+.kp-peiling__rose { width: 100%; max-width: 320px; }
+@media (min-width: 560px) {
+  .kp-peiling { padding: var(--space-4); }
+  .kp-peiling__hoved {
+    grid-template-columns: 290px 1fr;
     justify-items: stretch; text-align: left;
     align-items: center;
-    gap: var(--space-4); padding: var(--space-4);
+    gap: var(--space-4);
   }
-  .kp-peiling > div:first-child { width: auto; }
+  .kp-peiling__rose { max-width: none; }
 }
+@media (min-width: 900px) {
+  .kp-peiling__hoved { grid-template-columns: 330px 1fr; gap: var(--space-5); }
+}
+
+/* Nøkkelen til de fire retningene, under kompasset hver gang */
+.kp-nokkel {
+  border-top: 1px solid var(--hb-slate-200);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+}
+.kp-nokkel__tittel {
+  font: 600 var(--text-xs)/1.3 var(--font-sans);
+  color: var(--fg-subtle);
+  margin: 0 0 var(--space-2);
+}
+.kp-nokkel ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+@media (min-width: 640px) {
+  .kp-nokkel ul { grid-template-columns: 1fr 1fr; gap: 6px var(--space-4); }
+}
+.kp-nokkel__rad {
+  display: flex; align-items: flex-start; gap: var(--space-2);
+  font-size: var(--text-xs); line-height: 1.45;
+  color: var(--fg-subtle);
+  border-radius: var(--radius-sm);
+  padding: 3px 6px 3px 2px;
+}
+.kp-nokkel__rad strong { color: var(--fg-default); font-weight: 600; }
+.kp-nokkel__rad[data-naa="true"] {
+  background: var(--hb-green-100);
+  color: var(--fg-default);
+}
+.kp-nokkel__pil {
+  flex: 0 0 auto; width: 19px; height: 19px;
+  color: var(--hb-slate-400); margin-top: 1px;
+}
+.kp-nokkel__rad[data-naa="true"] .kp-nokkel__pil { color: var(--hb-red-700); }
 .kp-peiling__kurs { font: 600 var(--text-lg)/var(--lh-lg) var(--font-heading); margin: 0 0 4px; }
 .kp-peiling__tekst { font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--fg-subtle); margin: 0; }
 .kp-peiling__utslag {
@@ -124,7 +161,10 @@
 .kp-peiling__utslag[data-vei="ingen"] { background: var(--hb-slate-100); border-color: var(--hb-slate-200); color: var(--fg-subtle); }
 
 /* Stort kompass på forsiden og i oppsummeringen */
-.kp-kompass-stort { max-width: 340px; margin-inline: auto; }
+/* Bredden må stå eksplisitt. Et rutenettelement med auto-marger
+   strekker seg ikke, og da falt rosa tilbake til sin egen
+   viewBox-størrelse i stedet for å fylle spalta. */
+.kp-kompass-stort { width: 100%; max-width: 380px; margin-inline: auto; }
 
 /* Fire kurser, klikkbare på forsiden */
 .kp-kurser { display: grid; gap: var(--space-2); margin-top: var(--space-3); }
@@ -379,7 +419,7 @@
 /* Bred skjerm: fanene står i margen og blir stående mens du blar */
 @media (min-width: 900px) {
   .kp-liste__oppsett {
-    grid-template-columns: 224px minmax(0, 1fr);
+    grid-template-columns: 250px minmax(0, 1fr);
     gap: var(--space-6);
     align-items: start;
   }
@@ -442,7 +482,7 @@
   align-items: center;
 }
 @media (min-width: 720px) {
-  .kp-resultat__topp { grid-template-columns: 300px 1fr; padding: var(--space-6) var(--space-5); }
+  .kp-resultat__topp { grid-template-columns: 330px 1fr; padding: var(--space-6) var(--space-5); }
 }
 .kp-resultat__kurs { font: 600 var(--text-xs)/1 var(--font-sans); text-transform: uppercase; letter-spacing: .1em; color: var(--hb-green-800); margin: 0 0 var(--space-2); }
 .kp-resultat__navn { font: 600 var(--text-2xl)/var(--lh-2xl) var(--font-display); margin: 0 0 var(--space-3); letter-spacing: -0.01em; }

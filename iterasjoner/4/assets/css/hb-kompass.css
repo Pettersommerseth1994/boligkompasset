@@ -340,7 +340,9 @@
    ─────────────────────────────────────────────────────────────────── */
 
 .kp-liste__oppsett { display: grid; gap: var(--space-4); }
-.kp-liste__innhold { min-width: 0; }
+/* Uten dette vokser rutenettelementene med innholdet sitt, og da biter
+   ikke overflow-x på fanerada. Sida fikk vannrett rulling i stedet. */
+.kp-liste__innhold, .kp-tabs { min-width: 0; }
 
 .kp-tabs ol { list-style: none; margin: 0; padding: 0; }
 .kp-tabs__tittel {
@@ -377,7 +379,7 @@
 /* Bred skjerm: fanene står i margen og blir stående mens du blar */
 @media (min-width: 900px) {
   .kp-liste__oppsett {
-    grid-template-columns: 224px minmax(0, 1fr);
+    grid-template-columns: 250px minmax(0, 1fr);
     gap: var(--space-6);
     align-items: start;
   }

@@ -32,7 +32,7 @@ papirsøknaden for aldersvennlig oppgradering. Lista står i
 commit, lagt i `iterasjoner/N/` av `verktoy/lag-iterasjoner.py`. Den siste er
 sidene i roten.
 
-Iterasjon 1 til 24 (22. september til 5. oktober 2026) er fra tiden før
+Iterasjon 1 til 16 (22. til 30. september 2026) er fra tiden før
 Boligkompasset fikk eget repo. De er merket `repo: 'husbanken'` og hentes fra
 [husbanken-repoet](https://github.com/Pettersommerseth1994/husbanken), som må
 ligge ved siden av dette (`../husbanken`) når skriptet kjøres. Lenkene til de

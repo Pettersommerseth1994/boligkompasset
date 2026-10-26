@@ -58,7 +58,7 @@ function kpNormaliser(sp, felt) {
 }
 
 function kpPoengFor(sp, felt) {
-  if (sp.ikkeKompass) return null;
+  if (sp.ikkeKompass || (felt && felt.ikkeKompass)) return null;
   const navn = felt ? felt.navn : sp.id;
   const svar = S[navn];
   if (svar === undefined || svar === null || svar === 'hoppet') return null;
@@ -67,6 +67,7 @@ function kpPoengFor(sp, felt) {
     const p = sp.poeng(svar);
     return { n: p.n / (sp.maks.n || 1), e: p.e / (sp.maks.e || 1) };
   }
+  if (sp.type === 'flervalg') return { n: 0, e: 0 };
   const valg = (felt ? felt.valg : sp.valg).find(v => v.v === svar);
   if (!valg) return null;
   const { mn, me } = kpNormaliser(sp, felt);
@@ -79,7 +80,7 @@ function kpEnheter() {
   const ut = [];
   KOMPASS_SPORSMAL.forEach(sp => {
     if (sp.ikkeKompass) return;
-    if (sp.type === 'flerfelt') sp.felt.forEach(f => ut.push({ sp, felt: f }));
+    if (sp.type === 'flerfelt') sp.felt.forEach(f => { if (!f.ikkeKompass) ut.push({ sp, felt: f }); });
     else ut.push({ sp, felt: null });
   });
   return ut;
@@ -141,10 +142,11 @@ function kpRetning(x, y, grense = 0.18) {
   return ['N', 'NØ', 'Ø', 'SØ', 'S', 'SV', 'V', 'NV'][Math.round(deg / 45) % 8];
 }
 
-const KP_RETNINGSORD = {
-  N: 'mot nord', NØ: 'mot nordøst', Ø: 'mot øst', SØ: 'mot sørøst',
-  S: 'mot sør', SV: 'mot sørvest', V: 'mot vest', NV: 'mot nordvest'
-};
+/* Himmelretningene står ikke noe sted utad. Det er kursen som har et
+   navn, og det er den folk skal kjenne igjen. N, Ø, S og V lever
+   videre som korte koder i regnestykket. */
+const kpKursnavn = retning =>
+  (KOMPASS_RETNINGER[retning] || KOMPASS_RETNINGER.MIDT).navn;
 const KP_RETNINGSFORKLARING = {
   N: 'Det taler for at du kan bli boende.',
   NØ: 'Det taler for at du kan bli boende, med noen små grep.',
@@ -160,18 +162,23 @@ const KP_RETNINGSFORKLARING = {
 /* ═══ Kompasset som figur ═════════════════════════════════════════ */
 
 function kpKompassTekst(kurs) {
-  const info = KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT;
-  return 'Kompass. Nåla peker '
-       + (kurs.retning === 'MIDT' ? 'mot midten' : KP_RETNINGSORD[kurs.retning])
-       + '. Kursen er «' + info.navn + '».';
+  return kurs.retning === 'MIDT'
+    ? 'Kompass. Nåla står nær midten. Kursen er «' + kpKursnavn('MIDT') + '».'
+    : 'Kompass. Nåla peker mot «' + kpKursnavn(kurs.retning) + '».';
 }
 
-function kpKompassSvg(kurs, opt = {}) {
-  const stort = !!opt.stort;
+/* Én størrelse overalt. Den lille utgaven med bare N, Ø, S og V var
+   for smått til å lese nederst på skjermen, og den tvang oss til å
+   forklare retningene et annet sted. Nå står navnet på kursen rett i
+   rosa, i samme rose på forsiden, under spørsmålene og i
+   oppsummeringen. */
+function kpKompassSvg(kurs) {
   const vinkel = (Math.atan2(kurs.x, kurs.y) * 180 / Math.PI) || 0;
   const skala = 0.52 + 0.48 * (kurs.r || 0);
-  const vb = stort ? '0 0 300 200' : '0 0 200 200';
-  const cx = stort ? 150 : 100, cy = 100, r = stort ? 60 : 78;
+  /* Bredden er satt av den lengste etiketten, «Ombygging», ikke av
+     rosa. Blir boksen smalere, skjæres den av i kanten. */
+  const vb = '0 0 316 210';
+  const cx = 158, cy = 103, r = 70;
 
   const felt = (d, navn, aktiv) =>
     `<path class="kp-kompass__felt${aktiv ? ' kp-kompass__felt--aktiv' : ''}" data-kv="${navn}" d="${d}"
@@ -195,20 +202,13 @@ function kpKompassSvg(kurs, opt = {}) {
     merker += `<line class="kp-kompass__tick" x1="${(cx + i * s).toFixed(1)}" y1="${(cy - i * c).toFixed(1)}" x2="${(cx + y * s).toFixed(1)}" y2="${(cy - y * c).toFixed(1)}"/>`;
   }
 
-  const etiketter = stort ? `
-    <text class="kp-kompass__etikett kp-kompass__etikett--n" x="${cx}" y="18" text-anchor="middle">NORD</text>
-    <text class="kp-kompass__under" x="${cx}" y="31" text-anchor="middle">Rett kurs</text>
-    <text class="kp-kompass__etikett kp-kompass__etikett--s" x="${cx}" y="196" text-anchor="middle">SØR</text>
-    <text class="kp-kompass__under" x="${cx}" y="180" text-anchor="middle">Ny kurs</text>
-    <text class="kp-kompass__etikett" x="${cx + r + 14}" y="97" text-anchor="start">ØST</text>
-    <text class="kp-kompass__under" x="${cx + r + 14}" y="111" text-anchor="start">Små grep</text>
-    <text class="kp-kompass__etikett" x="${cx - r - 14}" y="97" text-anchor="end">VEST</text>
-    <text class="kp-kompass__under" x="${cx - r - 14}" y="111" text-anchor="end">Ombygging</text>`
-    : `
-    <text class="kp-kompass__etikett kp-kompass__etikett--n" x="${cx}" y="16" text-anchor="middle">N</text>
-    <text class="kp-kompass__etikett kp-kompass__etikett--s" x="${cx}" y="193" text-anchor="middle">S</text>
-    <text class="kp-kompass__etikett" x="191" y="105" text-anchor="end">Ø</text>
-    <text class="kp-kompass__etikett" x="9" y="105" text-anchor="start">V</text>`;
+  /* Bare kursnavnene. Himmelretningene sa ingenting om boligen, og de
+     tok plassen til det som faktisk betyr noe. */
+  const etiketter = `
+    <text class="kp-kompass__etikett kp-kompass__etikett--n" x="${cx}" y="24" text-anchor="middle">Rett kurs</text>
+    <text class="kp-kompass__etikett kp-kompass__etikett--s" x="${cx}" y="192" text-anchor="middle">Ny kurs</text>
+    <text class="kp-kompass__etikett" x="${cx + r + 8}" y="108" text-anchor="start">Små grep</text>
+    <text class="kp-kompass__etikett" x="${cx - r - 8}" y="108" text-anchor="end">Ombygging</text>`;
 
   const info = KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT;
 
@@ -225,11 +225,11 @@ function kpKompassSvg(kurs, opt = {}) {
   ${merker}
   <g class="kp-kompass__naal" data-naal
      style="transform-origin:${cx}px ${cy}px; transform:rotate(${vinkel.toFixed(1)}deg) scale(${skala.toFixed(2)})">
-    <path class="kp-kompass__naal-nord" d="M${cx} ${cy - r + 6} L${cx + 9} ${cy + 6} L${cx} ${cy} L${cx - 9} ${cy + 6} Z"/>
-    <path class="kp-kompass__naal-sor"  d="M${cx} ${cy + r - 20} L${cx + 7} ${cy - 4} L${cx} ${cy} L${cx - 7} ${cy - 4} Z"/>
+    <path class="kp-kompass__naal-nord" d="M${cx} ${cy - r + 5} L${cx + 12} ${cy + 8} L${cx} ${cy} L${cx - 12} ${cy + 8} Z"/>
+    <path class="kp-kompass__naal-sor"  d="M${cx} ${cy + r - 18} L${cx + 9} ${cy - 5} L${cx} ${cy} L${cx - 9} ${cy - 5} Z"/>
   </g>
-  <circle class="kp-kompass__nav" cx="${cx}" cy="${cy}" r="6.5"/>
-  <circle cx="${cx}" cy="${cy}" r="2.6" fill="#fff"/>
+  <circle class="kp-kompass__nav" cx="${cx}" cy="${cy}" r="8.5"/>
+  <circle cx="${cx}" cy="${cy}" r="3.4" fill="#fff"/>
   ${etiketter}
 </svg>`;
 }
@@ -310,11 +310,11 @@ function kpStartHtml() {
       <svg class="kp-kurs__pil" viewBox="0 0 40 40" aria-hidden="true">
         <circle cx="20" cy="20" r="18" fill="none" stroke="var(--hb-slate-200)" stroke-width="1.5"/>
         <g style="transform:rotate(${piler[kode]}deg);transform-origin:20px 20px">
-          <path d="M20 5 L25 24 L20 20 L15 24 Z" fill="var(--hb-red-700)"/>
+          <path d="M20 5 L25 24 L20 20 L15 24 Z" fill="var(--hb-green-700)"/>
         </g>
       </svg>
       <span>
-        <span class="kp-kurs__navn">${kode === 'N' ? 'Nord' : kode === 'Ø' ? 'Øst' : kode === 'S' ? 'Sør' : 'Vest'}: ${k.navn}</span>
+        <span class="kp-kurs__navn">${k.navn}</span>
         <span class="kp-kurs__kort">${k.kort}</span>
       </span>
     </button>`;
@@ -404,7 +404,7 @@ function kpStartHtml() {
           </p>
         </div>
         <div>
-          <div class="kp-kompass-stort" id="start-kompass">${kpKompassSvg(kurs, { stort: true })}</div>
+          <div class="kp-kompass-stort" id="start-kompass">${kpKompassSvg(kurs)}</div>
         </div>
       </div>
     </div>
@@ -567,21 +567,56 @@ function kpUtslagHtml(u) {
     </span>`;
 }
 
+/* Nøkkelen til de fire retningene. Den står under kompasset hver
+   eneste gang det vises, for man skal aldri måtte huske hva en kurs
+   betydde fra forsiden. */
+const KP_NOKKEL = [
+  { kode: 'N', grader: 0   },
+  { kode: 'Ø', grader: 90  },
+  { kode: 'V', grader: 270 },
+  { kode: 'S', grader: 180 }
+];
+
+function kpNokkelHtml(retning) {
+  return `
+  <div class="kp-nokkel">
+    <p class="kp-nokkel__tittel">Slik leser du kompasset</p>
+    <ul>
+      ${KP_NOKKEL.map(p => {
+        const k = KOMPASS_RETNINGER[p.kode];
+        const naa = retning === p.kode;
+        return `
+      <li class="kp-nokkel__rad"${naa ? ' data-naa="true"' : ''}>
+        <svg class="kp-nokkel__pil" viewBox="0 0 24 24" aria-hidden="true">
+          <g style="transform:rotate(${p.grader}deg);transform-origin:12px 12px">
+            <path d="M12 3 L16 15 L12 12 L8 15 Z" fill="currentColor"/>
+          </g>
+        </svg>
+        <span><strong>${k.navn}.</strong> ${k.kort}.</span>
+      </li>`;
+      }).join('')}
+    </ul>
+  </div>`;
+}
+
 function kpPeilingHtml(kurs) {
   const info = KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT;
   return `
 <div class="kp-peiling" style="margin-top:var(--space-5)" id="peiling">
-  <div>${kpKompassSvg(kurs)}</div>
-  <div>
-    <p class="hb-small hb-muted" style="margin:0 0 2px">Kursen din nå</p>
-    <p class="kp-peiling__kurs" data-kurs-navn>${info.navn}</p>
-    <p class="kp-peiling__tekst" data-kurs-tekst>${info.tekst}</p>
-    <span data-utslag>${kpUtslagHtml(kpSisteUtslag)}</span>
-    <p class="hb-small hb-muted" style="margin:var(--space-2) 0 0" data-kurs-teller>
-      Basert på ${kurs.svart} av ${kurs.totalt} spørsmål som teller for kursen.
-      Den kan snu helt til du er ferdig.
-    </p>
+  <div class="kp-peiling__hoved">
+    <div class="kp-peiling__rose">${kpKompassSvg(kurs)}</div>
+    <div>
+      <p class="hb-small hb-muted" style="margin:0 0 2px">Kursen din nå</p>
+      <p class="kp-peiling__kurs" data-kurs-navn>${info.navn}</p>
+      <p class="kp-peiling__tekst" data-kurs-tekst>${info.tekst}</p>
+      <span data-utslag>${kpUtslagHtml(kpSisteUtslag)}</span>
+      <p class="hb-small hb-muted" style="margin:var(--space-2) 0 0" data-kurs-teller>
+        Basert på ${kurs.svart} av ${kurs.totalt} spørsmål som teller for kursen.
+        Den kan snu helt til du er ferdig.
+      </p>
+    </div>
   </div>
+  <div data-nokkel>${kpNokkelHtml(kurs.retning)}</div>
 </div>`;
 }
 
@@ -943,7 +978,7 @@ function kpOppsummeringHtml() {
 
     <div class="kp-resultat">
       <div class="kp-resultat__topp">
-        <div class="kp-kompass-stort">${kpKompassSvg(kurs, { stort: true })}</div>
+        <div class="kp-kompass-stort">${kpKompassSvg(kurs)}</div>
         <div>
           <p class="kp-resultat__kurs">Kompasset peker mot</p>
           <p class="kp-resultat__navn">${info.navn}</p>
@@ -1274,6 +1309,11 @@ function kpOppdaterPeiling() {
     utslag.innerHTML = kpUtslagHtml(kpSisteUtslag);
     kpIkoner(utslag);
   }
+
+  boks.querySelectorAll('.kp-nokkel__rad').forEach((rad, i) => {
+    if (KP_NOKKEL[i].kode === kurs.retning) rad.setAttribute('data-naa', 'true');
+    else rad.removeAttribute('data-naa');
+  });
 }
 
 /* ═══ Svar ════════════════════════════════════════════════════════ */
@@ -1297,12 +1337,13 @@ function kpSettSvar(navn, verdi, sp, felt) {
       const r = kpRetning(p.e, p.n, 0.22);
       const skiftet = foer.antall > 0 && foer.retning !== etter.retning;
       const skifte = skiftet
-        ? ' Kursen din er nå «' + (KOMPASS_RETNINGER[etter.retning] || KOMPASS_RETNINGER.MIDT).navn + '».'
+        ? ' Kursen din er nå «' + kpKursnavn(etter.retning) + '».'
         : '';
       kpSisteUtslag = r === 'MIDT'
         ? { vei: 'ingen', tekst: KP_RETNINGSFORKLARING.MIDT + skifte }
         : { vei: (p.n < 0 ? 'sor' : 'nord'),
-            tekst: 'Dette svaret teller ' + KP_RETNINGSORD[r] + '. ' + KP_RETNINGSFORKLARING[r] + skifte };
+            tekst: 'Dette svaret teller mot «' + kpKursnavn(r) + '». '
+                   + KP_RETNINGSFORKLARING[r] + skifte };
     } else {
       kpSisteUtslag = null;
     }
@@ -1519,7 +1560,7 @@ function kpKlikk(ev) {
     document.getElementById('kurs-forklaring').textContent = k.tekst;
     const piler = { N: 0, Ø: 90, S: 180, V: 270 };
     document.getElementById('start-kompass').innerHTML =
-      kpKompassSvg({ x: Math.sin(piler[d.kurs] * Math.PI / 180), y: Math.cos(piler[d.kurs] * Math.PI / 180), r: 1, retning: d.kurs }, { stort: true });
+      kpKompassSvg({ x: Math.sin(piler[d.kurs] * Math.PI / 180), y: Math.cos(piler[d.kurs] * Math.PI / 180), r: 1, retning: d.kurs });
   }
 }
 

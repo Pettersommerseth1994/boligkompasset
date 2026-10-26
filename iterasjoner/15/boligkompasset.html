@@ -5,15 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Boligkompasset | Husbanken</title>
 <meta name="description" content="Svar på 20 spørsmål om boligen din, og få vite hvor godt den passer deg i dag, hva som skal til for at den fortsatt passer om ti år, og hvem som kan være med og betale.">
-<link rel="stylesheet" href="ds/colors_and_type.css">
-<link rel="stylesheet" href="assets/css/hb-app.css">
-<link rel="stylesheet" href="assets/css/hb-kompass.css?v=14">
-<link rel="icon" href="../../ds/logo/husbanken-primary.png">
+<!-- Ett stilark for hele sida. Det importerer Husbankens filer og
+     Designsystemet.no i en uttalt lagrekkefølge, se fila for hvorfor. -->
+<link rel="stylesheet" href="ds-no/boligkompasset-stiler.css?v=18">
+<link rel="icon" type="image/svg+xml" href="../../assets/img/favicon-boligkompasset.svg">
+<link rel="icon" type="image/png" sizes="64x64" href="../../assets/img/favicon-boligkompasset.png">
+<link rel="apple-touch-icon" href="../../assets/img/apple-touch-boligkompasset.png">
 <!-- GitHub Pages serverer filene med ti minutters cache. Uten ?v= ville
      den som nettopp så på siden, fortsatt få den gamle utgaven etter en
      ny publisering. Tallet økes når skript eller stilark endres. -->
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="../../assets/css/kp-versjoner.css?v=6">
+<link rel="stylesheet" href="../../assets/css/kp-versjoner.css?v=7">
 </head>
 <body data-versjon="15" data-rot="../../">
 
@@ -42,8 +44,8 @@
 <div id="hb-bunn"></div>
 
 <script src="assets/js/hb.js"></script>
-<script src="assets/js/hb-kompass-data.js?v=14"></script>
-<script src="assets/js/hb-kompass.js?v=14"></script>
+<script src="assets/js/hb-kompass-data.js?v=18"></script>
+<script src="assets/js/hb-kompass.js?v=18"></script>
 <script>
   hbMonter({ kontekst: 'Boligkompasset' });
   kompassStart();
@@ -53,6 +55,6 @@
     .kp-start-split { grid-template-columns: 1.25fr 1fr; align-items: center; }
   }
 </style>
-<script src="../../assets/js/kp-versjoner.js?v=6"></script>
+<script src="../../assets/js/kp-versjoner.js?v=7"></script>
 </body>
 </html>

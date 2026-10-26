@@ -418,7 +418,10 @@
   min-height: 44px;
 }
 .kp-ressurs:hover { background: var(--hb-blue-100); }
-.kp-ressurs svg { width: 18px; height: 18px; }
+/* Ikonet ligger i en span, og en inline span setter seg på grunnlinja.
+   Da havner pila lavere enn teksten ved siden av. */
+.kp-ressurs > span { display: inline-flex; align-items: center; }
+.kp-ressurs svg { width: 18px; height: 18px; display: block; }
 
 .kp-svardetaljer {
   margin-top: var(--space-6);
@@ -651,11 +654,16 @@
   font-size: var(--text-sm); line-height: var(--lh-sm);
 }
 .kp-tiltak__hvorfor strong { display: block; margin-bottom: 2px; }
-.kp-merkeliste { list-style: none; margin: var(--space-2) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+/* Tiltakene i tilskuddet. Dette sto som piller før, men ordlyden er
+   lang og brakk over tre linjer. Da ble den runde enden så stor at
+   teksten la seg utenfor. Nå er det rader med rett kant. */
+.kp-merkeliste { list-style: none; margin: var(--space-2) 0 0; padding: 0; display: grid; gap: 4px; }
 .kp-merke {
-  font-size: 13px; line-height: 1.4;
+  font-size: 13px; line-height: 1.45;
   background: var(--hb-blue-100); color: var(--hb-blue-900);
-  border-radius: var(--radius-pill); padding: 5px 11px;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--hb-blue-800);
+  padding: 7px 12px;
 }
 
 /* Vis mer, uten å forlate siden. Designkritikken: trekkspill som
@@ -673,14 +681,38 @@
 .kp-ordning h4 { margin: 0 0 2px; font-size: var(--text-base); }
 .kp-ordning p { margin: 0 0 4px; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--fg-subtle); }
 
-.kp-svarliste { list-style: none; margin: 0; padding: 0; }
-.kp-svarliste li {
-  display: grid; gap: 2px; padding-block: var(--space-3);
-  border-bottom: 1px solid var(--hb-slate-200);
+/* Svarene, satt opp som oppsummeringen i søknaden. Flat variant av
+   hb-summary: ingen ramme rundt, ingen grå topp, bare hårstreker.
+   «Endre» står under overskriften, ikke ute til høyre, for på mobil
+   ble den stående for seg selv uten sammenheng med teksten over. */
+
+.hb-summary--flat { border: 0; border-radius: 0; }
+.hb-summary--flat .hb-summary__group { padding-top: var(--space-4); }
+.hb-summary--flat .hb-summary__group + .hb-summary__group { border-top: 0; }
+.hb-summary--flat .hb-summary__head {
+  display: block;
+  background: none;
+  padding: 0 0 var(--space-2);
 }
-@media (min-width: 640px) { .kp-svarliste li { grid-template-columns: 1fr 1fr auto; gap: var(--space-3); align-items: baseline; } }
-.kp-svarliste__sp { color: var(--fg-subtle); font-size: var(--text-sm); }
-.kp-svarliste__sv { font-weight: 600; }
+.hb-summary--flat .hb-summary__head h3 {
+  font: 600 var(--text-lg)/var(--lh-lg) var(--font-heading);
+  margin: 0;
+}
+.hb-summary--flat .hb-summary__edit {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 0; min-height: 0;
+}
+.hb-summary--flat .hb-summary__edit svg { width: 18px; height: 18px; }
+.hb-summary--flat dl { padding: 0; }
+.hb-summary--flat dl > div {
+  border-top: 1px solid var(--hb-slate-200);
+  padding: var(--space-3) 0;
+}
+.hb-summary--flat dt {
+  font: 600 var(--text-sm)/var(--lh-sm) var(--font-sans);
+  color: var(--fg-default);
+}
+.hb-summary--flat dd { margin: 2px 0 0; font-weight: 400; }
 
 .kp-neste { display: grid; gap: var(--space-3); }
 @media (min-width: 720px) { .kp-neste { grid-template-columns: 1fr 1fr; } }

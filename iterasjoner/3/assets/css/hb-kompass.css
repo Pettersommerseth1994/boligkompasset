@@ -215,23 +215,43 @@
 .kp-sporsmal h2 { margin-bottom: var(--space-2); }
 .kp-sporsmal__under { color: var(--fg-default); margin: 0 0 var(--space-3); max-width: 56ch; }
 
-/* «Derfor spør vi» og «Dette brukes til» står alltid framme.
-   Designkritikken var tydelig på at trekkspill ikke fungerer her. */
-.kp-hvorfor {
-  border-left: 4px solid var(--hb-green-600);
-  background: var(--hb-green-100);
+/* «Derfor spør vi» og «Dette brukes svaret til» står alltid framme.
+   Designkritikken var tydelig på at trekkspill ikke fungerer her.
+
+   To adskilte bokser, ikke én, fordi de svarer på to ulike spørsmål:
+   hvorfor vi spør, og hva vi gjør med svaret. Grønn for det første,
+   blå for det andre, så det er lett å se at det er to ting. */
+.kp-forklaring {
+  display: grid; gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+@media (min-width: 640px) {
+  .kp-forklaring { grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+}
+.kp-forklaring__boks {
+  border-left: 4px solid;
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
   padding: var(--space-3);
-  margin-bottom: var(--space-4);
   font-size: var(--text-sm);
   line-height: var(--lh-sm);
 }
-.kp-hvorfor dt {
-  font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
-  font-size: 12px; color: var(--hb-green-800);
+.kp-forklaring__boks p { margin: 0; }
+.kp-forklaring__tittel {
+  font: 600 var(--text-sm)/var(--lh-sm) var(--font-sans);
+  letter-spacing: 0;
+  margin: 0 0 2px;
 }
-.kp-hvorfor dd { margin: 2px 0 0; }
-.kp-hvorfor dd + dt { margin-top: var(--space-2); }
+.kp-forklaring__boks--sporsmal {
+  background: var(--hb-green-100);
+  border-left-color: var(--hb-green-700);
+}
+.kp-forklaring__boks--sporsmal .kp-forklaring__tittel { color: var(--hb-green-800); }
+
+.kp-forklaring__boks--bruk {
+  background: var(--hb-blue-100);
+  border-left-color: var(--hb-blue-800);
+}
+.kp-forklaring__boks--bruk .kp-forklaring__tittel { color: var(--hb-blue-900); }
 
 .kp-felt + .kp-felt { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--hb-slate-200); }
 .kp-felt__ledetekst { font-weight: 600; display: block; margin-bottom: 4px; }
@@ -313,10 +333,90 @@
   font: 400 var(--text-sm)/var(--lh-sm) var(--font-sans);
 }
 
-/* ═══ Listemodus ══════════════════════════════════════════════════ */
+/* ═══ Listemodus ══════════════════════════════════════════════════
+   Etappene har hver sin fane i margen, som seksjonene i OneNote. Du
+   ser hvor du er, hvor mye som står igjen i hver etappe, og du kan
+   hoppe rett dit du vil. Fanen følger med når du blar.
+   ─────────────────────────────────────────────────────────────────── */
 
-.kp-liste__etappe { margin-bottom: var(--space-7); }
-.kp-liste__etappe > h2 { padding-top: var(--space-3); border-top: 3px solid var(--hb-green-700); }
+.kp-liste__oppsett { display: grid; gap: var(--space-4); }
+.kp-liste__innhold { min-width: 0; }
+
+.kp-tabs ol { list-style: none; margin: 0; padding: 0; }
+.kp-tabs__tittel {
+  font: 600 var(--text-xs)/1.3 var(--font-sans);
+  color: var(--fg-subtle);
+  margin: 0 0 var(--space-2);
+}
+.kp-tab {
+  display: flex; align-items: center; gap: var(--space-2);
+  min-height: 46px;
+  text-decoration: none; color: var(--fg-default);
+  background: #fff;
+  font-size: var(--text-sm); line-height: 1.35;
+  transition: background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out);
+}
+.kp-tab:hover { background: var(--hb-slate-50); }
+.kp-tab__nr {
+  flex: 0 0 auto;
+  width: 22px; height: 22px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--tab-farge); color: #fff;
+  font: 600 12px/1 var(--font-sans);
+}
+.kp-tab__navn { flex: 1; }
+.kp-tab__tall {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  font-size: 13px; color: var(--fg-subtle);
+}
+.kp-tab[data-ferdig="true"] .kp-tab__tall { color: var(--hb-green-800); font-weight: 600; }
+.kp-tab[aria-current="true"] { background: var(--hb-slate-50); font-weight: 600; }
+
+/* Bred skjerm: fanene står i margen og blir stående mens du blar */
+@media (min-width: 900px) {
+  .kp-liste__oppsett {
+    grid-template-columns: 224px minmax(0, 1fr);
+    gap: var(--space-6);
+    align-items: start;
+  }
+  .kp-tabs { position: sticky; top: var(--space-4); }
+  .kp-tabs ol { display: grid; gap: 2px; }
+  .kp-tab {
+    padding: 8px var(--space-3) 8px 12px;
+    border-left: 6px solid var(--tab-farge);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  }
+  .kp-tab[aria-current="true"] { border-left-width: 10px; padding-left: 8px; }
+  .kp-liste__innhold { max-width: 720px; }
+}
+
+/* Smal skjerm: en rad med faner som blir liggende øverst */
+@media (max-width: 899px) {
+  .kp-tabs {
+    position: sticky; top: 0; z-index: 20;
+    background: #fff;
+    border-bottom: 1px solid var(--hb-slate-200);
+    padding-block: var(--space-2);
+  }
+  .kp-tabs__tittel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .kp-tabs ol { display: flex; gap: var(--space-2); overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .kp-tab {
+    flex: 0 0 auto; white-space: nowrap;
+    padding: 6px var(--space-3);
+    border-bottom: 4px solid var(--tab-farge);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  }
+  .kp-tab__tall { display: none; }
+}
+
+.kp-liste__etappe { margin-bottom: var(--space-7); scroll-margin-top: 84px; }
+@media (min-width: 900px) { .kp-liste__etappe { scroll-margin-top: var(--space-4); } }
+.kp-liste__etappe > h2 {
+  padding-top: var(--space-3);
+  border-top: 4px solid var(--etappe-farge, var(--hb-green-700));
+}
 .kp-liste__sporsmal { padding-block: var(--space-4); border-bottom: 1px solid var(--hb-slate-200); }
 .kp-liste__sporsmal:last-child { border-bottom: 0; }
 .kp-liste__nr { font-size: var(--text-sm); color: var(--fg-subtle); font-variant-numeric: tabular-nums; }
