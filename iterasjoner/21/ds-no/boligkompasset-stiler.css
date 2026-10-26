@@ -1,0 +1,32 @@
+/* ──────────────────────────────────────────────────────────────────
+   Lagrekkefølgen for Boligkompasset
+
+   Designsystemets CSS ligger i @layer. Ulagde regler slår lagde uansett
+   spesifisitet, så hb-app.css sine nakne h1-h4- og p-regler vant over
+   .ds-heading og .ds-paragraph, og data-size ble stående uten virkning.
+
+   Her lastes alt gjennom ett stilark, med rekkefølgen sagt rett ut:
+
+     hb-grunnlag   Husbankens tokens, skrifter og skallet rundt sida
+     ds.*          Designsystemet: størrelser, typeskala, komponenter
+     hb-farger     Husbankens palett lagt inn i --ds-color-*
+     hb-kompass    det som bare finnes i Boligkompasset
+
+   Navnene er flate med vilje. Skriver man hb.grunnlag og hb.farger, blir
+   begge undernivåer av det samme hb-laget, og et lag rangeres der
+   forelderen står. Da havnet også hb.farger foran ds, og Digdirs farger
+   vant. Flate navn gir den rekkefølgen som står her.
+
+   Ingenting i de importerte filene er endret. Bare rekkefølgen.
+   ────────────────────────────────────────────────────────────────── */
+
+@layer hb-grunnlag, ds.theme, ds.base, ds.components, hb-farger, hb-kompass;
+
+@import url('../ds/colors_and_type.css')      layer(hb-grunnlag);
+@import url('../assets/css/hb-app.css')       layer(hb-grunnlag);
+
+@import url('designsystemet-tema.css');
+@import url('designsystemet-komponenter.css');
+
+@import url('husbanken-farger.css')           layer(hb-farger);
+@import url('../assets/css/hb-kompass.css')   layer(hb-kompass);

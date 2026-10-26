@@ -14,6 +14,9 @@
         «mappe: 'iterasjoner/N/'».
      3. Kjør  python3 verktoy/lag-iterasjoner.py  og commit mappa.
 
+   Iterasjon 1 til 24 er fra før Boligkompasset fikk eget repo. De har
+   «repo: 'husbanken'» og hentes fra husbanken-repoet.
+
    Sidene sier selv hvor de er, med
      <body data-versjon="8" data-rot="">        i roten
      <body data-versjon="3" data-rot="../../">  i iterasjoner/3/
@@ -21,15 +24,203 @@
 
 const KP_VERSJONER = [
   {
-    nr: 1, commit: '6e4d15c', mappe: 'iterasjoner/1/',
+    nr: 1, repo: 'husbanken', commit: 'b309012', mappe: 'iterasjoner/1/',
+    navn: 'Et kompass som faktisk peker', dato: '22. september 2026',
+    endringer: [
+      'Boligkompasset bygget om rundt et kompass med to akser: om boligen bærer deg videre, og hvor stort arbeidet er.',
+      'Spørsmålene fra workshopen. 26 spørsmål ble 20, og sju kategorier ble fem etapper.',
+      'Kartleggingen ligger åpent, uten innlogging, og utskriften er et A4-dokument å ta med til kommunen.'
+    ]
+  },
+  {
+    nr: 2, repo: 'husbanken', commit: '69b892f', mappe: 'iterasjoner/2/',
+    navn: 'Illustrasjon i toppfeltet', dato: '22. september 2026',
+    endringer: [
+      'Kompassrosa og boligen på samme bakkelinje, i samme stil som illustrasjonen på tilskuddssiden.'
+    ]
+  },
+  {
+    nr: 3, repo: 'husbanken', commit: '70aa340', mappe: 'iterasjoner/3/',
+    navn: 'Uten bytteknapp', dato: '22. september 2026',
+    endringer: [
+      'Knappen over hvert spørsmål for å bytte mellom kompass og liste er fjernet.'
+    ]
+  },
+  {
+    nr: 4, repo: 'husbanken', commit: '1c33816', mappe: 'iterasjoner/4/',
+    navn: 'Sidefaner, og nåla svinger', dato: '22. september 2026',
+    endringer: [
+      'Lista har en fane per etappe i margen.',
+      'Nåla svinger på stedet i stedet for å hoppe.',
+      '«Derfor spør vi» og «Dette brukes svaret til» står i hver sin boks.'
+    ]
+  },
+  {
+    nr: 5, repo: 'husbanken', commit: 'cfa7acf', mappe: 'iterasjoner/5/',
+    navn: 'Etappenavn som snakker til deg', dato: '22. september 2026',
+    endringer: [
+      '«Deg og boligen» ble «Deg og boligen din», og de fire andre etappene fulgte etter.'
+    ]
+  },
+  {
+    nr: 6, repo: 'husbanken', commit: 'd153e0d', mappe: 'iterasjoner/6/',
+    navn: 'Veien inn til boligen din', dato: '22. september 2026',
+    endringer: [
+      'Etappe 3 heter «Veien inn til boligen din».'
+    ]
+  },
+  {
+    nr: 7, repo: 'husbanken', commit: '47552b4', mappe: 'iterasjoner/7/',
+    navn: 'Større kompass med nøkkel', dato: '22. september 2026',
+    endringer: [
+      'Én kompassrose overalt, 45 prosent større, med navnet på kursen i rosa.',
+      'En nøkkel under kompasset forklarer de fire retningene.'
+    ]
+  },
+  {
+    nr: 8, repo: 'husbanken', commit: '51aebb4', mappe: 'iterasjoner/8/',
+    navn: 'Kursene får navn', dato: '22. september 2026',
+    endringer: [
+      'Rett kurs, Små grep, Ombygging og Ny kurs i stedet for himmelretninger.',
+      'Spørsmålet om hverdagen er flervalg.',
+      'Å leie flytter ikke nåla. Det som teller, er hvor fornøyd du er.'
+    ]
+  },
+  {
+    nr: 9, repo: 'husbanken', commit: 'f032da8', mappe: 'iterasjoner/9/',
+    navn: 'Ett spørsmål om gangen', dato: '22. september 2026',
+    endringer: [
+      'Nåla viser svaret på spørsmålet du står på.',
+      'Summen for etappen kommer på en egen skjerm etter hver etappe.',
+      '«Vri kompasset selv» i oppsummeringen.',
+      'Snarvei som fyller ut tilfeldige svar.'
+    ]
+  },
+  {
+    nr: 10, repo: 'husbanken', commit: 'bd305f4', mappe: 'iterasjoner/10/',
+    navn: 'Summen per steg', dato: '22. september 2026',
+    endringer: [
+      'Nåla summerer svarene i ett steg, grønn oppover og rød nedover.',
+      '«Ombygging» heter «Større grep», og «Etappe» heter «Steg».',
+      'Du kommer videre uten å svare.'
+    ]
+  },
+  {
+    nr: 11, repo: 'husbanken', commit: '213d6f1', mappe: 'iterasjoner/11/',
+    navn: 'Nåla teller grader', dato: '22. september 2026',
+    endringer: [
+      'Hvert svar vrir nåla et bestemt antall grader.',
+      'Steget som står dårligst, setter den samlede kursen.'
+    ]
+  },
+  {
+    nr: 12, repo: 'husbanken', commit: '4a9a9bd', mappe: 'iterasjoner/12/',
+    navn: 'Innenfra og ut', dato: '23. september 2026',
+    endringer: [
+      'Stegene går fra deg og boligen og utover til nærmiljøet.',
+      'Økonomisteget er byttet med ett spørsmål om hvor mye du vil investere. 26 spørsmål ble 17.',
+      'Oppsummeringen etter skissen: handlingsplan i to spalter, generelle anbefalinger og ressurser.'
+    ]
+  },
+  {
+    nr: 13, repo: 'husbanken', commit: '1ad2ad1', mappe: 'iterasjoner/13/',
+    navn: 'Handlingsplanen øverst', dato: '23. september 2026',
+    endringer: [
+      'Oppsummeringen: handlingsplan, anbefalinger og ressurser, med kompassene til slutt.',
+      '«Hva funker ikke» viser de tre første, resten bak «se de andre».'
+    ]
+  },
+  {
+    nr: 14, repo: 'husbanken', commit: 'fb5a1ac', mappe: 'iterasjoner/14/',
+    navn: 'Svarlista som i søknaden', dato: '23. september 2026',
+    endringer: [
+      'Alle svarene står som oppsummeringen i søknaden, med «Endre» for hvert steg.'
+    ]
+  },
+  {
+    nr: 15, repo: 'husbanken', commit: 'd6673fe', mappe: 'iterasjoner/15/',
+    navn: 'Uten versaler', dato: '23. september 2026',
+    endringer: [
+      'Ingen tekst står i versaler, og pilene står midt i teksten.'
+    ]
+  },
+  {
+    nr: 16, repo: 'husbanken', commit: 'ce7e255', mappe: 'iterasjoner/16/',
+    navn: 'Modusvelgeren øverst', dato: '23. september 2026',
+    endringer: [
+      'Valget mellom kompasset og lista står rett under toppfeltet.'
+    ]
+  },
+  {
+    nr: 17, repo: 'husbanken', commit: 'e9d8c43', mappe: 'iterasjoner/17/',
+    navn: 'Løst fra tilskuddet', dato: '23. september 2026',
+    endringer: [
+      'Kartleggingen er ikke lenger bundet til tilskuddet for aldersvennlig oppgradering. Tilskuddet står sidestilt med de andre ordningene.'
+    ]
+  },
+  {
+    nr: 18, repo: 'husbanken', commit: '43d2097', mappe: 'iterasjoner/18/',
+    navn: 'Ingen tynn skrift', dato: '24. september 2026',
+    endringer: [
+      'Ingressen står i vanlig vekt, ikke Inter Light.'
+    ]
+  },
+  {
+    nr: 19, repo: 'husbanken', commit: 'b272d14', mappe: 'iterasjoner/19/',
+    navn: 'Overtittel', dato: '25. september 2026',
+    endringer: [
+      '«Slik ser det ut» står som overtittel over navnet på steget.'
+    ]
+  },
+  {
+    nr: 20, repo: 'husbanken', commit: 'a74be54', mappe: 'iterasjoner/20/',
+    navn: 'Designsystemet.no', dato: '28. september 2026',
+    endringer: [
+      'Komponentene fra Designsystemet.no, i Husbankens farger.'
+    ]
+  },
+  {
+    nr: 21, repo: 'husbanken', commit: 'bdfe9e3', mappe: 'iterasjoner/21/',
+    navn: 'Luft mellom svarene', dato: '28. september 2026',
+    endringer: [
+      'Luft mellom svarrutene.'
+    ]
+  },
+  {
+    nr: 22, repo: 'husbanken', commit: 'a0e7fdc', mappe: 'iterasjoner/22/',
+    navn: 'Stegene øverst', dato: '30. september 2026',
+    endringer: [
+      'Stegnavnene står øverst, og framdriftslinja nederst med en teller.'
+    ]
+  },
+  {
+    nr: 23, repo: 'husbanken', commit: 'f80240d', mappe: 'iterasjoner/23/',
+    navn: 'Fasaden og masterfila', dato: '5. oktober 2026',
+    endringer: [
+      'Fasaden, Husbankens designsystem, i stedet for Designsystemet.no.',
+      'De tolv spørsmålene fra masterfila, i fire steg.',
+      'Kompasset vises bare etter hvert steg og i oppsummeringen.',
+      'Listevisningen er tatt bort, og det er laget en papirutgave.'
+    ]
+  },
+  {
+    nr: 24, repo: 'husbanken', commit: '389a943', mappe: 'iterasjoner/24/',
+    navn: 'Rolig stegindikator', dato: '5. oktober 2026',
+    endringer: [
+      'Animasjonen i stegindikatoren spiller bare når du kommer til et nytt steg.'
+    ]
+  },
+  {
+    nr: 25, commit: '6e4d15c', mappe: 'iterasjoner/25/',
     navn: 'Eget repo', dato: '8. oktober 2026',
     endringer: [
       'Boligkompasset skilt ut fra husbanken-repoet, med egen adresse.',
+      'Underalternativ med innrykk i 6a.',
       'Spørsmålene fra «MASTERFIL - Boligkompasset justert»: tolv spørsmål i fire steg.'
     ]
   },
   {
-    nr: 2, commit: '2fd4a6b', mappe: 'iterasjoner/2/',
+    nr: 26, commit: '2fd4a6b', mappe: 'iterasjoner/26/',
     navn: 'Masterfil, justert 2', dato: '12. oktober 2026',
     endringer: [
       'Elleve spørsmål. «Er det noe i hverdagen som er blitt tyngre» er tatt ut.',
@@ -41,14 +232,14 @@ const KP_VERSJONER = [
     ]
   },
   {
-    nr: 3, commit: '0b1e8f8', mappe: 'iterasjoner/3/',
+    nr: 27, commit: '0b1e8f8', mappe: 'iterasjoner/27/',
     navn: 'Tynn grønn framdriftslinje', dato: '12. oktober 2026',
     endringer: [
       'Fasadens blå progressbar under stegene er byttet med en tynn grønn linje.'
     ]
   },
   {
-    nr: 4, commit: '4608824', mappe: 'iterasjoner/4/',
+    nr: 28, commit: '4608824', mappe: 'iterasjoner/28/',
     navn: 'Roligere side etter hvert steg', dato: '19. oktober 2026',
     endringer: [
       'Kompasset og kursen står alene etter hvert steg, med forklaringene i to trekkspill under.',
@@ -56,14 +247,14 @@ const KP_VERSJONER = [
     ]
   },
   {
-    nr: 5, commit: '064518d', mappe: 'iterasjoner/5/',
+    nr: 29, commit: '064518d', mappe: 'iterasjoner/29/',
     navn: 'Fasadens trekkspill', dato: '19. oktober 2026',
     endringer: [
       'Trekkspillene etter hvert steg og «Se alle svarene dine» er Fasadens hb-accordion.'
     ]
   },
   {
-    nr: 6, commit: 'be89ba1', mappe: 'iterasjoner/6/',
+    nr: 30, commit: 'be89ba1', mappe: 'iterasjoner/30/',
     navn: 'Etter designgjennomgangen', dato: '21. oktober 2026',
     endringer: [
       '«Neste» står til venstre, ved siden av «Forrige».',
@@ -75,7 +266,7 @@ const KP_VERSJONER = [
     ]
   },
   {
-    nr: 7, commit: '64754f6', mappe: 'iterasjoner/7/',
+    nr: 31, commit: '64754f6', mappe: 'iterasjoner/31/',
     navn: 'Én framdrift og Fasadens typografi', dato: '21. oktober 2026',
     endringer: [
       'Den grønne framdriftslinja er fjernet. Bare de fire stegene står igjen.',
@@ -85,7 +276,7 @@ const KP_VERSJONER = [
     ]
   },
   {
-    nr: 8, commit: '29fe53b', mappe: 'iterasjoner/8/',
+    nr: 32, commit: '29fe53b', mappe: 'iterasjoner/32/',
     navn: 'Masterfil 3', dato: '26. oktober 2026',
     endringer: [
       'Spørsmålene følger «MASTERFIL - Boligkompasset_3»: tolv spørsmål, nummerert 1, 2, 3a … 12a.',
@@ -101,7 +292,7 @@ const KP_VERSJONER = [
     ]
   },
   {
-    nr: 9, commit: '998ebe3', mappe: 'iterasjoner/9/',
+    nr: 33, commit: '998ebe3', mappe: 'iterasjoner/33/',
     navn: 'Resultatsiden med veiledningstekster', dato: '26. oktober 2026',
     endringer: [
       'Oppsummeringen starter med «Slik fungerer boligen din»: veiledningsteksten fra kolonne C i masterfila for hvert svar, steg for steg.',
@@ -111,7 +302,7 @@ const KP_VERSJONER = [
     ]
   },
   {
-    nr: 10, commit: 'd33d390', mappe: 'iterasjoner/10/',
+    nr: 34, commit: 'd33d390', mappe: 'iterasjoner/34/',
     navn: 'Handlingsplanen', dato: '26. oktober 2026',
     endringer: [
       '«2. Handlingsplan» med tiltakene fra kolonne D (enkle tiltak) og E (større tiltak) i masterfila, med avkrysning.',
@@ -123,7 +314,7 @@ const KP_VERSJONER = [
     ]
   },
   {
-    nr: 11,
+    nr: 35,
     navn: 'Tilbakemeldingen 21. oktober', dato: '26. oktober 2026',
     endringer: [
       'Forsiden: ny introtekst med «Start kartleggingen» rett under, ny tekst i «Hvorfor gjøre det nå?», og papirutgaven helt nederst med ny tekst. «Hvem er det for?», «Hva får du?» og kortet «På skjerm» er tatt ut.',
@@ -272,14 +463,20 @@ const KP_VERSJONER = [
       sessionStorage.removeItem(OVERFOR);
     } catch (e) { /* ingenting å hente */ }
     if (!pakke || typeof kpGaaTil !== 'function') return;
-    if (pakke.svar) {
-      /* Svar på alternativer som ikke finnes i denne iterasjonen, blir
-         bare ikke talt. Kompasset regner bare med det det kjenner. */
-      S = Object.assign({}, pakke.svar);
-      if (typeof kpLagre === 'function') kpLagre();
+    try {
+      if (pakke.svar) {
+        /* Svar på alternativer som ikke finnes i denne iterasjonen, blir
+           bare ikke talt. Kompasset regner bare med det det kjenner. */
+        S = Object.assign({}, pakke.svar);
+        if (typeof kpLagre === 'function') kpLagre();
+      }
+      if (pakke.skjerm) gaaTilSkjerm(pakke.skjerm);
+      else if (typeof kpTegn === 'function') { kpModus = 'start'; kpTegn(); }
+    } catch (e) {
+      /* De eldste iterasjonene fra husbanken-repoet har andre spørsmål
+         og en annen flyt. Tåler de ikke svarene, begynner de på nytt. */
+      try { S = {}; kpModus = 'start'; kpTegn(); } catch (e2) { /* som den er */ }
     }
-    if (pakke.skjerm) gaaTilSkjerm(pakke.skjerm);
-    else if (typeof kpTegn === 'function') { kpModus = 'start'; kpTegn(); }
   })();
 
   if (!endringer.length) return;
