@@ -23,3 +23,16 @@ designbeslutninger) peker dit.
 ## Kjøre lokalt
 
     python3 -m http.server 4322
+
+## Iterasjoner
+
+Versjonsvelgeren nede til venstre lar deg bla mellom iterasjonene, som i
+papirsøknaden for aldersvennlig oppgradering. Lista står i
+`assets/js/kp-versjoner.js`. Hver eldre iterasjon er siden slik den sto i en
+commit, lagt i `iterasjoner/N/` av `verktoy/lag-iterasjoner.py`. Den siste er
+sidene i roten.
+
+Ny iterasjon: commit endringene, gi forrige siste oppføring sin `commit` og
+`mappe`, legg til den nye nederst, og kjør
+
+    python3 verktoy/lag-iterasjoner.py
