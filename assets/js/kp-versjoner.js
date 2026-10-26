@@ -101,13 +101,25 @@ const KP_VERSJONER = [
     ]
   },
   {
-    nr: 9,
+    nr: 9, commit: '998ebe3', mappe: 'iterasjoner/9/',
     navn: 'Resultatsiden med veiledningstekster', dato: '26. oktober 2026',
     endringer: [
       'Oppsummeringen starter med «Slik fungerer boligen din»: veiledningsteksten fra kolonne C i masterfila for hvert svar, steg for steg.',
       'Tekstene er delt i «Dette fungerer i dag», «Dette kan bli en utfordring» og «Dette var du usikker på».',
       'For rommene i 3a og vaskemaskinen på badet står teksten under det som ikke er krysset av, slik masterfila sier.',
       'Den gamle handlingsplanen med stikkord er tatt ut.'
+    ]
+  },
+  {
+    nr: 10,
+    navn: 'Handlingsplanen', dato: '26. oktober 2026',
+    endringer: [
+      '«2. Handlingsplan» med tiltakene fra kolonne D (enkle tiltak) og E (større tiltak) i masterfila, med avkrysning.',
+      'Tiltakskodene står med navnene fra tiltakskatalogen. 6a og 6b mangler navn.',
+      'Blokk og borettslag: egen tekst når du deler adkomstveien (7a) eller inngangspartiet (8a og 9a).',
+      '«Vurder flytting til en mer egnet bolig» når nærmiljøet er sterkt begrenset eller svært vanskelig, og det er utfordringer i boligen.',
+      '«Lag handlingsplan» skriver ut, eller lagrer som PDF, bare tiltakene du har krysset av.',
+      'De gamle «Generelle anbefalinger» er tatt ut.'
     ]
   }
 ];

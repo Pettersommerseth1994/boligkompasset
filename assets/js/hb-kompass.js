@@ -1020,34 +1020,221 @@ function kpResultatHtml() {
     : '<p class="hb-text--secondary">Du har ikke svart på noe som gir veiledning ennå. Gå tilbake og svar på spørsmålene, så kommer den her.</p>'}`;
 }
 
+/* ═══ Handlingsplanen, med tiltakene fra masterfila ═══════════════
+   Kolonne D (enkle tiltak) og E (større tiltak) i masterfila. Den som svarer
+   krysser av for tiltakene de vil gå videre med, og får en handlingsplan
+   å skrive ut eller lagre som PDF og sende til en entreprenør for å få
+   pris, slik arket beskriver det.
+
+   - For rommene i 3a og vaskemaskinen på badet gjelder tiltakene det som
+     IKKE er krysset av, som veiledningen.
+   - Blokk og borettslag: arket har egen tekst for flere tiltak i steg 3
+     («KOBLES MOT SVAR 1a og 2a»). Den brukes når du deler det tiltaket
+     gjelder: adkomstveien for 7a, inngangspartiet for 8a og 9a.
+   - Samme tiltak fra flere svar står én gang, med alt det gjelder.
+   - Steg 4: svarene merket «flytting» gir, sammen med utfordringer i de
+     andre stegene, rådet «Vurder flytting til en mer egnet bolig».
+   ─────────────────────────────────────────────────────────────────── */
+
+const KP_TILTAKSTYPER = [
+  { id: 'enkel', tittel: 'Enkle tiltak' },
+  { id: 'stor',  tittel: 'Større tiltak' }
+];
+
+/* Deler du det tiltaket gjelder med andre, gjelder blokk-teksten */
+function kpBrukBlokk(sp) {
+  if (sp.id === 'adkomst-frem') return ['deler-adkomst', 'deler-inngang'].includes(S.inngang);
+  if (sp.id === 'adkomst-inngang' || sp.id === 'adkomst-lagring') return S.inngang === 'deler-inngang';
+  return false;
+}
+
+/* «5.a. og 5.c. og muligens 5.d.» med navnene fra tiltakskatalogen */
+const kpKoderTekst = koder => String(koder || '').replace(/(\d)\.\s?([a-z])\.?(\?)?/g, (m, a, b, sporsmaal) => {
+  const navn = KOMPASS_TILTAK[a + b];
+  return `${a}${b}${navn ? ' ' + navn.charAt(0).toLowerCase() + navn.slice(1) : ''}${sporsmaal ? ' (usikkert)' : ''}`;
+});
+
+const kpTiltakId = (type, tekst) => {
+  let h = 0;
+  for (const c of type + tekst) h = (h * 31 + c.charCodeAt(0)) | 0;
+  return type + '-' + (h >>> 0).toString(36);
+};
+
+function kpTiltakForslag() {
+  const liste = { enkel: [], stor: [] };
+  const finnes = {};
+  const legg = (sp, sporsmal, svar, t) => KP_TILTAKSTYPER.forEach(({ id: type }) => {
+    if (!t[type]) return;
+    const blokk = kpBrukBlokk(sp) && t[type + 'Blokk'];
+    const tekst = blokk || t[type];
+    const id = kpTiltakId(type, tekst);
+    const gjelder = `${sporsmal}: ${svar}`;
+    if (finnes[id]) { if (!finnes[id].gjelder.includes(gjelder)) finnes[id].gjelder.push(gjelder); return; }
+    finnes[id] = { id, type, tekst, koder: t[type + 'Koder'] || '', blokk: !!blokk, gjelder: [gjelder] };
+    liste[type].push(finnes[id]);
+  });
+
+  const ettFelt = (sp, sporsmal, valg, svar) => {
+    if (svar === undefined || svar === null || svar === 'hoppet') return;
+    if (Array.isArray(svar)) {
+      if (!svar.length) return;
+      valg.filter(v => !v.vis || v.vis(S)).forEach(v => {
+        const valgt = svar.includes(v.v);
+        if (valgt && v.tiltak) legg(sp, sporsmal, v.tittel, v.tiltak);
+        if (!valgt && v.tiltakUten && !svar.includes('usikker')) legg(sp, sporsmal, `ikke krysset av for ${v.tittel.toLowerCase()}`, v.tiltakUten);
+      });
+      return;
+    }
+    const v = valg.find(x => x.v === svar);
+    if (v && v.tiltak) legg(sp, sporsmal, v.tittel, v.tiltak);
+  };
+
+  KOMPASS_SPORSMAL.forEach(sp => {
+    if (sp.type === 'flerfelt') return;
+    ettFelt(sp, sp.stikkord || sp.tittel, sp.valg, S[sp.id]);
+    const b = sp.betinget;
+    if (b && b.naar(S)) ettFelt(sp, b.ledetekst, b.valg, S[b.navn]);
+  });
+  return liste;
+}
+
+/* Rådet om å vurdere flytting, etter regelen i steg 4 */
+function kpFlyttegrunner() {
+  const steg4 = KOMPASS_SPORSMAL.filter(sp => sp.etappe === 'naermiljo');
+  const grunner = steg4.map(sp => sp.valg.find(v => v.flytting && v.v === S[sp.id]))
+    .filter(Boolean).map(v => v.tittel.toLowerCase());
+  if (!grunner.length) return null;
+  const utfordringer = ['inne', 'adkomst'].reduce((n, e) => n + kpVeiledningFor(e).utfordring.length, 0);
+  return utfordringer ? { grunner, utfordringer } : null;
+}
+
+function kpHandlingsplanHtml() {
+  const forslag = kpTiltakForslag();
+  const valgt = new Set(S.handlingsplan || []);
+  const flytt = kpFlyttegrunner();
+  const antall = forslag.enkel.length + forslag.stor.length;
+
+  const tiltak = t => `
+          <li>
+            <input class="hb-checkbox" id="tiltak-${t.id}" type="checkbox" name="handlingsplan" value="${t.id}" ${valgt.has(t.id) ? 'checked' : ''}>
+            <div class="hb-label">
+              <label class="hb-label-tekst" for="tiltak-${t.id}">${t.tekst}</label>
+              <p class="hb-felt-beskrivelse--alternativ kp-tiltak__om">
+                <span class="kp-tiltak__gjelder">Gjelder ${t.gjelder.join(', ')}.</span>
+                ${t.koder ? `<span class="kp-tiltak__koder">Tiltak ${kpKoderTekst(t.koder)}.</span>` : ''}
+              </p>
+            </div>
+          </li>`;
+
+  return `
+    <h2 class="hb-h2 kp-seksjon">2. Handlingsplan</h2>
+    <p class="kp-hjelp__tekst">
+      Her er tiltakene som passer til svarene dine. Kryss av for dem du vil gå
+      videre med, så lager vi en handlingsplan du kan skrive ut eller lagre som
+      PDF, og sende til en entreprenør for å få pris.
+    </p>
+
+    ${flytt ? `
+    <div class="hb-callout hb-callout--warning kp-planvarsel">
+      <div class="hb-callout-body">
+        <h3 class="hb-callout-title">Vurder flytting til en mer egnet bolig</h3>
+        <div class="hb-callout-content"><p>Du har svart ${flytt.grunner.map(g => `«${g}»`).join(' og ')} om nærmiljøet,
+          og det er ${flytt.utfordringer === 1 ? 'én ting' : flytt.utfordringer + ' ting'} i og rundt boligen som kan bli en utfordring.
+          Da kan en annen bolig passe deg bedre enn å gjøre mange tiltak her.</p></div>
+      </div>
+    </div>` : ''}
+
+    ${S.eieform === 'leier' ? `
+    <div class="hb-callout hb-callout--info kp-planvarsel">
+      <div class="hb-callout-body"><div class="hb-callout-content">
+        <p>Du leier boligen. Endringer i boligen må avklares med utleier.</p>
+      </div></div>
+    </div>` : ''}
+
+    ${antall ? `
+    <form class="kp-handlingsplan" data-handlingsplan novalidate>
+      ${KP_TILTAKSTYPER.filter(ty => forslag[ty.id].length).map(ty => `
+      <fieldset class="hb-felt hb-felt-checkboxgruppe kp-tiltaksgruppe">
+        <legend class="hb-legend"><span class="hb-legend-tekst">${ty.tittel}</span></legend>
+        <ul class="hb-feltliste">${forslag[ty.id].map(tiltak).join('')}</ul>
+      </fieldset>`).join('')}
+    </form>
+    <p class="kp-planlenke">
+      <a href="${KOMPASS_ORDNINGER.aldersvennlig.lenke}">Les om tilskudd til aldersvennlig oppgradering av egen bolig</a>
+    </p>
+    <div class="kp-knapper kp-utskrift-skjul">
+      ${kpKnapp('Lag handlingsplan', 'data-lag-plan')}
+      <p class="hb-text--sm hb-text--secondary hb-mb--none" data-plan-antall aria-live="polite"></p>
+    </div>`
+    : '<p class="hb-text--secondary">Svarene dine gir ingen tiltak å gå videre med.</p>'}`;
+}
+
+/* Handlingsplanen til utskrift: bare tiltakene som er krysset av */
+function kpPlanUtskriftHtml() {
+  const forslag = kpTiltakForslag();
+  const valgt = new Set(S.handlingsplan || []);
+  const dato = new Date().toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' });
+  const del = ty => {
+    const t = forslag[ty.id].filter(x => valgt.has(x.id));
+    return t.length ? `
+    <h2>${ty.tittel}</h2>
+    <ol>${t.map(x => `<li><p>${x.tekst}</p><p class="kp-planutskrift__om">Gjelder ${x.gjelder.join(', ')}.${x.koder ? ` Tiltak ${kpKoderTekst(x.koder)}.` : ''}</p></li>`).join('')}</ol>` : '';
+  };
+  return `
+  <header>
+    <p class="kp-planutskrift__over">Husbanken · Boligkompasset</p>
+    <h1>Ditt boligkompass – handlingsplan</h1>
+    <p>Tiltakene jeg vil gå videre med. Laget ${dato}.</p>
+  </header>
+  <div class="kp-planutskrift__felter">
+    <p><span>Navn</span><span></span></p>
+    <p><span>Adresse</span><span></span></p>
+    <p><span>Telefon</span><span></span></p>
+  </div>
+  ${KP_TILTAKSTYPER.map(del).join('')}
+  <p class="kp-planutskrift__om">Tilskudd til aldersvennlig oppgradering av egen bolig: ${KOMPASS_ORDNINGER.aldersvennlig.lenke}</p>
+  <div class="kp-planutskrift__notat">Notater</div>`;
+}
+
+function kpInitHandlingsplan() {
+  const skjema = document.querySelector('[data-handlingsplan]');
+  if (!skjema) return;
+  const antall = document.querySelector('[data-plan-antall]');
+  const tell = () => {
+    const n = (S.handlingsplan || []).length;
+    if (antall) antall.textContent = n ? `${n} ${n === 1 ? 'tiltak' : 'tiltak'} krysset av.` : 'Kryss av for minst ett tiltak.';
+  };
+  skjema.addEventListener('change', () => {
+    S.handlingsplan = [...skjema.querySelectorAll('input[name="handlingsplan"]:checked')].map(i => i.value);
+    kpLagre();
+    tell();
+  });
+  tell();
+}
+
+/* Skriver ut bare handlingsplanen. Vanlig utskrift av siden er som før. */
+function kpLagPlan() {
+  if (!(S.handlingsplan || []).length) {
+    const antall = document.querySelector('[data-plan-antall]');
+    if (antall) antall.textContent = 'Kryss av for minst ett tiltak først.';
+    return;
+  }
+  let ark = document.querySelector('.kp-planutskrift');
+  if (!ark) { ark = document.createElement('div'); ark.className = 'kp-planutskrift'; document.body.appendChild(ark); }
+  ark.innerHTML = kpPlanUtskriftHtml();
+  document.body.classList.add('skriver-plan');
+  const ferdig = () => { document.body.classList.remove('skriver-plan'); window.removeEventListener('afterprint', ferdig); };
+  window.addEventListener('afterprint', ferdig);
+  window.print();
+}
+
 function kpOppsummeringHtml() {
   const kurs = kpBeregnKurs();
   const info = KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT;
-  const anb = kpAnbefalinger();
-  const naa = anb.filter(a => a.storrelse === 'liten');
-  const frem = anb.filter(a => a.storrelse === 'stor');
   const ubesvart = kpAntallSporsmal() - KOMPASS_SPORSMAL.filter(kpBesvart).length;
-
-  /* Ordningene som er nevnt i tiltakene, uten gjentakelser */
-  const ordninger = [...new Set([].concat(...anb.map(a => a.ordninger)))];
-
-  const tiltaksrad = a => {
-    const hvorfor = typeof a.hvorfor === 'function' ? a.hvorfor(S) : a.hvorfor;
-    const tekst = typeof a.tekst === 'function' ? a.tekst(S) : a.tekst;
-    return `
-    <li class="kp-plan__tiltak">
-      <button type="button" class="kp-mer" aria-expanded="false" data-mer="t-${a.id}">
-        <span data-ikon="chevron"></span>${a.tittel}
-      </button>
-      <div class="kp-mer-panel" id="t-${a.id}" hidden>
-        <p style="margin:0 0 var(--space-2)">${tekst}</p>
-        <p class="hb-text--sm hb-mb--none"><strong>Derfor står det her:</strong> ${hvorfor}</p>
-        ${a.tiltak.length ? `<ul class="kp-merkeliste">
-          ${a.tiltak.map(t => `<li class="kp-merke">${t}. ${KOMPASS_TILTAK[t]}</li>`).join('')}
-        </ul>` : ''}
-      </div>
-    </li>`;
-  };
+  /* Ressursene står fast. Tilskuddet til aldersvennlig oppgradering er
+     det masterfila lenker til fra tiltakene. */
+  const ordninger = ['aldersvennlig', 'komtilskudd', 'hjelpemiddel', 'ergoterapeut'];
 
   return `
 <div class="kp-utskrift-topp">
@@ -1070,21 +1257,7 @@ function kpOppsummeringHtml() {
 
     ${kpResultatHtml()}
 
-    <h2 class="hb-h2 kp-seksjon">2. Generelle anbefalinger</h2>
-    <div class="kp-plan">
-      <div class="kp-plan__kol">
-        <h3 class="hb-h4">Nå</h3>
-        ${naa.length
-          ? `<ul class="kp-plan__liste">${naa.map(tiltaksrad).join('')}</ul>`
-          : '<p class="hb-text--sm hb-text--secondary">Ingen enkle grep peker seg ut.</p>'}
-      </div>
-      <div class="kp-plan__kol">
-        <h3 class="hb-h4">Fremtiden, 5–10 år</h3>
-        ${frem.length
-          ? `<ul class="kp-plan__liste">${frem.map(tiltaksrad).join('')}</ul>`
-          : '<p class="hb-text--sm hb-text--secondary">Ingen større arbeider peker seg ut nå.</p>'}
-      </div>
-    </div>
+    ${kpHandlingsplanHtml()}
 
     <h2 class="hb-h2 kp-seksjon">3. Ressurser</h2>
     <ul class="kp-ressurser">
@@ -1390,7 +1563,7 @@ function kpTegn() {
   kpIkoner(rot);
   kpTegnBunn();
   hbInitTrekkspill(rot);
-  if (kpModus === 'oppsummering') kpInitEgenKurs();
+  if (kpModus === 'oppsummering') { kpInitEgenKurs(); kpInitHandlingsplan(); }
   const h = rot.querySelector('h1') || rot.querySelector('h2');
   if (h && kpModus !== 'start') { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
   window.scrollTo({ top: 0, behavior: 'auto' });
@@ -1513,6 +1686,7 @@ function kpKlikk(ev) {
   else if (d.tilbakeSvar !== undefined) { kpModus = 'kompass'; kpPos = Math.max(0, KP_FLYT.length - 2); kpTegn(); }
   else if (d.endre) kpTilSporsmal(d.endre);
   else if (d.skrivUt !== undefined) window.print();
+  else if (d.lagPlan !== undefined) kpLagPlan();
 
   else if (d.tilfeldig !== undefined) kpFyllTilfeldig();
   /* Fasadens trekkspill: tilstanden står på elementet */
