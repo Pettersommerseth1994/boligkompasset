@@ -111,7 +111,7 @@ const KP_VERSJONER = [
     ]
   },
   {
-    nr: 10,
+    nr: 10, commit: 'd33d390', mappe: 'iterasjoner/10/',
     navn: 'Handlingsplanen', dato: '26. oktober 2026',
     endringer: [
       '«2. Handlingsplan» med tiltakene fra kolonne D (enkle tiltak) og E (større tiltak) i masterfila, med avkrysning.',
@@ -120,6 +120,23 @@ const KP_VERSJONER = [
       '«Vurder flytting til en mer egnet bolig» når nærmiljøet er sterkt begrenset eller svært vanskelig, og det er utfordringer i boligen.',
       '«Lag handlingsplan» skriver ut, eller lagrer som PDF, bare tiltakene du har krysset av.',
       'De gamle «Generelle anbefalinger» er tatt ut.'
+    ]
+  },
+  {
+    nr: 11,
+    navn: 'Tilbakemeldingen 21. oktober', dato: '26. oktober 2026',
+    endringer: [
+      'Forsiden: ny introtekst med «Start kartleggingen» rett under, ny tekst i «Hvorfor gjøre det nå?», og papirutgaven helt nederst med ny tekst. «Hvem er det for?», «Hva får du?» og kortet «På skjerm» er tatt ut.',
+      'Stegene i stepperen er grønne når du er der eller er ferdig, grå når de kommer.',
+      'Stegsidene er venstrestilt, uten «Steg 1 av 4», og ingressen blir ikke bredere enn overskriften.',
+      '«Spørsmål 1 av 12» er tilbake.',
+      'De blå boksene er borte. Teksten står som et eget avsnitt i hjelpeteksten.',
+      'Forklaringen på svaralternativene ligger bak spørsmålstegnet igjen, ikke under svaret.',
+      'Kompasset etter hvert steg: all tekst venstrestilt og i bokser.',
+      'Oppsummeringen: «Kursen din» øverst, så «Resultat av kartleggingen», «Handlingsplan» med «Vi anbefaler at du gjør dette nå» og «Ressurser».',
+      'Handlingsplanen kan skrives ut med alle tiltakene, eller bare dem du har krysset av.',
+      '«Finn din kommune» under Ressurser.',
+      '«Velg kursen selv» er tatt ut.'
     ]
   }
 ];

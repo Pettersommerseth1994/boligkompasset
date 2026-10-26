@@ -231,7 +231,7 @@ const KOMPASS_SPORSMAL = [
     kilde: 'Fane 2, spørsmål 4a.',
     tittel: 'Kommer du deg lett rundt inne i boligen?',
     hjelp: 'Det er ikke sikkert du merker noe til trapper, terskler og smale dører i dag, men dette kan bli en utfordring hvis du får redusert bevegelighet eller trenger å bruke rullator eller rullestol. Se på boligen din og tenk gjennom hva du har av hindringer og nivåforskjeller.',
-    popover: 'Dette kan du enkelt teste ved å prøve å trille en fullpakket koffert med hjul gjennom alle rommene og se hvor det er vanskelig å komme frem.',
+    popover: 'Dette kan du enkelt teste ved å trille en fullpakket koffert med hjul gjennom alle rommene og se hvor det er vanskelig å komme frem.',
     valg: [
       { v: 'ja',     tittel: 'Ja', gruppe: 'bra',
         veiledning: 'Du kommer deg lett rundt i boligen din i dag og det er et godt utgangspunkt. Tenk over om dette vil være like enkelt i fremtiden om du skulle få redusert bevegelighet.',     n: 1,    e: 0 },

@@ -288,22 +288,24 @@ function kpKompassSvg(kurs, opt = {}) {
 
 const kpEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-/* Hjelpeteksten står framme, ikke bak Fasadens spørsmålstegn. Teksten
-   er lang, og designkritikken var tydelig på at det som er gjemt bak
-   et trykk, ikke blir lest. Avsnittene i masterfila holdes adskilt. */
+/* Hjelpeteksten står framme, med avsnittene i masterfila holdt
+   adskilt. Det masterfila kaller Popover på et spørsmål, er et eget
+   avsnitt til slutt. Tilbakemeldingen 21. oktober: en blå boks ser ut
+   som det viktigste på sida, og tar oppmerksomheten fra refleksjonen
+   i teksten over. */
 const kpAvsnitt = (tekst, klasse = 'hb-felt-beskrivelse', popover = '') =>
-  String(tekst || '').split(/\n\s*\n/).filter(Boolean)
-    .map(a => `<p class="${klasse}">${a.trim()}</p>`).join('')
-  + (popover ? kpInfoboks(popover) : '');
+  [...String(tekst || '').split(/\n\s*\n/), popover].filter(a => a && a.trim())
+    .map(a => `<p class="${klasse}">${a.trim()}</p>`).join('');
 
-/* Det masterfila kaller Popover, står i en infoboks som alltid er
-   åpen, under hjelpeteksten. Designgjennomgangen 21. oktober: folk
-   forstår ikke at spørsmålstegnet kan trykkes på, og skjermleseren
-   finner det ikke. */
-const kpInfoboks = tekst => `
-  <div class="hb-callout hb-callout--info kp-infoboks">
-    <div class="hb-callout-body"><div class="hb-callout-content"><p>${tekst}</p></div></div>
-  </div>`;
+/* Popover på et svaralternativ er Fasadens hjelpetekst: et
+   spørsmålstegn etter svaret som folder ut teksten på stedet.
+   Tilbakemeldingen 21. oktober: tekst under svarene gjorde
+   avkrysningen rotete, og spørsmålstegnet klarer folk å trykke på. */
+let kpHjelpNr = 0;
+function kpHjelpetekst(tekst) {
+  const id = `hjelpetekst-${++kpHjelpNr}`;
+  return `<span class="hb-hjelpetekst"><button type="button" class="hb-hjelpetekst-knapp" aria-expanded="false" aria-controls="${id}" data-hjelpetekst><span aria-hidden="true">?</span><span class="hb-screenreader-only">Mer om dette</span></button><span class="hb-hjelpetekst-innhold" id="${id}"><span class="hb-hjelpetekst-tekstgruppe">${tekst}</span></span></span>`;
+}
 
 /* Fasadens knapp. «prominent» er hovedknappen, «standard» er den
    sekundære og «subtle» den diskré. Alle i stor utgave, for målgruppa
@@ -337,8 +339,7 @@ function kpValgHtml(navn, valg, type, gjeldende, legend) {
                type="${flertall ? 'checkbox' : 'radio'}" name="${navn}" value="${v.v}"
                ${av ? 'checked' : ''} ${v.alene ? 'data-alene="1"' : ''}>
         <div class="hb-label">
-          <label class="hb-label-tekst" for="${id}">${v.tittel}</label>
-          ${v.desc || v.popover ? `<p class="hb-felt-beskrivelse--alternativ kp-valgforklaring">${v.desc || v.popover}</p>` : ''}
+          <label class="hb-label-tekst" for="${id}">${v.tittel}</label>${v.popover ? kpHjelpetekst(v.popover) : ''}
         </div>
         ${barn.length ? `<ul class="hb-feltliste kp-underliste">${barn.map(rad).join('')}</ul>` : ''}
       </li>`;
@@ -394,12 +395,10 @@ function kpBesvart(sp) {
 /* ═══ Startsiden ══════════════════════════════════════════════════
    Designkritikken: «Hvem er boligkompasset for? Og hvorfor skal de
    ta veilederen? Hva får de ut av det?» og «Forsiden viser ikke
-   verdien». Derfor tre korte svar, og et kompass du kan klikke på for
-   å se hvor kartleggingen kan føre.
-
-   Listevisningen er tatt bort. I stedet ligger papirutgaven her, for
-   dem som heller vil fylle ut med penn, for eksempel sammen med en
-   ergoterapeut.
+   verdien». Tilbakemeldingen 21. oktober kortet det ned: introteksten
+   med startknappen rett under, «Hvorfor gjøre det nå?», kompasset du
+   kan klikke på for å se hvor kartleggingen kan føre, og papirutgaven
+   helt nederst.
    ─────────────────────────────────────────────────────────────────── */
 
 const KP_PAPIR_PDF = 'assets/pdf/boligkompasset-papirutgave.pdf';
@@ -433,10 +432,12 @@ function kpStartHtml() {
       <div>
         <h1 class="hb-h1 kp-h1">Boligkompasset</h1>
         <p class="hb-text--ingress kp-ingress">
-          Svar på ${kpAntallSporsmal()} spørsmål om boligen du bor i nå. Du får vite hvor godt den
-          passer deg i dag, hva som skal til for at den fortsatt passer om ti år,
-          og hvem som kan betale for det. Det tar 5–10 minutter.
+          Kartlegg din bolig ved å svare på ${kpAntallSporsmal()} spørsmål og finn ut hvor godt
+          egnet boligen din vil være når du blir eldre eller at helsen endrer seg.
         </p>
+        <div class="kp-hero__start">
+          ${kpKnapp('Start kartleggingen', 'data-start="kompass"', 'prominent', 'pil')}
+        </div>
         <p class="hb-text--sm hb-mb--none">
           Du trenger ikke logge inn. Ingenting sendes til Husbanken før du selv velger det.
         </p>
@@ -467,66 +468,15 @@ function kpStartHtml() {
       </div>
     </div>` : ''}
 
-    <div class="kp-modus">
-      <div class="hb-card kp-modus__kort kp-modus__kort--anbefalt">
-        <div class="hb-card-header"><h2 class="hb-card-tittel">På skjerm, med kompasset</h2></div>
-        <div class="hb-card-body">
-          <p>
-            Ett spørsmål om gangen, i ${KOMPASS_ETAPPER.length} steg. Etter hvert steg ser du
-            hvor kompassnåla peker, og til slutt får du en oppsummering med
-            tiltakene i prioritert rekkefølge.
-          </p>
-          <p class="hb-text--semibold">${KOMPASS_ETAPPER.length} steg · ${kpAntallSporsmal()} spørsmål · 5–10 minutter</p>
-        </div>
-        <div class="hb-card-footer">
-          ${kpKnapp('Start kartleggingen', 'data-start="kompass"', 'prominent', 'pil')}
-        </div>
-      </div>
-      <div class="hb-card kp-modus__kort">
-        <div class="hb-card-header"><h2 class="hb-card-tittel">På papir</h2></div>
-        <div class="hb-card-body">
-          <p>
-            Alle spørsmålene og svaralternativene på et skjema du skriver ut og
-            krysser av med penn. Fint hvis du vil gå gjennom boligen sammen med
-            noen, for eksempel en ergoterapeut eller en pårørende.
-          </p>
-          <p class="hb-text--semibold">PDF · A4 · ${kpAntallSporsmal()} spørsmål</p>
-        </div>
-        <div class="hb-card-footer">
-          <a class="hb-button hb-button--standard hb-button--l" href="${KP_PAPIR_PDF}" target="_blank" rel="noopener">
-            <span class="hb-button-text">Åpne papirutgaven (PDF)</span>
-            <span class="hb-screenreader-only">, åpnes i nytt vindu</span>
-          </a>
-        </div>
-      </div>
+    <div class="hb-card kp-hvorfor">
+      <h2 class="hb-h4">Hvorfor gjøre det nå?</h2>
+      <p class="hb-mb--none">
+        De fleste ønsker å bo hjemme så lenge som mulig. Mange pusser opp boligen
+        sin flere ganger i løpet av livet. Da kan det være lurt å gjøre noen grep
+        som gjør det enklere å bo i boligen også når du blir eldre eller at helsen
+        endrer seg. Velger du å ta grep nå, så kan du selv bestemme løsningene.
+      </p>
     </div>
-
-    <ul class="kp-tre">
-      <li class="hb-card">
-        <h2 class="hb-h4">Hvem er det for?</h2>
-        <p class="hb-text--sm hb-mb--none">
-          Deg som er rundt 60 år eller eldre og bor hjemme, og som vil vite hva
-          boligen din tåler av årene som kommer. Er du pårørende, kan du gå
-          gjennom spørsmålene sammen med den det gjelder.
-        </p>
-      </li>
-      <li class="hb-card">
-        <h2 class="hb-h4">Hvorfor gjøre det nå?</h2>
-        <p class="hb-text--sm hb-mb--none">
-          De fleste venter til noe har skjedd. Da haster det, valgene er færre,
-          og det blir dyrere. Gjør du det mens alt går greit, velger du selv
-          både løsning og tidspunkt.
-        </p>
-      </li>
-      <li class="hb-card">
-        <h2 class="hb-h4">Hva får du?</h2>
-        <p class="hb-text--sm hb-mb--none">
-          En kurs som sier hvor du står, tiltakene dine i prioritert rekkefølge,
-          hvilke tilskudd og lån som kan dekke dem, og hvem du skal ringe.
-          Alt kan skrives ut.
-        </p>
-      </li>
-    </ul>
 
     <div class="hb-panel hb-panel--noytral kp-veier">
       <div>
@@ -545,6 +495,22 @@ function kpStartHtml() {
       </div>
       <div>
         <div class="kp-kompass-stort" id="start-kompass">${kpKompassSvg(kurs)}</div>
+      </div>
+    </div>
+
+    <div class="hb-card kp-papir">
+      <div class="hb-card-header"><h2 class="hb-card-tittel">På papir</h2></div>
+      <div class="hb-card-body">
+        <p>
+          Alle spørsmålene og svaralternativene på et skjema, som du kan skrive ut.
+          For å få en handlingsplan må du legge inn svarene dine i Boligkompasset på nett.
+        </p>
+      </div>
+      <div class="hb-card-footer">
+        <a class="hb-button hb-button--standard hb-button--l" href="${KP_PAPIR_PDF}" target="_blank" rel="noopener">
+          <span class="hb-button-text">Åpne papirutgaven (PDF)</span>
+          <span class="hb-screenreader-only">, åpnes i nytt vindu</span>
+        </a>
       </div>
     </div>
 
@@ -613,7 +579,7 @@ const KP_ETAPPEFIG = {
    samme rekkefølge som øyet ser dem. Spørsmålene er lange setninger,
    så de settes i h2-størrelse, selv om de er sidas h1. */
 const kpTittel = (over, tittel, storrelse = 'hb-h1') =>
-  `<h1 class="${storrelse} kp-tittel"><small class="hb-h1-overtittel">${over}</small> ${tittel}</h1>`;
+  `<h1 class="${storrelse} kp-tittel">${over ? `<small class="hb-h1-overtittel">${over}</small> ` : ''}${tittel}</h1>`;
 
 /* Begge knappene står til venstre, «Forrige» først og «Neste» rett
    ved siden av. Designgjennomgangen 21. oktober: helt til høyre blir
@@ -633,8 +599,10 @@ function kpEtappeHtml(f) {
     <svg class="kp-etappe-kort__fig" viewBox="0 0 96 96" aria-hidden="true">
       ${KP_ETAPPEFIG[f.e.ikon] || ''}
     </svg>
-    ${kpTittel(`Steg ${f.nr} av ${KOMPASS_ETAPPER.length}`, f.e.navn)}
-    <div class="kp-etappe-kort__ingress">${kpAvsnitt(f.e.ingress, 'hb-text--ingress')}</div>
+    <div class="kp-etappe-kort__innhold">
+      ${kpTittel('', f.e.navn)}
+      <div class="kp-etappe-kort__ingress">${kpAvsnitt(f.e.ingress, 'hb-text--ingress')}</div>
+    </div>
   </div>
   ${kpNavHtml(f.nr === 1 ? 'Til første spørsmål' : 'Fortsett', kpPos > 0)}
 </div>`;
@@ -834,7 +802,7 @@ function kpSporsmalHtml(f) {
   const nr = kpSporsmalNr(kpPos);
   return `
 <div class="kp-sporsmal">
-  ${kpTittel(`Spørsmål ${nr}`, sp.tittel, 'hb-h2')}
+  ${kpTittel(`Spørsmål ${nr} av ${kpAntallSporsmal()}`, sp.tittel, 'hb-h2')}
   ${sp.hjelp || sp.popover ? `<div class="kp-hjelp">${kpAvsnitt(sp.hjelp, 'kp-hjelp__tekst', sp.popover)}</div>` : ''}
   ${sp.undertekst ? `<p class="hb-text--semibold kp-sporsmal__under">${sp.undertekst}</p>` : ''}
 
@@ -997,7 +965,7 @@ function kpResultatHtml() {
     .filter(x => KP_GRUPPER.some(g => x.funn[g.id].length));
 
   return `
-    <h2 class="hb-h2 kp-resultat-start">1. Slik fungerer boligen din</h2>
+    <h2 class="hb-h2 kp-seksjon">2. Resultat av kartleggingen</h2>
     <p class="kp-hjelp__tekst">
       Her står hva svarene dine betyr, steg for steg: hva som fungerer i dag, og
       hva som kan bli en utfordring om du får redusert bevegelighet.
@@ -1127,11 +1095,12 @@ function kpHandlingsplanHtml() {
           </li>`;
 
   return `
-    <h2 class="hb-h2 kp-seksjon">2. Handlingsplan</h2>
+    <h2 class="hb-h2 kp-seksjon">3. Handlingsplan</h2>
+    <p class="hb-text--ingress kp-planingress">Vi anbefaler at du gjør dette nå.</p>
     <p class="kp-hjelp__tekst">
-      Her er tiltakene som passer til svarene dine. Kryss av for dem du vil gå
-      videre med, så lager vi en handlingsplan du kan skrive ut eller lagre som
-      PDF, og sende til en entreprenør for å få pris.
+      Tiltakene under passer til svarene dine. Du kan skrive ut alle, eller
+      krysse av for dem du har bestemt deg for å gjennomføre og bare skrive ut
+      dem. Planen kan du sende til en entreprenør for å få pris.
     </p>
 
     ${flytt ? `
@@ -1163,19 +1132,21 @@ function kpHandlingsplanHtml() {
       <a href="${KOMPASS_ORDNINGER.aldersvennlig.lenke}">Les om tilskudd til aldersvennlig oppgradering av egen bolig</a>
     </p>
     <div class="kp-knapper kp-utskrift-skjul">
-      ${kpKnapp('Lag handlingsplan', 'data-lag-plan')}
-      <p class="hb-text--sm hb-text--secondary hb-mb--none" data-plan-antall aria-live="polite"></p>
-    </div>`
+      ${kpKnapp('Skriv ut alle tiltakene', 'data-lag-plan="alle"')}
+      ${kpKnapp('Skriv ut tiltakene jeg har valgt', 'data-lag-plan="valgte"', 'standard')}
+    </div>
+    <p class="hb-text--sm hb-text--secondary kp-utskrift-skjul" data-plan-antall aria-live="polite"></p>`
     : '<p class="hb-text--secondary">Svarene dine gir ingen tiltak å gå videre med.</p>'}`;
 }
 
-/* Handlingsplanen til utskrift: bare tiltakene som er krysset av */
-function kpPlanUtskriftHtml() {
+/* Handlingsplanen til utskrift: alle tiltakene vi foreslår, eller bare
+   dem som er krysset av. Tilbakemeldingen 21. oktober ba om begge. */
+function kpPlanUtskriftHtml(alle) {
   const forslag = kpTiltakForslag();
   const valgt = new Set(S.handlingsplan || []);
   const dato = new Date().toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' });
   const del = ty => {
-    const t = forslag[ty.id].filter(x => valgt.has(x.id));
+    const t = forslag[ty.id].filter(x => alle || valgt.has(x.id));
     return t.length ? `
     <h2>${ty.tittel}</h2>
     <ol>${t.map(x => `<li><p>${x.tekst}</p><p class="kp-planutskrift__om">Gjelder ${x.gjelder.join(', ')}.${x.koder ? ` Tiltak ${kpKoderTekst(x.koder)}.` : ''}</p></li>`).join('')}</ol>` : '';
@@ -1184,7 +1155,7 @@ function kpPlanUtskriftHtml() {
   <header>
     <p class="kp-planutskrift__over">Husbanken · Boligkompasset</p>
     <h1>Ditt boligkompass – handlingsplan</h1>
-    <p>Tiltakene jeg vil gå videre med. Laget ${dato}.</p>
+    <p>${alle ? 'Tiltakene Boligkompasset anbefaler ut fra svarene mine' : 'Tiltakene jeg har bestemt meg for å gjennomføre'}. Laget ${dato}.</p>
   </header>
   <div class="kp-planutskrift__felter">
     <p><span>Navn</span><span></span></p>
@@ -1202,7 +1173,7 @@ function kpInitHandlingsplan() {
   const antall = document.querySelector('[data-plan-antall]');
   const tell = () => {
     const n = (S.handlingsplan || []).length;
-    if (antall) antall.textContent = n ? `${n} ${n === 1 ? 'tiltak' : 'tiltak'} krysset av.` : 'Kryss av for minst ett tiltak.';
+    if (antall) antall.textContent = n ? `${n} tiltak krysset av.` : '';
   };
   skjema.addEventListener('change', () => {
     S.handlingsplan = [...skjema.querySelectorAll('input[name="handlingsplan"]:checked')].map(i => i.value);
@@ -1213,15 +1184,15 @@ function kpInitHandlingsplan() {
 }
 
 /* Skriver ut bare handlingsplanen. Vanlig utskrift av siden er som før. */
-function kpLagPlan() {
-  if (!(S.handlingsplan || []).length) {
+function kpLagPlan(alle) {
+  if (!alle && !(S.handlingsplan || []).length) {
     const antall = document.querySelector('[data-plan-antall]');
     if (antall) antall.textContent = 'Kryss av for minst ett tiltak først.';
     return;
   }
   let ark = document.querySelector('.kp-planutskrift');
   if (!ark) { ark = document.createElement('div'); ark.className = 'kp-planutskrift'; document.body.appendChild(ark); }
-  ark.innerHTML = kpPlanUtskriftHtml();
+  ark.innerHTML = kpPlanUtskriftHtml(alle);
   document.body.classList.add('skriver-plan');
   const ferdig = () => { document.body.classList.remove('skriver-plan'); window.removeEventListener('afterprint', ferdig); };
   window.addEventListener('afterprint', ferdig);
@@ -1255,24 +1226,7 @@ function kpOppsummeringHtml() {
 
     <h1 class="hb-h1 kp-h1 kp-utskrift-skjul">Oppsummering</h1>
 
-    ${kpResultatHtml()}
-
-    ${kpHandlingsplanHtml()}
-
-    <h2 class="hb-h2 kp-seksjon">3. Ressurser</h2>
-    <ul class="kp-ressurser">
-      ${ordninger.map(o => {
-        const ord = KOMPASS_ORDNINGER[o];
-        return `<li><a class="kp-ressurs" href="${ord.lenke}">
-          <span>${ord.navn}</span><span data-ikon="pil"></span>
-        </a></li>`;
-      }).join('')}
-      <li><a class="kp-ressurs" href="tel:${HB_REGLER.telefonRaw}">
-        <span>Ring Husbanken, ${HB_REGLER.telefon}</span><span data-ikon="pil"></span>
-      </a></li>
-    </ul>
-
-    <h2 class="hb-h2 kp-seksjon">4. Kursen din</h2>
+    <h2 class="hb-h2 kp-resultat-start">1. Kursen din</h2>
     <div class="kp-resultat">
       <div class="kp-resultat__topp">
         <div class="kp-kompass-stort">${kpKompassSvg(kurs)}</div>
@@ -1289,7 +1243,23 @@ function kpOppsummeringHtml() {
       </div>
     </div>
 
-    ${kpEgenKursHtml()}
+    ${kpResultatHtml()}
+
+    ${kpHandlingsplanHtml()}
+
+    <h2 class="hb-h2 kp-seksjon">4. Ressurser</h2>
+    ${kpKommuneHtml()}
+    <ul class="kp-ressurser">
+      ${ordninger.map(o => {
+        const ord = KOMPASS_ORDNINGER[o];
+        return `<li><a class="kp-ressurs" href="${ord.lenke}">
+          <span>${ord.navn}</span><span data-ikon="pil"></span>
+        </a></li>`;
+      }).join('')}
+      <li><a class="kp-ressurs" href="tel:${HB_REGLER.telefonRaw}">
+        <span>Ring Husbanken, ${HB_REGLER.telefon}</span><span data-ikon="pil"></span>
+      </a></li>
+    </ul>
 
     <div class="kp-utskrift-notat">
       <strong>Plass til dine egne notater</strong>
@@ -1310,109 +1280,46 @@ function kpOppsummeringHtml() {
 </section>`;
 }
 
-/* ═══ Kompasset du vrir selv ══════════════════════════════════════
-   Kompasset over er regnet ut av svarene. Men den som bor der, vet
-   noe et regnestykke ikke får tak i. Her kan man vri nåla dit man
-   selv føler at man står, og se de to ved siden av hverandre.
-
-   Nåla kan dras med mus eller finger, og skyvekontrollen under gjør
-   det samme med tastatur. Målgruppen er 62+, og en sirkel man må
-   treffe er ikke nok alene.
+/* ═══ Finn din kommune ═══════════════════════════════════════════
+   Som på bostøttesidene: skriv kommunen din, og gå rett til nettsida
+   deres. Tilbakemeldingen 21. oktober. Kommunene har adressen
+   <navn>.kommune.no, med æ, ø og å skrevet ae, o og a.
    ─────────────────────────────────────────────────────────────────── */
 
-/* Du velger kursen selv med fire radioknapper, samme slags valg som
-   ellers i kartleggingen. Designgjennomgangen 21. oktober: en
-   skyvekontroll, og en nål man skal dra i, krever for mye av
-   finmotorikken for målgruppa. */
-const KP_EGNE_KURSER = [
-  { v: 'N', grader: 0 }, { v: 'Ø', grader: 90 }, { v: 'V', grader: 270 }, { v: 'S', grader: 180 }
-];
-const kpTilNarmesteKurs = grader => {
-  const g = ((Math.round(grader / 90) * 90) % 360 + 360) % 360;
-  return KP_EGNE_KURSER.find(k => k.grader === g);
+function kpKommuneHtml() {
+  return `
+    <form class="hb-felt kp-kommune kp-utskrift-skjul" data-kommune novalidate>
+      <label class="hb-label" for="kp-kommune">Finn din kommune</label>
+      <p class="hb-felt-beskrivelse">
+        Kommunen kan gi råd om tilpasning av boligen, og har ofte tilskudd
+        og en ergoterapeut som kan komme hjem til deg.
+      </p>
+      <div class="kp-kommune__rad">
+        <input class="hb-inputfelt" id="kp-kommune" name="kommune" type="text"
+               autocomplete="address-level2" placeholder="For eksempel Drammen">
+        ${kpKnapp('Gå til kommunen', 'type="submit"', 'standard', 'pil').replace('type="button" ', '')}
+      </div>
+      <p class="hb-text--sm hb-feilmelding kp-kommune__feil" data-kommune-feil aria-live="polite"></p>
+    </form>`;
+}
+
+const kpKommuneAdresse = navn => {
+  const ord = navn.trim().toLowerCase()
+    .replace(/\s+kommune$/, '')
+    .replace(/æ/g, 'ae').replace(/ø/g, 'o').replace(/å/g, 'a')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return ord ? `https://www.${ord}.kommune.no` : '';
 };
 
-function kpEgenKursHtml() {
-  const valgt = Number.isFinite(S.egenKurs) ? kpTilNarmesteKurs(S.egenKurs) : null;
-  const kurs = kpKursAvGrader(valgt ? valgt.grader : 0);
-  const regnet = kpBeregnKurs();
-
-  return `
-  <h2 class="hb-h2 kp-seksjon">Velg kursen selv</h2>
-  <p style="max-width:58ch;margin-bottom:0">
-    Kompasset over er regnet ut. Du vet noe det ikke vet. Velg den kursen du
-    selv føler passer best.
-  </p>
-
-  <div class="kp-egen" id="kp-egen">
-    <div class="kp-egen__rose" data-egen-rose>
-      ${kpKompassSvg(valgt ? kurs : Object.assign({}, KP_TOMKURS))}
-    </div>
-    <div>
-      <fieldset class="hb-felt hb-felt-radio">
-        <legend class="kp-egen__merke">Hvor føler du at du står?</legend>
-        <ul class="hb-feltliste">
-          ${KP_EGNE_KURSER.map(k => `
-          <li>
-            <input class="hb-radiobutton" id="egen-kurs-${k.v}" type="radio" name="egen-kurs"
-                   value="${k.v}" ${valgt && valgt.v === k.v ? 'checked' : ''}>
-            <div class="hb-label">
-              <label class="hb-label-tekst" for="egen-kurs-${k.v}">${KOMPASS_RETNINGER[k.v].navn}</label>
-              <p class="hb-felt-beskrivelse--alternativ">${KOMPASS_RETNINGER[k.v].kort}.</p>
-            </div>
-          </li>`).join('')}
-        </ul>
-      </fieldset>
-      <p class="hb-text--sm" id="egen-avlest" aria-live="polite" data-egen-avlest>
-        ${valgt ? kpEgenSammenlikning(kurs.retning, regnet.retning) : ''}
-      </p>
-      <p style="margin:var(--space-3) 0 0">
-        <button type="button" class="hb-button hb-button--link" data-egen-nullstill><span class="hb-button-text">Velg den kursen vi regnet ut</span></button>
-      </p>
-    </div>
-  </div>`;
-}
-
-function kpKursAvGrader(grader) {
-  const rad = grader * Math.PI / 180;
-  return { x: Math.sin(rad), y: Math.cos(rad), r: 1, retning: kpRetning(Math.sin(rad), Math.cos(rad), 0.2) };
-}
-
-function kpEgenSammenlikning(egen, regnet) {
-  if (egen === regnet) {
-    return 'Du og kompasset er enige. Det er et godt utgangspunkt for å snakke med kommunen eller familien.';
-  }
-  return `Kompasset vårt peker mot «${kpKursnavn(regnet)}», du peker mot «${kpKursnavn(egen)}». `
-       + 'Begge deler er verdt å ta med videre. Det du selv kjenner på, veier tungt i et slikt valg.';
-}
-
-function kpInitEgenKurs() {
-  const boks = document.getElementById('kp-egen');
-  if (!boks) return;
-  const rose = boks.querySelector('[data-egen-rose]');
-
-  const tegn = grader => {
-    S.egenKurs = ((grader % 360) + 360) % 360;
-    const kurs = kpKursAvGrader(S.egenKurs);
-    rose.innerHTML = kpKompassSvg(kurs);
-    boks.querySelector('[data-egen-avlest]').textContent =
-      kpEgenSammenlikning(kurs.retning, kpBeregnKurs().retning);
-    boks.querySelectorAll('input[name="egen-kurs"]').forEach(i => {
-      i.checked = kpTilNarmesteKurs(S.egenKurs).v === i.value;
-    });
-    kpLagre();
-  };
-
-  boks.addEventListener('change', ev => {
-    if (ev.target.name !== 'egen-kurs') return;
-    tegn(KP_EGNE_KURSER.find(k => k.v === ev.target.value).grader);
-  });
-
-  /* Vår utregning kan peke mellom to kurser. Da velges den nærmeste av
-     de fire. */
-  boks.querySelector('[data-egen-nullstill]').addEventListener('click', () => {
-    const k = kpBeregnKurs();
-    tegn(kpTilNarmesteKurs((Math.atan2(k.x, k.y) * 180 / Math.PI) || 0).grader);
+function kpInitKommune() {
+  const skjema = document.querySelector('[data-kommune]');
+  if (!skjema) return;
+  skjema.addEventListener('submit', ev => {
+    ev.preventDefault();
+    const adresse = kpKommuneAdresse(skjema.kommune.value);
+    skjema.querySelector('[data-kommune-feil]').textContent = adresse ? '' : 'Skriv navnet på kommunen din.';
+    if (adresse) window.open(adresse, '_blank', 'noopener');
   });
 }
 
@@ -1421,7 +1328,6 @@ function kpInitEgenKurs() {
    mellom. Den gamle varianten la «Endre» på egen linje til høyre i
    hver rad, og på mobil ble det en trapp av lenker uten sammenheng
    med teksten over. */
-
 const KP_BLYANT = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
   + '<path d="M4 20h4L19 9l-4-4L4 16v4Z" fill="none" stroke="currentColor" '
   + 'stroke-width="1.8" stroke-linejoin="round"/>'
@@ -1563,7 +1469,7 @@ function kpTegn() {
   kpIkoner(rot);
   kpTegnBunn();
   hbInitTrekkspill(rot);
-  if (kpModus === 'oppsummering') { kpInitEgenKurs(); kpInitHandlingsplan(); }
+  if (kpModus === 'oppsummering') { kpInitHandlingsplan(); kpInitKommune(); }
   const h = rot.querySelector('h1') || rot.querySelector('h2');
   if (h && kpModus !== 'start') { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
   window.scrollTo({ top: 0, behavior: 'auto' });
@@ -1686,7 +1592,7 @@ function kpKlikk(ev) {
   else if (d.tilbakeSvar !== undefined) { kpModus = 'kompass'; kpPos = Math.max(0, KP_FLYT.length - 2); kpTegn(); }
   else if (d.endre) kpTilSporsmal(d.endre);
   else if (d.skrivUt !== undefined) window.print();
-  else if (d.lagPlan !== undefined) kpLagPlan();
+  else if (d.lagPlan !== undefined) kpLagPlan(d.lagPlan === 'alle');
 
   else if (d.tilfeldig !== undefined) kpFyllTilfeldig();
   /* Fasadens trekkspill: tilstanden står på elementet */
@@ -1694,6 +1600,12 @@ function kpKlikk(ev) {
     const el = t.closest('.hb-accordion-element');
     const aapen = !el.classList.contains('hb-accordion-element--utvidet');
     el.classList.toggle('hb-accordion-element--utvidet', aapen);
+    t.setAttribute('aria-expanded', String(aapen));
+  }
+  else if (d.hjelpetekst !== undefined) {
+    const el = t.closest('.hb-hjelpetekst');
+    const aapen = !el.classList.contains('hb-hjelpetekst--utvidet');
+    el.classList.toggle('hb-hjelpetekst--utvidet', aapen);
     t.setAttribute('aria-expanded', String(aapen));
   }
   else if (d.mer) {
