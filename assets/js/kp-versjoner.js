@@ -254,7 +254,7 @@ const KP_VERSJONER = [
     ]
   },
   {
-    nr: 25,
+    nr: 25, commit: '560eb5e', mappe: 'iterasjoner/25/',
     navn: 'Tilbakemeldingen 21. oktober', dato: '26. oktober 2026',
     endringer: [
       'Forsiden: ny introtekst med «Start kartleggingen» rett under, ny tekst i «Hvorfor gjøre det nå?», og papirutgaven helt nederst med ny tekst. «Hvem er det for?», «Hva får du?» og kortet «På skjerm» er tatt ut.',
@@ -268,6 +268,25 @@ const KP_VERSJONER = [
       'Handlingsplanen kan skrives ut med alle tiltakene, eller bare dem du har krysset av.',
       '«Finn din kommune» under Ressurser.',
       '«Velg kursen selv» er tatt ut.'
+    ]
+  },
+  {
+    nr: 26,
+    navn: 'Møtet 27. oktober', dato: '27. oktober 2026',
+    endringer: [
+      'Kompasset kommer bare til slutt, øverst i oppsummeringen. Kompassene etter hvert steg er tatt ut.',
+      'Nåla regnes av alle svarene samlet, og «Slik har vi regnet ut hvor nåla peker» viser svar for svar.',
+      'Retningene heter «Fungerer godt», «Enkle grep», «Større grep» og «Omfattende grep», i stedet for «Rett kurs» og «Ny kurs». Fem forslag til navn ligger på forslag-26.html.',
+      'Ingen advarsel om flytting. Peker svarene mot omfattende grep, står et forsiktig avsnitt i oppsummeringen. Utkast.',
+      'Forbehold om at kartleggingen er til refleksjon, på forsiden og i oppsummeringen. Utkast.',
+      'Oppsummeringen: kompasset, så «Dette fungerer i dag» og «Dette fungerer ikke i dag» i to bokser, så handlingsplanen. Veiledningen står bak «Les mer».',
+      'Tiltakene har korte overskrifter. Fagteksten, og hva du kan søke tilskudd til fra Husbanken, står bak «Les mer».',
+      'Steget du står i er lysere grønt enn stegene du er ferdig med.',
+      '«Spørsmål 3 av 12» er en tag, med mer luft ned til spørsmålet.',
+      'Spørsmålstegnet står midt på tekstlinja.',
+      'Stegsidene er midtstilt igjen, med kortere ingress i steg 3 og 4.',
+      'Spørsmål 10 og 11 er kortere, og forklaringen om redusert bevegelighet står først i hjelpeteksten. «Service og tjenester» heter «tilbudene».',
+      'Ergoterapeut er tatt ut av ressursene.'
     ]
   }
 ];

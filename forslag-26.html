@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forslag til iterasjon 26 | Boligkompasset</title>
+<meta name="robots" content="noindex">
+<!-- Arbeidsside etter møtet 27. oktober: fem forslag til mykere navn på
+     retningene i kompasset, og fem måter å vise utdypende tekst på i
+     oppsummeringen. Forslag 1 i begge står i tjenesten nå. Ikke lenket
+     fra tjenesten. -->
+<link rel="stylesheet" href="fasaden/boligkompasset-stiler.css?v=35">
+<style>
+  body { background: var(--hb-slate-50); }
+  .f-side { max-width: 900px; margin: 0 auto; padding: var(--space-5) var(--space-3) var(--space-7); }
+  .f-side > p { max-width: 66ch; }
+  .f-del { margin-top: var(--space-7); }
+  .f-forslag { background: #fff; border: 1px solid var(--hb-slate-200); border-radius: var(--radius-lg); padding: var(--space-4); margin-top: var(--space-4); }
+  .f-forslag > h3 { margin: 0 0 4px; }
+  .f-forslag > p { margin: 0 0 var(--space-3); color: var(--fg-subtle); max-width: 66ch; }
+  .f-naa { display: inline-block; font-size: var(--text-xs); font-weight: 600; background: var(--hb-green-100); color: var(--hb-green-900); border: 1px solid var(--hb-green-600); border-radius: var(--radius-sm); padding: 2px 8px; margin-left: 8px; vertical-align: middle; }
+
+  /* Navnene */
+  .f-navn { display: grid; gap: var(--space-4); align-items: center; }
+  @media (min-width: 680px) { .f-navn { grid-template-columns: 300px 1fr; } }
+  .f-navn dl { margin: 0; display: grid; gap: var(--space-2); }
+  .f-navn dt { font-weight: 600; }
+  .f-navn dd { margin: 0; color: var(--fg-subtle); font-size: var(--text-sm); }
+
+  /* Utdypende tekst */
+  .f-punkt { border: 1px solid var(--hb-slate-200); border-left: 5px solid #c0560a; border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4); }
+  .f-punkt strong, .f-punkt .f-svar { display: block; }
+  .f-svar { color: var(--fg-subtle); font-size: var(--text-sm); }
+  .f-punkt + .f-punkt { margin-top: var(--space-2); }
+  .f-tekst { margin: var(--space-2) 0 0; max-width: 62ch; }
+  .f3 .hb-label { font-weight: 600; }
+  .f4-knapp { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: var(--space-2); width: 100%; }
+  .f4-knapp:focus-visible { outline: 2px dashed #3b444c; outline-offset: 4px; }
+  .f4-knapp .f4-pil { color: var(--hb-blue-800); font-size: 1.5rem; }
+  dialog.f4-dialog { border: 0; border-radius: var(--radius-lg); padding: var(--space-5); max-width: 560px; width: calc(100% - 32px); box-shadow: 0 12px 40px rgba(0,0,0,.25); }
+  dialog.f4-dialog::backdrop { background: rgba(44, 70, 86, .45); }
+  .f5 { display: grid; gap: var(--space-3); }
+  @media (min-width: 680px) { .f5 { grid-template-columns: 260px 1fr; } }
+  .f5 ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .f5 button { all: unset; box-sizing: border-box; cursor: pointer; display: block; width: 100%; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--hb-slate-200); }
+  .f5 button[aria-pressed="true"] { background: #fef3ea; border-color: #c0560a; }
+  .f5 button:focus-visible { outline: 2px dashed #3b444c; outline-offset: 2px; }
+  .f5-detalj { border: 1px solid var(--hb-slate-200); border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4); background: #fff; }
+  .f5-detalj h4 { margin: 0 0 var(--space-2); }
+</style>
+</head>
+<body class="fasaden">
+<main class="f-side">
+  <h1 class="hb-h1">Forslag til iterasjon 26</h1>
+  <p>
+    Etter møtet 27. oktober. Del 1 er fem forslag til mykere navn på de fire
+    retningene i kompasset, i stedet for «Rett kurs» og «Ny kurs». Del 2 er fem
+    måter å vise den utdypende teksten på i oppsummeringen. Forslag 1 i begge
+    står i Boligkompasset nå.
+  </p>
+  <p><a href="boligkompasset.html">Til Boligkompasset</a></p>
+
+  <section class="f-del">
+    <h2 class="hb-h2">1. Navn på retningene</h2>
+    <p>Kompasset er det samme som i iterasjon 25. Bare navnene og de korte forklaringene er nye. Nåla peker mot den nederste retningen, så man ser hvordan det tyngste svaret ser ut.</p>
+    <div id="navn"></div>
+  </section>
+
+  <section class="f-del">
+    <h2 class="hb-h2">2. Utdypende tekst i oppsummeringen</h2>
+    <p>Eksempelet er rommene på inngangsplanet, der du ikke har krysset av for stue. Teksten er veiledningen fra kolonne C i masterfila.</p>
+    <div id="mer"></div>
+  </section>
+</main>
+
+<script src="assets/js/hb-kompass-data.js?v=29"></script>
+<script src="assets/js/hb-kompass.js?v=34"></script>
+<script>
+  /* ── Del 1: fem sett med navn ─────────────────────────────────── */
+  const NAVN = [
+    { tittel: 'Grep, fra enkle til omfattende', om: '«Grep» hele veien, som møtet var inne på. Står i tjenesten nå.', naa: true,
+      N: ['Fungerer godt', 'Boligen passer deg godt'], Ø: ['Enkle grep', 'Mye kan løses enkelt'],
+      V: ['Større grep', 'Boligen kan bli godt tilpasset'], S: ['Omfattende grep', 'Boligen krever mye arbeid'] },
+    { tittel: 'Tiltak', om: 'Samme ord som i handlingsplanen, så kompasset og tiltakene henger sammen.',
+      N: ['Godt egnet', 'Få eller ingen tiltak'], Ø: ['Enkle tiltak', 'Det meste løses enkelt'],
+      V: ['Større tiltak', 'Noe må bygges om'], S: ['Omfattende tiltak', 'Mye må bygges om'] },
+    { tittel: 'Tilpasning', om: 'Beskriver boligen, ikke personen. Sier ingenting om å flytte.',
+      N: ['Godt tilpasset', 'Boligen fungerer for deg'], Ø: ['Små tilpasninger', 'Litt må justeres'],
+      V: ['Større tilpasninger', 'Ombygging gir god bolig'], S: ['Store tilpasninger', 'Krever mye av boligen'] },
+    { tittel: 'Hvor mye som gjenstår', om: 'Nøytralt og konkret: hvor mye arbeid det er, ikke hvor bra eller dårlig boligen er.',
+      N: ['Lite å gjøre', 'Boligen er klar'], Ø: ['Noe å gjøre', 'Enkle ting'],
+      V: ['Mer å gjøre', 'Noen større ting'], S: ['Mye å gjøre', 'Mange større ting'] },
+    { tittel: 'Klar for framtiden', om: 'Retter blikket framover, mot hvor klar boligen er for at bevegeligheten endrer seg.',
+      N: ['Klar for framtiden', 'Boligen tåler endringer'], Ø: ['Nesten klar', 'Noen enkle grep gjenstår'],
+      V: ['Kan bli klar', 'Med et større arbeid'], S: ['Langt fram', 'Krever mye før den er klar'] }
+  ];
+  const kursNed = { x: 0, y: -1, r: 1, retning: 'S', tom: false };
+  document.getElementById('navn').innerHTML = NAVN.map((f, i) => {
+    ['N', 'Ø', 'V', 'S'].forEach(k => { KOMPASS_RETNINGER[k] = Object.assign({}, KOMPASS_RETNINGER[k], { navn: f[k][0], kort: f[k][1] }); });
+    return `
+    <article class="f-forslag">
+      <h3 class="hb-h3">Forslag ${i + 1}: ${f.tittel}${f.naa ? '<span class="f-naa">I tjenesten nå</span>' : ''}</h3>
+      <p>${f.om}</p>
+      <div class="f-navn">
+        <div>${kpKompassSvg(kursNed)}</div>
+        <dl>${['N', 'Ø', 'V', 'S'].map(k => `<div><dt>${f[k][0]}</dt><dd>${f[k][1]}</dd></div>`).join('')}</dl>
+      </div>
+    </article>`;
+  }).join('');
+
+  /* ── Del 2: fem måter å vise mer tekst på ─────────────────────── */
+  const SP = 'Rommene på inngangsplanet', SVAR = 'Mangler stue';
+  const TEKST = KOMPASS_SPORSMAL.find(s => s.id === 'rom').valg.find(v => v.v === 'stue').veiledningUten;
+  const ANDRE = [['Å komme seg rundt inne', 'Delvis'], ['Å bruke badet', 'Kan bli vanskelig, badet er lite']];
+
+  const varianter = [
+    { tittel: '«Les mer» som folder ut', om: 'En liten lenke under punktet. Teksten kommer rett under, og lenken snur pila. Står i tjenesten nå.', naa: true,
+      html: () => `<div class="f-punkt"><strong>${SP}</strong><span class="f-svar">${SVAR}</span>${kpLesMer(`<p>${TEKST}</p>`)}</div>` },
+    { tittel: 'Fasadens trekkspill', om: 'Hvert punkt er et hb-accordion-element. Hele raden er trykkflate, og det er tydelig at den kan åpnes.',
+      html: () => kpTrekkspill([{ id: 'f2-a', tittel: `${SP}: ${SVAR.toLowerCase()}`, innhold: `<p>${TEKST}</p>` },
+        ...ANDRE.map(([a, b], i) => ({ id: 'f2-' + i, tittel: `${a}: ${b.toLowerCase()}`, innhold: '<p>…</p>' }))]) },
+    { tittel: 'Spørsmålstegn ved punktet', om: 'Samme spørsmålstegn som på svaralternativene i kartleggingen, så det er kjent fra før.',
+      html: () => `<div class="f-punkt f3"><span class="hb-label">${SP}${kpHjelpetekst(TEKST)}</span><span class="f-svar">${SVAR}</span></div>` },
+    { tittel: 'Dialog over siden', om: 'Hele punktet er en knapp. Teksten åpnes i en dialog, så lista under ikke flytter seg.',
+      html: () => `<div class="f-punkt"><button type="button" class="f4-knapp" data-f4><span><strong>${SP}</strong><span class="f-svar">${SVAR}</span></span><span class="f4-pil" aria-hidden="true">›</span></button></div>
+        <dialog class="f4-dialog" id="f4"><h3 class="hb-h4">${SP}</h3><p>${TEKST}</p><form method="dialog"><button class="hb-button hb-button--standard hb-button--l"><span class="hb-button-text">Lukk</span></button></form></dialog>` },
+    { tittel: 'Liste og tekst ved siden av hverandre', om: 'På bred skjerm står punktene til venstre og teksten til det valgte punktet til høyre. På smal skjerm under.',
+      html: () => `<div class="f5"><ul>
+          <li><button type="button" aria-pressed="true" data-f5="0"><strong>${SP}</strong><span class="f-svar">${SVAR}</span></button></li>
+          ${ANDRE.map(([a, b], i) => `<li><button type="button" aria-pressed="false" data-f5="${i + 1}"><strong>${a}</strong><span class="f-svar">${b}</span></button></li>`).join('')}
+        </ul><div class="f5-detalj" aria-live="polite"><h4 class="hb-h4">${SP}</h4><p class="hb-mb--none">${TEKST}</p></div></div>` }
+  ];
+  document.getElementById('mer').innerHTML = varianter.map((v, i) => `
+    <article class="f-forslag">
+      <h3 class="hb-h3">Forslag ${i + 1}: ${v.tittel}${v.naa ? '<span class="f-naa">I tjenesten nå</span>' : ''}</h3>
+      <p>${v.om}</p>
+      ${v.html()}
+    </article>`).join('');
+
+  document.addEventListener('click', ev => {
+    const t = ev.target.closest('button');
+    if (!t) return;
+    if (t.dataset.mer) {
+      const aapen = t.getAttribute('aria-expanded') === 'true';
+      t.setAttribute('aria-expanded', String(!aapen));
+      document.getElementById(t.dataset.mer).hidden = aapen;
+    } else if (t.dataset.trekk !== undefined) {
+      const el = t.closest('.hb-accordion-element');
+      const aapen = !el.classList.contains('hb-accordion-element--utvidet');
+      el.classList.toggle('hb-accordion-element--utvidet', aapen);
+      t.setAttribute('aria-expanded', String(aapen));
+    } else if (t.dataset.hjelpetekst !== undefined) {
+      const el = t.closest('.hb-hjelpetekst');
+      const aapen = !el.classList.contains('hb-hjelpetekst--utvidet');
+      el.classList.toggle('hb-hjelpetekst--utvidet', aapen);
+      t.setAttribute('aria-expanded', String(aapen));
+    } else if (t.dataset.f4 !== undefined) {
+      document.getElementById('f4').showModal();
+    } else if (t.dataset.f5) {
+      const n = Number(t.dataset.f5);
+      document.querySelectorAll('[data-f5]').forEach(b => b.setAttribute('aria-pressed', String(b === t)));
+      const [a, b] = n ? ANDRE[n - 1] : [SP, SVAR];
+      document.querySelector('.f5-detalj').innerHTML = `<h4 class="hb-h4">${a}</h4><p class="hb-mb--none">${n ? 'Her kommer veiledningen for «' + b.toLowerCase() + '».' : TEKST}</p>`;
+    }
+  });
+</script>
+</body>
+</html>

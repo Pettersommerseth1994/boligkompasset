@@ -18,34 +18,38 @@
    Ø, S og V brukes fortsatt internt som korte navn på de åtte feltene.
    ─────────────────────────────────────────────────────────────────── */
 
+/* Navnene er forslag 1 av 5 fra møtet 27. oktober, se
+   forslag-26.html: «grep» i stedet for «Rett kurs» og «Ny kurs».
+   Ingen av tekstene sier at du bør flytte. Det står, om det passer,
+   som et eget avsnitt i oppsummeringen. */
 const KOMPASS_RETNINGER = {
-  N:  { navn: 'Rett kurs',
-        kort: 'Boligen er passende for deg',
-        tekst: 'Boligen din fungerer godt slik den er. Det viktigste du kan gjøre nå, er å holde den ved like og gjøre de små grepene før du trenger dem.' },
-  NØ: { navn: 'Rett kurs med små grep',
+  N:  { navn: 'Fungerer godt',
+        kort: 'Boligen passer deg godt',
+        tekst: 'Boligen din ser ut til å fungere godt for deg, også om bevegeligheten din endrer seg. Hold den ved like, og gjør de enkle grepene før du trenger dem.' },
+  NØ: { navn: 'Fungerer godt med enkle grep',
         kort: 'Nesten i mål',
-        tekst: 'Boligen bærer deg langt. Noen få tiltak, som lys, håndlister eller en terskel som fjernes, gjør at den holder mange år til.' },
-  Ø:  { navn: 'Små grep',
-        kort: 'Mye løses enkelt',
-        tekst: 'Det meste av det som er tungvint hos deg, kan løses uten å bygge om. Start med det enkleste, så ser du hvor langt det rekker.' },
-  SØ: { navn: 'Små grep nå, større valg senere',
+        tekst: 'Boligen fungerer godt. Noen få enkle grep, som lys, håndlister eller å fjerne en terskel, kan gjøre at den fungerer i mange år til.' },
+  Ø:  { navn: 'Enkle grep',
+        kort: 'Mye kan løses enkelt',
+        tekst: 'Det meste av det som kan bli tungvint hos deg, kan løses uten å bygge om. Begynn med det enkleste.' },
+  SØ: { navn: 'Enkle grep nå, mer på sikt',
         kort: 'Begynn enkelt, planlegg videre',
-        tekst: 'Du kan gjøre mye enkelt med én gang. Men noe av det som er vanskelig hos deg, løses ikke uten et større arbeid. Begynn med det enkle, og bruk tiden til å planlegge resten.' },
-  S:  { navn: 'Ny kurs',
-        kort: 'Det kan være verdt å se etter noe nytt',
-        tekst: 'Flere av hindringene hos deg er tunge å bygge bort. Da kan en annen bolig gi deg mer for pengene enn en stor ombygging. Det betyr ikke at du må flytte nå, men at det er verdt å se på.' },
-  SV: { navn: 'Stort valg foran deg',
-        kort: 'Bygge om, eller bytte bolig',
-        tekst: 'Boligen kan tilpasses, men det krever et omfattende arbeid. Da står valget mellom en stor ombygging og en annen bolig. Begge deler tåler å bli regnet på før du bestemmer deg.' },
+        tekst: 'Mye kan gjøres enkelt med én gang. Noe krever et større arbeid. Begynn med det enkle, og bruk tiden til å planlegge resten.' },
+  S:  { navn: 'Omfattende grep',
+        kort: 'Boligen krever mye arbeid',
+        tekst: 'Flere av utfordringene i og rundt boligen din krever omfattende grep. Det er lurt å tenke gjennom hva som er viktigst for deg, og planlegge i god tid.' },
+  SV: { navn: 'Større og omfattende grep',
+        kort: 'Det krever et stort arbeid',
+        tekst: 'Boligen kan tilpasses, men det krever et omfattende arbeid. Det er verdt å regne på løsningene og tenke gjennom hva som passer deg best.' },
   V:  { navn: 'Større grep',
-        kort: 'Boligen kan bli passende for deg',
-        tekst: 'Boligen din kan bli god å bli gammel i, men det krever bygging. Bad, planløsning eller inngang må gjøres om. Det er verdt å starte planleggingen tidlig.' },
-  NV: { navn: 'Bli boende, men bygg om',
-        kort: 'Ett stort grep holder lenge',
-        tekst: 'Du bor godt, og du kan bli boende. Men ett større arbeid, oftest badet eller inngangen, bør gjøres før behovet melder seg.' },
-  MIDT: { navn: 'Delt kurs',
+        kort: 'Boligen kan bli godt tilpasset',
+        tekst: 'Boligen din kan bli god å bo i også når du blir eldre, men det krever bygging. Bad, planløsning eller inngang kan måtte gjøres om. Det er lurt å begynne å planlegge tidlig.' },
+  NV: { navn: 'Fungerer godt med ett større grep',
+        kort: 'Ett større grep holder lenge',
+        tekst: 'Boligen fungerer godt, men ett større arbeid, oftest på badet eller ved inngangen, bør gjøres før behovet melder seg.' },
+  MIDT: { navn: 'Litt av hvert',
         kort: 'Noe fungerer, noe ikke',
-        tekst: 'Svarene dine peker i flere retninger. Noe ved boligen fungerer godt, annet gjør det ikke. Se på de prioriterte tiltakene under, så blir det tydeligere hvor du bør begynne.' }
+        tekst: 'Svarene dine peker i flere retninger. Noe fungerer godt, annet kan bli en utfordring. Se gjennom oppsummeringen og tiltakene under.' }
 };
 
 /* ═══ Etappene ═════════════════════════════════════════════════════
@@ -61,10 +65,10 @@ const KOMPASS_ETAPPER = [
     ingress: 'Nå skal vi se nærmere på hvilke rom du har og tilgangen til disse.',
     ikon: 'rom' },
   { id: 'adkomst',  navn: 'Veien inn til boligen din',
-    ingress: 'Nå ser vi på hvordan du kommer deg fra veien eller parkeringen og inn inngangsdøren din.',
+    ingress: 'Nå ser vi på hvordan du kommer deg fra veien og inn døren din.',
     ikon: 'dor' },
   { id: 'naermiljo', navn: 'Utenfor boligen din',
-    ingress: 'Til slutt ser vi på nærmiljøet ditt. Det er ikke bare avstanden til butikk, aktiviteter og tjenester som betyr noe, men også hvordan du kommer deg dit. Tenk på hva som er viktig for deg, og hvordan dette vil fungere dersom du senere får redusert bevegelighet.',
+    ingress: 'Til slutt ser vi på nærmiljøet ditt, og hvordan du kommer deg dit du vil.',
     ikon: 'kart' }
 ];
 
@@ -109,7 +113,7 @@ const KOMPASS_ETAPPER = [
 const kpHar = (S, id, v) => Array.isArray(S[id]) && S[id].includes(v);
 
 /* Inngangen er stengt når du må opp en trapp, og bygget ikke har heis.
-   Da veier den tyngre enn alt annet i steget, se kpKursForSteg. */
+   Da veier den tyngre enn alt annet, se kpBeregnKurs. */
 const kpInngangStengt = S => kpHar(S, 'adkomst-inngang', 'trapp') && !kpHar(S, 'adkomst-inngang', 'heis');
 const KP_INNGANG_HINDRING = ['trapp', 'terskler', 'dor-tung', 'terreng'];
 const kpInngangHindringer = S => KP_INNGANG_HINDRING.filter(h => kpHar(S, 'adkomst-inngang', h));
@@ -556,21 +560,21 @@ const KOMPASS_SPORSMAL = [
   /* ─── Steg 4, utenfor boligen din ───────────────────────────────── */
   {
     id: 'tjenester',
-    stikkord: 'Service og tjenester i nærheten',
+    stikkord: 'Tilbudene i nærheten',
     grep: 'Dette kan ikke bygges om. Det teller hvis du en dag vurderer å flytte',
     etappe: 'naermiljo',
     kilde: 'Fane 4, spørsmål 10a.',
-    tittel: 'Hvor tilgjengelig vil service- og tjenestetilbud være for deg ved redusert bevegelighet?',
-    hjelp: 'Eksempler på tilbud som er viktige for de fleste er matbutikk, apotek, lege, offentlige tjenester og andre steder du er avhengig av i hverdagen. Vurder om du fortsatt vil kunne komme deg dit eller få tilgang til de tilbudene du ønsker, dersom bevegeligheten din blir redusert. I vurderingen kan du gjerne ta hensyn til gangavstand, transportmuligheter, tilgjengelighet, leveringsmuligheter eller digitale alternativer.',
+    tittel: 'Hvor lett vil du komme deg til tilbudene du trenger?',
+    hjelp: 'Tenk deg at du en periode får redusert bevegelighet, for eksempel etter en operasjon. Vil du da fortsatt komme deg til tilbudene du er avhengig av i hverdagen?\n\nEksempler på tilbud som er viktige for de fleste, er matbutikk, apotek, lege og offentlige tjenester. Ta gjerne hensyn til gangavstand, transportmuligheter, leveringsmuligheter og digitale alternativer.',
     valg: [
       { v: 'god',       tittel: 'God tilgang', gruppe: 'bra',
-        veiledning: 'Du har god tilgang til service- og tjenestetilbud selv om du får redusert bevegelighet. Det kan gjøre det enklere å bo godt og selvstendig over tid.',              n: 1,    e: 0 },
+        veiledning: 'Du har god tilgang til tilbudene selv om du får redusert bevegelighet. Det kan gjøre det enklere å bo godt og selvstendig over tid.',              n: 1,    e: 0 },
       { v: 'begrenset', tittel: 'Begrenset tilgang', gruppe: 'utfordring',
-        veiledning: 'Du får begrenset tilgang til service- og tjenestetilbud om du skulle få redusert bevegelighet. Dette kan påvirke hvor lenge du klarer deg selv og kan bli boende. Tenk over om du har transportmuligheter eller leveringsmuligheter.',        n: -0.5, e: 0 },
+        veiledning: 'Du får begrenset tilgang til tilbudene om du skulle få redusert bevegelighet. Dette kan påvirke hvor lenge du klarer deg selv og kan bli boende. Tenk over om du har transportmuligheter eller leveringsmuligheter.',        n: -0.5, e: 0 },
       { v: 'sterkt',    tittel: 'Sterkt begrenset tilgang', flytting: true, gruppe: 'utfordring',
-        veiledning: 'Du har svært begrenset tilgang til service- og tjenestetilbud om du skulle få redusert bevegelighet. Dette kan gjøre det vanskelig å bli boende uten å være avhengig av hjelp fra andre.', n: -1,   e: 0 },
+        veiledning: 'Du har svært begrenset tilgang til tilbudene om du skulle få redusert bevegelighet. Dette kan gjøre det vanskelig å bli boende uten å være avhengig av hjelp fra andre.', n: -1,   e: 0 },
       { v: 'usikker',   tittel: 'Usikker', gruppe: 'usikker',
-        veiledning: 'Vi forstår at du er usikker på hvor tilgjengelig service- og tjenestetilbudet vil være om behovene dine endrer seg. Snakk med noen eller bruk litt tid på å tenke over gåavstand, transport- og leveringsmuligheter om du får problemer med å gå uten hjelpemidler. Gå gjerne tilbake til kartleggingen og se om du nå klarer å svare på spørsmål 10.',                  n: 0,    e: 0 }
+        veiledning: 'Vi forstår at du er usikker på hvor tilgjengelige tilbudene vil være om behovene dine endrer seg. Snakk med noen eller bruk litt tid på å tenke over gåavstand, transport- og leveringsmuligheter om du får problemer med å gå uten hjelpemidler. Gå gjerne tilbake til kartleggingen og se om du nå klarer å svare på spørsmål 10.',                  n: 0,    e: 0 }
     ]
   },
   {
@@ -579,8 +583,8 @@ const KOMPASS_SPORSMAL = [
     grep: 'Sjekk transporttjenesten i kommunen din',
     etappe: 'naermiljo',
     kilde: 'Fane 4, spørsmål 11a.',
-    tittel: 'Hvor lett vil det være for deg å delta på de aktivitetene du ønsker ved redusert bevegelighet?',
-    hjelp: 'Tenk på aktiviteter og møteplasser som er viktige for deg, for eksempel kulturtilbud, idrett, frivillige aktiviteter, tros- og livssynstilbud, bibliotek, natur- og parkområder, kafé eller å bare kunne treffe familie og venner. I vurderingen kan du gjerne ta hensyn til gangavstand, tilgjengelighet og transportmuligheter. Ved å planlegge tidlig kan du legge til rette for å opprettholde sosial kontakt og fortsette med aktiviteter som gir deg glede og mening i hverdagen.',
+    tittel: 'Hvor lett vil du kunne delta på aktivitetene du ønsker?',
+    hjelp: 'Tenk deg igjen at du en periode får redusert bevegelighet. Vil du da fortsatt kunne delta på det som er viktig for deg?\n\nDet kan være kulturtilbud, idrett, frivillige aktiviteter, tros- og livssynstilbud, bibliotek, natur, kafé eller å treffe familie og venner. Ta gjerne hensyn til gangavstand, tilgjengelighet og transportmuligheter.',
     valg: [
       { v: 'lett',      tittel: 'Lett', gruppe: 'bra',
         veiledning: 'Du har et godt utgangspunkt siden det er lett for deg å delta på aktivitetene du ønsker, selv om du får redusert bevegelighet. Det å kunne delta på aktiviteter og møte andre mennesker er viktig for trivsel, helse og livskvalitet.',            n: 1,    e: 0 },
@@ -899,6 +903,64 @@ const KOMPASS_ANBEFALINGER = [
    Ordlyden er hentet fra arket «Eksempler på tiltak» i
    arbeidsdokumentet.
    ─────────────────────────────────────────────────────────────────── */
+
+/* Korte overskrifter på tiltakene, så handlingsplanen kan skummes.
+   Den faglige teksten fra kolonne D og E står under, bak «Les mer».
+   Møtet 27. oktober. Nøkkelen er spørsmål/svar/enkel eller stor.
+   Like tiltak fra flere svar får samme overskrift og står én gang. */
+const KOMPASS_TILTAK_TITLER = {
+  'rom/stue/enkel': 'Rekkverk og bedre lys i trappen inne',
+  'rom/soverom/enkel': 'Rekkverk og bedre lys i trappen inne',
+  'rom/bad/enkel': 'Rekkverk og bedre lys i trappen inne',
+  'rom/toalett/enkel': 'Rekkverk og bedre lys i trappen inne',
+  'rom/vaskemaskin/enkel': 'Rekkverk og bedre lys i trappen inne',
+  'bad-innhold/annen-etasje/enkel': 'Rekkverk og bedre lys i trappen inne',
+  'rom/stue/stor': 'Stue på inngangsplanet',
+  'rom/kjokken/stor': 'Kjøkken på inngangsplanet',
+  'rom/soverom/stor': 'Soverom på inngangsplanet',
+  'rom/bad/stor': 'Bad på inngangsplanet',
+  'rom/toalett/stor': 'Toalett på inngangsplanet',
+  'rom/vaskemaskin/stor': 'Vaskemaskin på inngangsplanet',
+  'rom/fryser/enkel': 'Fryser på inngangsplanet',
+  'bevegelse/delvis/enkel': 'Færre hindringer og terskler inne',
+  'bevegelse/delvis/stor': 'Bredere dører og mer plass inne',
+  'bevegelse/nei/stor': 'Bredere dører uten terskel, og mer plass inne',
+  'bad-innhold/toalett/enkel': 'Støttehåndtak ved toalettet',
+  'bad-innhold/toalett/stor': 'Mer plass rundt toalettet',
+  'bad-innhold/vask/stor': 'Vask og speil du kan bruke sittende',
+  'bad-innhold/vaskemaskin/stor': 'Plass til vaskemaskin på badet',
+  'bad-innhold/naborom/enkel': 'Uten terskler, og støttehåndtak ved toalettet',
+  'bad-innhold/samme-etasje/enkel': 'Uten terskler, og støttehåndtak ved toalettet',
+  'bad-innhold/naborom/stor': 'Bad og toalett i samme rom',
+  'bad-innhold/samme-etasje/stor': 'Plass til toalett på badet',
+  'bad-innhold/annen-etasje/stor': 'Plass til toalett på badet',
+  'bad-bruk/terskel/enkel': 'Fjerne terskelen til badet',
+  'bad-bruk/terskel/stor': 'Bredere baderomsdør uten terskel',
+  'bad-bruk/stort/stor': 'God plassering av vask, toalett og dusj',
+  'bad-bruk/dor-innover/enkel': 'Baderomsdør som slår utover',
+  'bad-bruk/dor-innover/stor': 'Større bad',
+  'bad-bruk/dor-utover/stor': 'Større bad',
+  'bad-bruk/dusj-kant/enkel': 'Støttehåndtak og sklisikring i dusjen',
+  'bad-bruk/dusj-kant/stor': 'Trinnfri dusjsone',
+  'bad-bruk/dusj-stol/enkel': 'Plass til dusjkrakk',
+  'bad-bruk/dusj-stol/stor': 'Trinnfri dusjsone med god plass',
+  'bad-bruk/badekar/enkel': 'Støttehåndtak og sklisikring ved badekaret',
+  'bad-bruk/badekar/stor': 'Trinnfri dusjsone i stedet for badekar',
+  'adkomst-frem/ja/stor': 'Rekkverk og trinnfri vei inn, ved behov',
+  'adkomst-frem/delvis/enkel': 'Rekkverk og bedre lys på veien inn',
+  'adkomst-frem/delvis/stor': 'Trinnfri vei inn',
+  'adkomst-frem/nei/stor': 'Rekkverk, lys og trinnfri vei inn',
+  'adkomst-inngang/trapp/enkel': 'Rekkverk og bedre lys i trappen ved inngangen',
+  'adkomst-inngang/trapp/stor': 'Trinnfri inngang, trappeheis eller heis',
+  'adkomst-inngang/terskler/enkel': 'Fjerne terskelen ved inngangen',
+  'adkomst-inngang/terskler/stor': 'Varig trinnfri inngang',
+  'adkomst-inngang/dor-tung/enkel': 'Bedre dørhåndtak',
+  'adkomst-inngang/dor-tung/stor': 'Lettere og bredere inngangsdør',
+  'adkomst-inngang/terreng/enkel': 'Jevnere underlag ved inngangen',
+  'adkomst-inngang/terreng/stor': 'Slakere terreng eller trinnfri inngang',
+  'adkomst-lagring/delvis/stor': 'Lagringsplass ved inngangen',
+  'adkomst-lagring/nei/stor': 'Lagringsplass ved inngangen'
+};
 
 const KOMPASS_TILTAK = {
   '1a': 'Justere terrenget ved parkeringsplass, gangveien og/eller inngangspartiet',
