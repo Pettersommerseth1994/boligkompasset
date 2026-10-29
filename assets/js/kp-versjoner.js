@@ -290,7 +290,7 @@ const KP_VERSJONER = [
     ]
   },
   {
-    nr: 27,
+    nr: 27, commit: '73d011c', mappe: 'iterasjoner/27/',
     navn: 'Tilbakemeldingen 28. oktober', dato: '29. oktober 2026',
     endringer: [
       'Du kan trykke på et steg du er ferdig med i stepperen, og gå tilbake dit.',
@@ -304,6 +304,22 @@ const KP_VERSJONER = [
       'Ny tekst under «Slik fungerer boligen din» og i handlingsplanen. «Vi anbefaler at du gjør dette nå» er tatt bort.',
       'Mindre avstand mellom tiltaket og «Les mer», og den grå teksten om hva tiltaket gjelder er tatt bort.',
       'Ressursene: uten den grå teksten om kommunen og uten telefonnummeret. Nye lenker til startlån, lån til å oppgradere bolig og bostøtte. «Kommunale boligtilskudd» og «Hjelpemidler og tilskudd fra Nav» har nye navn.'
+    ]
+  },
+  {
+    nr: 28,
+    navn: 'Oppsummeringen, forslag 2', dato: '29. oktober 2026',
+    endringer: [
+      'Oppsummeringen bygger på forslag 2 av 10: «Slik fungerer boligen din» er ett trekkspill per steg, med tagger for hvor mye som fungerer og hvor mange utfordringer.',
+      'Inni hvert steg står svarene gruppert under samme tagg som i tittelen. Hvert svar er en rad i trekkspillet, og veiledningen folder seg ut. «Les mer» er tatt bort.',
+      '«3. Handlingsplan» har en velger med fem forslag: beskrivelse under, tabell, kort, velg så les, og faner per steg. Ingen spørsmålstegn per tiltak.',
+      'Handlingsplanen skrives ut som et eget A4-ark: tittel og dato, felt for navn og adresse, tiltakene steg for steg med rute å krysse av, tilskudd, hvem som kan hjelpe og notater. Uten kompasset.',
+      'Prøver du å skrive ut uten å ha krysset av, kommer en feilmelding i Fasadens stil.',
+      'Ressursene er Fasadens inngangskort. Knappene «Skriv ut eller lagre som PDF», «Endre svarene mine» og «Start på nytt» nederst er tatt bort.',
+      'Kolonnen «Nåla» er tatt ut av «Slik har vi regnet ut hvor nåla peker».',
+      'Spørsmål 6: «Badet er stort nok» og «Badet er lite» kan krysses av samtidig.',
+      'Forsiden: «Ingenting sendes til Husbanken før du selv velger det» er tatt bort, og overskriften har luft ned til ingressen.',
+      'Arbeidssider: forslag-oppsummering-10.html, forslag-oppsummering-2.html og forslag-handlingsplan.html.'
     ]
   }
 ];

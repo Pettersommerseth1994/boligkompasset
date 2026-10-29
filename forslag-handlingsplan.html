@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fem forslag til handlingsplanen | Boligkompasset</title>
+<meta name="robots" content="noindex">
+<!-- Arbeidsside: fem forslag til «3. Handlingsplan» i oppsummeringen,
+     29. oktober. Ingen spørsmålstegn ved hvert tiltak: tilbakemeldingen
+     var at det ble for mange. Alt er Fasadens komponenter. Ikke lenket
+     fra tjenesten. -->
+<link rel="stylesheet" href="fasaden/boligkompasset-stiler.css?v=46">
+<style>
+  /* Velgeren øverst og det lille som Fasaden ikke har */
+  .fh-velger { position: sticky; top: 0; z-index: 30; background: #fff; border-bottom: 1px solid var(--hb-slate-200); padding: var(--space-3) 0; }
+  .fh-velger .hb-buttongroup { flex-wrap: wrap; }
+  .fh-om { margin: var(--space-2) 0 0; max-width: 70ch; }
+
+  .fh-gruppe + .fh-gruppe { margin-top: var(--space-5); }
+  .fasaden .fh-gruppe .hb-legend, .fh-gruppetittel { margin: 0 0 var(--space-3); }
+  .fh-beskrivelse { display: block; margin-top: 2px; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--fg-subtle); }
+  .fh-merker { display: flex; flex-wrap: wrap; gap: var(--space-1) 6px; margin-top: var(--space-1); }
+  .fasaden .fh-liste .hb-feltliste > li { margin-bottom: var(--space-3); }
+
+  /* 2: tabell */
+  .fh-tabell td, .fh-tabell th { vertical-align: top; }
+  .fh-tabell td:first-child { width: 2.5rem; }
+  .fh-tabell .hb-checkbox + .hb-label { min-height: 0; }
+
+  /* 3: kort */
+  .fh-kort { display: grid; gap: var(--space-3); grid-template-columns: 1fr; list-style: none; padding: 0; margin: 0; }
+  @media (min-width: 640px) { .fh-kort { grid-template-columns: 1fr 1fr; } }
+  .fh-kort > li { margin: 0; }
+  .fh-kort .hb-card { height: 100%; }
+  .fh-kort .hb-card-body { display: flex; flex-direction: column; gap: var(--space-2); height: 100%; }
+  .fh-kort .hb-card-body > p { margin: 0; }
+  .fh-kort .fh-velg { margin-top: auto; padding-top: var(--space-2); border-top: 1px solid var(--hb-slate-200); }
+  .fh-kort .hb-card:has(input:checked) { box-shadow: 0 0 0 2px var(--hb-green-700); }
+
+  /* 4: valgte tiltak med teksten */
+  .fh-valgte { margin-top: var(--space-5); }
+  .fh-valgte ol { margin: 0; padding-left: 1.25rem; }
+  .fh-valgte li + li { margin-top: var(--space-3); }
+  .fh-valgte li p { margin: 2px 0 0; }
+
+  /* 5: faner */
+  .fh-faner .hb-tabs-panel { padding-top: var(--space-4); }
+
+  .fh-tilskudd { margin: var(--space-2) 0 0; font-size: var(--text-sm); line-height: var(--lh-sm); }
+</style>
+</head>
+<body>
+
+<div id="hb-topp"></div>
+
+<div class="fh-velger fasaden">
+  <div class="hb-shell">
+    <fieldset class="hb-felt">
+      <legend class="hb-text--semibold hb-mb--sm">Forslag til handlingsplanen</legend>
+      <div class="hb-buttongroup hb-buttongroup--gap-none" id="fh-knapper"></div>
+    </fieldset>
+    <p class="fh-om hb-text--sm" id="fh-om" aria-live="polite"></p>
+  </div>
+</div>
+
+<main id="hovedinnhold" class="fasaden">
+  <section class="hb-section" style="padding-top:var(--space-5)">
+    <div class="hb-shell" id="fh-side"></div>
+  </section>
+</main>
+
+<div id="hb-bunn"></div>
+
+<script src="assets/js/hb.js"></script>
+<script src="assets/js/hb-kompass-data.js?v=31"></script>
+<script src="assets/js/hb-kompass.js?v=44"></script>
+<script>
+/* ═══ Svarene ═════════════════════════════════════════════════════
+   Har du svart i Boligkompasset i denne nettleseren, brukes svarene
+   dine. Ellers et fast sett med tilfeldige svar, så alle fem forslagene
+   viser det samme. */
+S = kpLes();
+if (!KOMPASS_SPORSMAL.some(kpBesvart)) {
+  let fro = 7;
+  const gammel = Math.random;
+  Math.random = () => (fro = (fro * 16807) % 2147483647) / 2147483647;
+  const tegn = kpTegn, lagre = kpLagre;
+  kpTegn = () => {}; kpLagre = () => {};
+  kpFyllTilfeldig();
+  kpTegn = tegn; kpLagre = lagre; Math.random = gammel;
+}
+
+/* ═══ Felles ══════════════════════════════════════════════════════ */
+
+const FORSLAG_T = kpTiltakForslag();
+const ALLE = [...FORSLAG_T.enkel, ...FORSLAG_T.stor];
+const valgt = () => new Set(S.handlingsplan || []);
+const harValgt = t => valgt().has(t.id);
+
+const fagtekst = t => t.tekst.replace(KP_SOK_HUSBANKEN, ' ').trim();
+/* Første setning av fagteksten, som en kort beskrivelse */
+const kort = t => { const f = fagtekst(t); const m = f.match(/^.*?[.!?](\s|$)/); return (m ? m[0] : f).trim(); };
+const kanSoke = t => KP_SOK_HUSBANKEN.test(t.tekst);
+const tilskudd = t => kanSoke(t) ? kpKoderListe(t.koder) : [];
+const tag = (tone, tekst) => `<span class="hb-tag hb-tag--${tone}"><span class="hb-tag-text">${tekst}</span></span>`;
+const tilskuddTag = t => kanSoke(t) ? tag('positive', 'Tilskudd fra Husbanken') : '';
+const stegnavn = t => (KOMPASS_ETAPPER.find(e => e.id === t.etappe) || {}).navn || '';
+const forsteLiten = s => s.charAt(0).toLowerCase() + s.slice(1);
+
+const boks = (t, etikett, under = '') => `
+  <input class="hb-checkbox" id="fh-${t.id}" type="checkbox" name="handlingsplan" value="${t.id}" ${harValgt(t) ? 'checked' : ''}>
+  <div class="hb-label"><label class="hb-label-tekst" for="fh-${t.id}">${etikett}</label>${under}</div>`;
+
+const grupper = (fn, tittel = ty => ty.tittel) => KP_TILTAKSTYPER.filter(ty => FORSLAG_T[ty.id].length).map(ty => fn(ty, FORSLAG_T[ty.id], tittel(ty))).join('');
+
+const innledning = tekst => `
+  <h2 class="hb-h2 kp-seksjon" style="margin-top:0">3. Handlingsplan</h2>
+  <p class="kp-hjelp__tekst">${tekst}</p>
+  ${S.eieform === 'leier' ? `
+  <div class="hb-callout hb-callout--info kp-planvarsel">
+    <div class="hb-callout-body"><div class="hb-callout-content"><p>Du leier boligen. Endringer i boligen må avklares med utleier.</p></div></div>
+  </div>` : ''}`;
+
+const STANDARD = 'Her kommer det frem forslag til enkle og større grep du kan gjøre i boligen. Kryss av for tiltakene du ønsker å gjennomføre.';
+
+const panel = () => `
+  <div class="hb-panel hb-panel--noytral kp-planpanel">
+    <h3 class="hb-h4">Handlingsplanen din</h3>
+    <p class="hb-mb--xs" data-plan-antall aria-live="polite"></p>
+    <p>Skriv ut handlingsplanen eller lagre den som PDF. Ta den med når du snakker med en entreprenør, kommunen eller familien.</p>
+      <div class="hb-felt kp-planfeil" data-plan-feil-felt>
+        <p class="hb-felt-feilmelding" data-plan-feil role="alert"></p>
+      </div>
+    <div class="hb-knappesamling">
+      <div class="hb-knappesamling-gruppe hb-knappesamling-gruppe--horisontal">
+        <div class="hb-knappesamling-element">${kpKnapp('Skriv ut handlingsplanen', 'data-lag-plan="valgte"')}</div>
+        <div class="hb-knappesamling-element">${kpKnapp('Skriv ut alle tiltakene', 'data-lag-plan="alle"', 'standard')}</div>
+      </div>
+    </div>
+  </div>`;
+
+/* ═══ De fem forslagene ═══════════════════════════════════════════ */
+
+const FORSLAG = [
+
+/* 1 ─ Kort beskrivelse under hvert tiltak */
+{ navn: 'Beskrivelse under', om: 'Fasadens avkrysningsliste. Under hvert tiltak står første setning av fagteksten i grått, og et grønt merke når du kan søke tilskudd. Ingen ting å trykke på for å lese: det viktigste står framme.',
+  html: () => `
+    ${innledning(STANDARD)}
+    <form class="fh-liste" data-fh-skjema novalidate>
+      ${grupper((ty, liste) => `
+      <fieldset class="hb-felt hb-felt-checkboxgruppe fh-gruppe">
+        <legend class="hb-legend"><span class="hb-legend-tekst">${ty.tittel}</span></legend>
+        <ul class="hb-feltliste">${liste.map(t => `<li>${boks(t, t.tittel, `<span class="fh-beskrivelse">${kort(t)}</span>${kanSoke(t) ? `<span class="fh-merker">${tilskuddTag(t)}</span>` : ''}`)}</li>`).join('')}</ul>
+      </fieldset>`)}
+    </form>
+    ${panel()}` },
+
+/* 2 ─ Tabell */
+{ navn: 'Tabell', om: 'Fasadens tabell. Én rad per tiltak, med avkrysning, steget det hører til og om du kan søke tilskudd. Kort og lett å skumme. Fagteksten kommer med på utskriften.',
+  html: () => `
+    ${innledning(STANDARD + ' Hele beskrivelsen av hvert tiltak står på utskriften.')}
+    <form data-fh-skjema novalidate>
+      ${grupper((ty, liste) => `
+      <h3 class="hb-h4 fh-gruppetittel ${ty.id === 'stor' ? 'hb-mt--xl' : ''}">${ty.tittel}</h3>
+      <div class="hb-scrollbox">
+        <table class="hb-table fh-tabell">
+          <thead><tr><th scope="col"><span class="hb-screenreader-only">Velg</span></th><th scope="col">Tiltak</th><th scope="col">Steg</th><th scope="col">Tilskudd</th></tr></thead>
+          <tbody>
+            ${liste.map(t => `<tr>
+              <td><input class="hb-checkbox" id="fh-${t.id}" type="checkbox" name="handlingsplan" value="${t.id}" ${harValgt(t) ? 'checked' : ''}><div class="hb-label"><label class="hb-label-tekst" for="fh-${t.id}"><span class="hb-screenreader-only">${t.tittel}</span></label></div></td>
+              <td><label for="fh-${t.id}">${t.tittel}</label></td>
+              <td>${stegnavn(t)}</td>
+              <td>${kanSoke(t) ? 'Ja' : '–'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`)}
+    </form>
+    ${panel()}` },
+
+/* 3 ─ Kort */
+{ navn: 'Kort', om: 'Fasadens kort, to i bredden. Hvert kort har tiltaket, en kort beskrivelse, merker for type og tilskudd, og avkrysningen nederst. Valgte kort får grønn ramme.',
+  html: () => `
+    ${innledning(STANDARD)}
+    <form data-fh-skjema novalidate>
+      ${grupper((ty, liste) => `
+      <fieldset class="hb-felt fh-gruppe" style="border:0;padding:0;margin-inline:0">
+        <legend class="hb-legend"><span class="hb-legend-tekst">${ty.tittel}</span></legend>
+        <ul class="fh-kort">
+          ${liste.map(t => `
+          <li><div class="hb-card">
+            <div class="hb-card-body">
+              <h4 class="hb-h5 hb-mb--none">${t.tittel}</h4>
+              <p class="hb-text--sm">${kort(t)}</p>
+              ${kanSoke(t) ? `<div class="fh-merker">${tilskuddTag(t)}</div>` : ''}
+              <div class="fh-velg hb-felt-checkbox">${boks(t, 'Ta med i planen')}</div>
+            </div>
+          </div></li>`).join('')}
+        </ul>
+      </fieldset>`)}
+    </form>
+    ${panel()}` },
+
+/* 4 ─ Velg først, les etterpå */
+{ navn: 'Velg, så les', om: 'En ren avkrysningsliste med bare navnene. Det du krysser av, dukker opp under i «Dette har du valgt», med hele fagteksten og hva du kan søke tilskudd til. Du leser bare om det du er interessert i.',
+  html: () => `
+    ${innledning(STANDARD + ' Det du velger, kommer opp under med mer informasjon.')}
+    <form class="fh-liste" data-fh-skjema novalidate>
+      ${grupper((ty, liste) => `
+      <fieldset class="hb-felt hb-felt-checkboxgruppe fh-gruppe">
+        <legend class="hb-legend"><span class="hb-legend-tekst">${ty.tittel}</span></legend>
+        <ul class="hb-feltliste">${liste.map(t => `<li>${boks(t, t.tittel)}</li>`).join('')}</ul>
+      </fieldset>`)}
+    </form>
+    <div class="hb-card fh-valgte" aria-live="polite">
+      <div class="hb-card-header hb-card-header--positiv"><h3 class="hb-card-tittel">Dette har du valgt</h3></div>
+      <div class="hb-card-body" data-fh-valgte></div>
+    </div>
+    ${panel()}`,
+  etter: () => {
+    const v = ALLE.filter(harValgt);
+    const el = document.querySelector('[data-fh-valgte]');
+    if (!el) return;
+    el.innerHTML = v.length ? `<ol>${v.map(t => `<li><strong>${t.tittel}</strong><p>${fagtekst(t)}</p>${tilskudd(t).length ? `<p class="fh-tilskudd"><strong>Du kan søke tilskudd fra Husbanken til:</strong> ${tilskudd(t).join(', ').toLowerCase()}.</p>` : ''}</li>`).join('')}</ol>`
+      : '<p class="hb-text--secondary hb-mb--none">Kryss av for et tiltak, så kommer det her med mer informasjon.</p>';
+  } },
+
+/* 5 ─ Faner per steg */
+{ navn: 'Faner per steg', om: 'Fasadens faner, én per steg. Hver fane har en kort avkrysningsliste, enkle og større tiltak, med beskrivelsen under. Man ser bare tiltakene for ett steg om gangen.',
+  html: () => {
+    const steg = KOMPASS_ETAPPER.filter(e => ALLE.some(t => t.etappe === e.id));
+    return `
+    ${innledning(STANDARD + ' Tiltakene er delt etter stegene i kartleggingen.')}
+    <form data-fh-skjema novalidate>
+      <div class="hb-tabs fh-faner" role="tablist">
+        ${steg.map((e, i) => {
+          const t = ALLE.filter(x => x.etappe === e.id);
+          return `
+        <button type="button" class="hb-tabs-tab${i ? '' : ' hb-tabs-tab--active'}" role="tab" aria-selected="${!i}" data-fane="${i}">${e.navn} (${t.length})</button>
+        <div class="hb-tabs-panel${i ? '' : ' hb-tabs-panel--active'}" role="tabpanel" ${i ? 'hidden' : ''}>
+          ${KP_TILTAKSTYPER.filter(ty => t.some(x => x.type === ty.id)).map(ty => `
+          <fieldset class="hb-felt hb-felt-checkboxgruppe fh-gruppe fh-liste">
+            <legend class="hb-legend"><span class="hb-legend-tekst">${ty.tittel}</span></legend>
+            <ul class="hb-feltliste">${t.filter(x => x.type === ty.id).map(x => `<li>${boks(x, x.tittel, `<span class="fh-beskrivelse">${kort(x)}</span>`)}</li>`).join('')}</ul>
+          </fieldset>`).join('')}
+        </div>`;
+        }).join('')}
+      </div>
+    </form>
+    ${panel()}`;
+  } }
+];
+
+/* ═══ Tegning og velger ═══════════════════════════════════════════ */
+
+let gjeldende = 0;
+function tegn(i) {
+  gjeldende = i;
+  const f = FORSLAG[i];
+  document.getElementById('fh-side').innerHTML = f.html();
+  document.getElementById('fh-om').innerHTML = `<strong>${i + 1}. ${f.navn}.</strong> ${f.om}`;
+  document.querySelectorAll('#fh-knapper input').forEach((r, j) => { r.checked = j === i; });
+  try { history.replaceState(null, '', '#' + (i + 1)); } catch (e) { /* lokal fil */ }
+  oppdater();
+}
+
+function oppdater() {
+  const n = (S.handlingsplan || []).length;
+  document.querySelectorAll('[data-plan-antall]').forEach(p => {
+    p.textContent = n ? `Du har krysset av for ${n} tiltak.` : 'Du har ikke krysset av for noen tiltak ennå.';
+  });
+  if (FORSLAG[gjeldende].etter) FORSLAG[gjeldende].etter();
+}
+
+document.getElementById('fh-knapper').innerHTML = FORSLAG.map((f, i) => `
+  <input class="hb-radiobutton" type="radio" name="fh-forslag" id="fh-v${i}" value="${i}">
+  <label class="hb-button hb-button--standard" for="fh-v${i}" title="${f.navn}">${i + 1}</label>`).join('');
+document.getElementById('fh-knapper').addEventListener('change', ev => { tegn(Number(ev.target.value)); window.scrollTo(0, 0); });
+
+document.addEventListener('change', ev => {
+  if (ev.target.name !== 'handlingsplan') return;
+  const v = valgt();
+  ev.target.checked ? v.add(ev.target.value) : v.delete(ev.target.value);
+  S.handlingsplan = [...v];
+  kpLagre();
+  if (v.size) kpPlanFeil('');
+  oppdater();
+});
+
+document.addEventListener('click', ev => {
+  const t = ev.target.closest('button, a');
+  if (!t) return;
+  const d = t.dataset;
+  if (d.fane !== undefined) {
+    const faner = t.closest('.hb-tabs');
+    faner.querySelectorAll('.hb-tabs-tab').forEach(b => { const p = b === t; b.classList.toggle('hb-tabs-tab--active', p); b.setAttribute('aria-selected', String(p)); });
+    faner.querySelectorAll('.hb-tabs-panel').forEach((p, j) => { const a = j === Number(d.fane); p.classList.toggle('hb-tabs-panel--active', a); p.hidden = !a; });
+  } else if (d.lagPlan !== undefined) kpLagPlan(d.lagPlan === 'alle');
+});
+
+hbMonter({ kontekst: 'Boligkompasset' });
+tegn(Math.min(Math.max(Number(location.hash.slice(1)) || 1, 1), FORSLAG.length) - 1);
+</script>
+</body>
+</html>

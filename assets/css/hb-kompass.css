@@ -11,6 +11,8 @@
    ─────────────────────────────────────────────────────────────────── */
 
 .kp-h1 { max-width: 22ch; }
+/* Luft mellom overskriften og ingressen på forsiden */
+.fasaden .kp-hero .kp-h1 { margin-bottom: var(--space-3); }
 
 /* Fasadens overskrifter setter ikke skrifttype selv, så prototypens
    grunnlag (ds/colors_and_type.css og hb-app.css) slo gjennom med
@@ -361,24 +363,8 @@
 .kp-plan__liste li { display: block; padding-block: 2px; }
 .kp-plan__tiltak .kp-mer { text-align: left; }
 
-.kp-ressurser {
-  list-style: none; margin: var(--space-3) 0 0; padding: 0;
-  display: flex; flex-wrap: wrap; gap: var(--space-2);
-}
-.kp-ressurs {
-  display: inline-flex; align-items: center; gap: var(--space-2);
-  border: 2px solid var(--hb-blue-800);
-  border-radius: var(--radius-pill);
-  padding: 9px var(--space-4);
-  background: #fff; color: var(--hb-blue-700);
-  text-decoration: none; font: 600 var(--text-sm)/1.3 var(--font-sans);
-  min-height: 44px;
-}
-.kp-ressurs:hover { background: var(--hb-blue-100); }
-/* Ikonet ligger i en span, og en inline span setter seg på grunnlinja.
-   Da havner pila lavere enn teksten ved siden av. */
-.kp-ressurs > span { display: inline-flex; align-items: center; }
-.kp-ressurs svg { width: 18px; height: 18px; display: block; }
+/* Ressursene er Fasadens inngangskort i et rutenett, som i forslag 2 */
+.kp-ressurser { margin-top: var(--space-3); }
 
 /* «Se alle svarene dine» er Fasadens trekkspill, som etter hvert steg */
 .kp-svardetaljer { margin-top: var(--space-6); }
@@ -403,19 +389,6 @@
 .kp-utregning thead th { font-weight: 600; }
 .kp-utregning tfoot th, .kp-utregning tfoot td { font-weight: 600; border-bottom: 0; }
 
-.kp-bokser { display: grid; gap: var(--space-3); margin-bottom: var(--space-3); }
-@media (min-width: 720px) { .kp-bokser { grid-template-columns: 1fr 1fr; align-items: start; } }
-.kp-boks { border: 1px solid var(--hb-slate-200); border-left-width: 5px; border-radius: var(--radius-lg); background: #fff; padding: var(--space-3) var(--space-4); }
-.kp-boks--bra { border-left-color: var(--hb-green-600); }
-.kp-boks--utfordring { border-left-color: #c0560a; }
-.kp-boks--usikker { border-left-color: var(--hb-slate-400); }
-.kp-boks__tittel { font: 600 var(--text-lg)/var(--lh-lg) var(--font-sans); margin: 0 0 var(--space-2); }
-.kp-boks__liste { list-style: none; margin: 0; padding: 0; }
-.kp-boks__liste > li { padding: var(--space-2) 0; }
-.kp-boks__liste > li + li { border-top: 1px solid var(--hb-slate-200); }
-.kp-boks__punkt { margin: 0; }
-.kp-boks__punkt strong { display: block; }
-.kp-boks__punkt span { display: block; color: var(--fg-subtle); font-size: var(--text-sm); line-height: var(--lh-sm); }
 
 /* «Les mer» folder ut teksten rett under */
 .fasaden .kp-lesmer { display: inline-flex; align-items: center; gap: 6px; min-height: 0; padding: 4px 0; font-size: var(--text-sm); }
@@ -423,22 +396,83 @@
 .kp-lesmer__pil svg { width: 12px; height: 12px; }
 .kp-lesmer[aria-expanded="true"] .kp-lesmer__pil { transform: rotate(180deg); }
 .kp-lesmer__innhold { margin: 4px 0 var(--space-2); max-width: 62ch; font-weight: 400; font-size: var(--text-base); line-height: var(--lh-base); }
-/* Tett inntil tiltaket. Tilbakemeldingen 28. oktober: avstanden var for stor. */
-.kp-handlingsplan .kp-lesmer { margin-left: 2px; vertical-align: baseline; }
+/* Stegene er Fasadens trekkspill med kantlinje, som utregningen. Inni
+   står svarene som egne trekkspill, med mindre tittel. Taggene i
+   tittelen står 2 px tettere enn Fasadens 8, avstanden fra teksten er
+   den samme. */
+.kp-steg .hb-accordion-tittel { flex-wrap: wrap; gap: var(--space-1) 6px; }
+.kp-steg .hb-accordion-tittel > .hb-tag:first-of-type { margin-left: 2px; }
+
+/* Gruppene inni et steg har taggen fra tittelen som overskrift. Lik
+   luft over og under: større over en ny gruppe enn ned til lista. */
+.kp-funn__tittel { display: flex; margin: var(--space-5) 0 var(--space-3); padding: 0; font: inherit; }
+.kp-steg .hb-accordion-body > .kp-funn__tittel:first-child { margin-top: 0; }
+
+.fasaden .kp-rader .hb-accordion-element { padding: var(--space-3); }
+.fasaden .kp-rader .hb-accordion-header { margin: calc(-1 * var(--space-3)); padding: var(--space-3); width: calc(100% + 2 * var(--space-3)); gap: var(--space-3); }
+.fasaden .kp-rader .hb-accordion-tittel { display: block; font-size: var(--text-base); line-height: var(--lh-base); }
+.fasaden .kp-rader .hb-accordion-toggle { top: 0; }
+.fasaden .kp-rader .hb-accordion-body { padding-top: var(--space-3); margin-top: 0; max-width: 62ch; }
+.fasaden .kp-rader .hb-accordion-body > :last-child { margin-bottom: 0; }
+.kp-rad__sp { display: block; font-weight: 600; }
+.kp-rad__svar { display: block; color: var(--fg-subtle); }
+/* Fasadens regler for åpent trekkspill treffer også trekkspill inni.
+   Her gjelder de bare raden som faktisk er åpen. */
+.fasaden .kp-rader .hb-accordion-toggle { transform: none; }
+.fasaden .kp-rader .hb-accordion-element--utvidet .hb-accordion-toggle { transform: rotateX(180deg); }
+
+/* Handlingsplanen: Fasadens avkrysningslister, med samme luft over og
+   under overskriftene som gruppene i stegene */
+.kp-handlingsplan { margin-top: var(--space-4); }
+.kp-tiltaksgruppe + .kp-tiltaksgruppe { margin-top: var(--space-5); }
+.fasaden .kp-tiltaksgruppe .hb-legend { margin-bottom: var(--space-3); }
+
+/* De fem forslagene til handlingsplanen, og velgeren mellom dem */
+.kp-pf-velger { border: 1px dashed var(--hb-slate-400); border-radius: var(--radius-md); padding: var(--space-3); margin: 0 0 var(--space-4); }
+.kp-pf-velger__tittel { padding: 0; margin-bottom: var(--space-2); font-size: var(--text-sm); font-weight: 600; color: var(--fg-subtle); }
+.kp-pf-velger .hb-buttongroup { flex-wrap: wrap; }
+.kp-pf-beskrivelse { display: block; margin-top: 2px; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--fg-subtle); }
+.kp-pf-merker { display: flex; flex-wrap: wrap; gap: var(--space-1) 6px; margin-top: var(--space-1); }
+.fasaden .kp-pf-liste .hb-feltliste > li { margin-bottom: var(--space-3); }
+.kp-pf-gruppetittel { margin: 0 0 var(--space-3); }
+.kp-pf-gruppetittel ~ .kp-pf-gruppetittel { margin-top: var(--space-5); }
+.kp-pf-tabell td, .kp-pf-tabell th { vertical-align: top; }
+.kp-pf-tabell td:first-child { width: 2.5rem; }
+.kp-pf-gruppe { border: 0; padding: 0; margin-inline: 0; }
+.kp-pf-kort { display: grid; gap: var(--space-3); grid-template-columns: 1fr; list-style: none; padding: 0; margin: 0; }
+@media (min-width: 640px) { .kp-pf-kort { grid-template-columns: 1fr 1fr; } }
+.kp-pf-kort > li { margin: 0; }
+.kp-pf-kort .hb-card { height: 100%; }
+.kp-pf-kort .hb-card-body { display: flex; flex-direction: column; gap: var(--space-2); height: 100%; }
+.kp-pf-kort .hb-card-body > p { margin: 0; }
+.kp-pf-velg { margin-top: auto; padding-top: var(--space-2); border-top: 1px solid var(--hb-slate-200); }
+.kp-pf-kort .hb-card:has(input:checked) { box-shadow: 0 0 0 2px var(--hb-green-700); }
+.kp-pf-valgte { margin-top: var(--space-5); }
+.kp-pf-valgte ol { margin: 0; padding-left: 1.25rem; }
+.kp-pf-valgte li + li { margin-top: var(--space-3); }
+.kp-pf-valgte li p { margin: 2px 0 0; }
+.kp-pf-tilskudd { margin: var(--space-2) 0 0; font-size: var(--text-sm); line-height: var(--lh-sm); }
+.kp-pf-faner .hb-tabs-panel { padding-top: var(--space-4); }
+
+/* «Handlingsplanen din» med utskriftsknappene */
+.kp-planpanel { margin-top: var(--space-5); }
+.kp-planpanel .hb-knappesamling { margin-top: var(--space-3); }
+.fasaden .kp-planfeil .hb-felt-feilmelding { margin: 0 0 var(--space-2); }
+.kp-steg .hb-accordion-tittel .hb-tag { margin-left: var(--space-1); vertical-align: middle; }
+
 .kp-lesmer__innhold p { margin: 0 0 var(--space-2); }
-.kp-tiltak__gjelder { font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--fg-subtle); }
 .kp-sok { background: var(--hb-green-100); border-radius: var(--radius-lg); padding: var(--space-3); }
 .kp-sok__tittel { font-weight: 600; margin: 0 0 4px !important; }
 .kp-sok ul { margin: 0 0 var(--space-2); padding-left: 1.2em; }
 @media print {
   .kp-lesmer { display: none !important; }
   .kp-lesmer__innhold { display: block !important; }
-  .kp-boks { break-inside: avoid; }
+  .kp-steg .hb-accordion-body { display: block !important; }
+  .kp-steg .hb-accordion-element { break-inside: avoid; }
 }
 
 /* ═══ Handlingsplanen og kommunen ═════════════════════════════════ */
 
-.kp-planingress { margin: 0 0 var(--space-2); }
 .kp-kommune { max-width: 46rem; margin: 0 0 var(--space-5); }
 .kp-kommune .hb-felt-beskrivelse { margin: 0 0 var(--space-2); }
 .kp-kommune__rad { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
@@ -649,6 +683,50 @@
 
 .kp-utskrift-topp, .kp-utskrift-notat { display: none; }
 
+/* ═══ Handlingsplanen til utskrift ═══════════════════════════════
+   Vises bare når «Skriv ut handlingsplanen» eller «Skriv ut alle
+   tiltakene» er trykket. Da skjules resten av siden. */
+.kp-planutskrift { display: none; }
+@media print {
+  body.skriver-plan > *:not(.kp-planutskrift) { display: none !important; }
+  body.skriver-plan .kp-planutskrift { display: block; }
+  .kp-planutskrift { color: #2c4656; font-size: 10.5pt; line-height: 1.45; }
+  .kp-planutskrift * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .kp-planutskrift h1 { font-size: 22pt; line-height: 1.15; margin: 0; }
+  .kp-planutskrift h2 { font-size: 13pt; margin: 0 0 6pt; }
+  .kp-planutskrift p { margin: 0 0 4pt; }
+
+  .kp-pu__topp { display: flex; align-items: flex-end; justify-content: space-between; flex-direction: row-reverse;
+    border-bottom: 2pt solid #2B4554; padding-bottom: 8pt; margin-bottom: 12pt; }
+  .kp-pu__logo { height: 26pt; width: auto; }
+  .kp-pu__over { font-size: 8.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #5f6d78; }
+  .kp-pu__under { color: #5f6d78; margin-top: 2pt !important; }
+
+  .kp-pu__kurs { display: grid; grid-template-columns: 70pt 1fr; gap: 12pt; align-items: center;
+    background: #f0f7ea; border: .75pt solid #4b7a2e; border-radius: 4pt; padding: 10pt 12pt; margin-bottom: 12pt; break-inside: avoid; }
+  .kp-pu__rose svg { width: 70pt; height: auto; display: block; }
+  .kp-pu__kursnavn { font-size: 15pt; font-weight: 600; margin-bottom: 2pt !important; }
+
+  .kp-pu__felter { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12pt; margin-bottom: 14pt; }
+  .kp-pu__felter p { border-bottom: .75pt solid #8c9aa5; padding-top: 16pt; font-size: 8.5pt; color: #5f6d78; }
+
+  .kp-pu__steg { margin-bottom: 12pt; }
+  .kp-pu__steg h2 { border-bottom: .75pt solid #d9dee2; padding-bottom: 3pt; }
+  .kp-pu__steg ol { list-style: none; margin: 0; padding: 0; }
+  .kp-pu__tiltak { display: grid; grid-template-columns: 14pt 1fr; gap: 8pt; padding: 6pt 0; border-bottom: .5pt solid #e6e9ec; break-inside: avoid; }
+  .kp-pu__rute { width: 11pt; height: 11pt; border: 1pt solid #2c4656; border-radius: 2pt; margin-top: 2pt; }
+  .kp-pu__tittel { font-weight: 600; }
+  .kp-pu__type { font-weight: 400; font-size: 8.5pt; color: #5f6d78; margin-left: 4pt; }
+  .kp-pu__tilskudd { font-size: 9pt; background: #f0f7ea; padding: 3pt 6pt; border-radius: 2pt; }
+
+  .kp-pu__videre { break-inside: avoid; margin-bottom: 12pt; }
+  .kp-pu__videre ul { margin: 0; padding-left: 14pt; }
+  .kp-pu__notat { border: .75pt solid #8c9aa5; border-radius: 4pt; padding: 8pt 10pt; min-height: 110pt; break-inside: avoid;
+    background-image: repeating-linear-gradient(to bottom, transparent 0 21pt, #d9dee2 21pt 21.75pt); background-position: 0 28pt; }
+  .kp-pu__notat h2 { font-size: 10.5pt; }
+  .kp-pu__forbehold { font-size: 8.5pt; color: #5f6d78; margin-top: 10pt !important; }
+}
+
 /* ═══ Hjelpeteksten ═══════════════════════════════════════════════
    Fasadens hb-hjelpetekst, for det masterfila kaller Popover. I
    fasaden.css står reglene for utvidet tilstand som
@@ -664,3 +742,6 @@
 /* Spørsmålstegnet står midt på tekstlinja, ikke under den. Møtet
    27. oktober: det sto for langt ned. */
 .fasaden .hb-label .hb-hjelpetekst-knapp { top: -0.15em; }
+
+/* «Du leier boligen» sto helt inntil trekkspillet under. */
+.kp-planvarsel { margin-bottom: var(--space-3); }

@@ -409,7 +409,7 @@ function kpStartHtml() {
           ${kpKnapp('Start kartleggingen', 'data-start="kompass"', 'prominent', 'pil')}
         </div>
         <p class="hb-text--sm">
-          Du trenger ikke logge inn. Ingenting sendes til Husbanken før du selv velger det.
+          Du trenger ikke logge inn.
         </p>
         <p class="hb-text--sm hb-mb--none kp-forbehold--start">${KP_FORBEHOLD}</p>
       </div>
@@ -681,12 +681,6 @@ function kpTegnSvarPaaNytt(sp, fokusId) {
    gir ingen tekst.
    ─────────────────────────────────────────────────────────────────── */
 
-const KP_GRUPPER = [
-  { id: 'bra',        tittel: 'Dette fungerer i dag' },
-  { id: 'utfordring', tittel: 'Dette fungerer ikke i dag' },
-  { id: 'usikker',    tittel: 'Dette var du usikker på' }
-];
-
 function kpVeiledningFor(etappeId) {
   const funn = { bra: [], utfordring: [], usikker: [] };
   const legg = (sporsmal, svar, v, tekst) => funn[v.gruppe || 'utfordring'].push({ sporsmal, svar, tekst });
@@ -729,40 +723,6 @@ function kpLesMer(innhold, tittel = 'Les mer') {
       <span class="hb-button-text">${tittel}</span><span class="kp-lesmer__pil" aria-hidden="true">${KP_PIL_NED}</span>
     </button>
     <div class="kp-lesmer__innhold" id="${id}" hidden>${innhold}</div>`;
-}
-
-/* Hva som fungerer i dag og hva som ikke gjør det, i to bokser som i
-   iterasjon 22. Hvert punkt er kort. Veiledningen fra kolonne C står
-   bak «Les mer». Møtet 27. oktober: boksene var lettere å få oversikt
-   over enn lange tekster under hverandre. */
-function kpResultatHtml() {
-  const funn = { bra: [], utfordring: [], usikker: [] };
-  KOMPASS_ETAPPER.forEach(e => {
-    const f = kpVeiledningFor(e.id);
-    KP_GRUPPER.forEach(g => funn[g.id].push(...f[g.id]));
-  });
-  const punkt = f => `
-          <li>
-            <p class="kp-boks__punkt"><strong>${f.sporsmal}</strong><span>${f.svar}</span></p>
-            ${kpLesMer(`<p>${f.tekst}</p>`)}
-          </li>`;
-  const boks = g => funn[g.id].length ? `
-      <div class="kp-boks kp-boks--${g.id}">
-        <h3 class="kp-boks__tittel">${g.tittel}</h3>
-        <ul class="kp-boks__liste">${funn[g.id].map(punkt).join('')}</ul>
-      </div>` : '';
-
-  return `
-    <h2 class="hb-h2 kp-seksjon">2. Slik fungerer boligen din</h2>
-    <p class="kp-hjelp__tekst">
-      Hva fungerer for deg i dag, og hva kan bli en utfordring om du får
-      redusert bevegelighet i fremtiden. Trykk på «Les mer» for å få tips til
-      hva du bør tenke på.
-    </p>
-    ${KP_GRUPPER.some(g => funn[g.id].length) ? `
-    <div class="kp-bokser">${boks(KP_GRUPPER[0])}${boks(KP_GRUPPER[1])}</div>
-    ${boks(KP_GRUPPER[2])}`
-    : '<p class="hb-text--secondary">Du har ikke svart på noe ennå. Gå tilbake og svar på spørsmålene, så kommer oppsummeringen her.</p>'}`;
 }
 
 /* ═══ Handlingsplanen, med tiltakene fra masterfila ═══════════════
@@ -849,121 +809,377 @@ function kpTiltakForslag() {
   return liste;
 }
 
+/* ═══ Slik fungerer boligen din, steg for steg ═══════════════════
+   Forslag 2 av 10 til oppsummeringen, valgt 29. oktober: ett
+   trekkspill per steg. Tittelen sier hvor mye som fungerer, hvor mye
+   som kan bli en utfordring, og hvor mange tiltak steget har. Inni står
+   svarene med en tagg og veiledningen bak «Les mer», og så tiltakene,
+   delt i enkle og større, med fagteksten og tilskuddsboksen bak
+   «Les mer». Tekstene er fra tilbakemeldingen 28. oktober.
+   ─────────────────────────────────────────────────────────────────── */
+
+/* Svar på samme spørsmål slås sammen, så «Rommene på inngangsplanet»
+   står én gang med alle rommene som mangler */
+function kpSlaaSammen(liste) {
+  const ut = [];
+  liste.forEach(f => {
+    const fra = ut.find(x => x.sporsmal === f.sporsmal);
+    if (!fra) { ut.push(Object.assign({ svarListe: [f.svar] }, f)); return; }
+    fra.svarListe.push(f.svar);
+    fra.tekst += '<br><br>' + f.tekst;
+  });
+  ut.forEach(f => {
+    const mangler = f.svarListe.every(x => x.startsWith('Mangler '));
+    const deler = mangler ? f.svarListe.map(x => x.slice(8)) : f.svarListe;
+    const og = deler.length < 2 ? deler[0] : `${deler.slice(0, -1).join(', ')} og ${deler[deler.length - 1]}`;
+    f.svar = mangler ? 'Mangler ' + og : og;
+  });
+  return ut;
+}
+
+const kpTag = (tone, tekst) => `<span class="hb-tag hb-tag--${tone}"><span class="hb-tag-text">${tekst}</span></span>`;
+const KP_FUNNTAG = { bra: ['positive', 'Fungerer'], utfordring: ['warning', 'Kan bli en utfordring'], usikker: ['neutral', 'Usikker'] };
+
+/* Fasadens trekkspill med kantlinje, som «Slik har vi regnet ut hvor
+   nåla peker». Hver rad er et element. */
+const kpTrekkElement = ({ id, tittel, innhold }) => `
+          <div class="hb-accordion-element">
+            <button type="button" class="hb-accordion-header" aria-expanded="false" aria-controls="${id}" data-trekk>
+              <span class="hb-accordion-tittel">${tittel}</span>
+              <span class="hb-icon hb-accordion-toggle" aria-hidden="true">${KP_PIL_NED}</span>
+            </button>
+            <div class="hb-accordion-body" id="${id}">${innhold}</div>
+          </div>`;
+
+/* Taggen som teller svar i tittelen på steget, og som overskrift på
+   gruppen inni. Samme navn og samme utseende begge steder. */
+const KP_FUNNGRUPPER = [
+  { id: 'utfordring', tone: 'warning',  en: 'utfordring', flere: 'utfordringer' },
+  { id: 'usikker',    tone: 'neutral',  en: 'usikker',    flere: 'usikre' },
+  { id: 'bra',        tone: 'positive', en: 'fungerer',   flere: 'fungerer' }
+];
+const kpFunnTag = (g, n) => kpTag(g.tone, `${n} ${n === 1 ? g.en : g.flere}`);
+
+function kpStegForStegSeksjonHtml() {
+  const steg = KOMPASS_ETAPPER.map(e => {
+    const f = kpVeiledningFor(e.id);
+    return { e, bra: kpSlaaSammen(f.bra), utfordring: kpSlaaSammen(f.utfordring), usikker: kpSlaaSammen(f.usikker) };
+  }).filter(x => x.bra.length + x.utfordring.length + x.usikker.length);
+
+  /* Hvert svar er en rad i trekkspillet: spørsmålet og svaret i raden,
+     veiledningen når den foldes ut. Gruppene har taggen fra tittelen
+     som overskrift. */
+  let nr = 0;
+  const innhold = x => KP_FUNNGRUPPER.filter(g => x[g.id].length).map(g => `
+        <h3 class="kp-funn__tittel">${kpFunnTag(g, x[g.id].length)}</h3>
+        <div class="hb-accordion hb-accordion--kantlinje kp-rader">
+          ${x[g.id].map(f => kpTrekkElement({
+            id: `svar-${x.e.id}-${++nr}`,
+            tittel: `<span class="kp-rad__sp">${f.sporsmal.replace(/:$/, '')}</span><span class="kp-rad__svar">${f.svar}</span>`,
+            innhold: `<p>${f.tekst}</p>`
+          })).join('')}
+        </div>`).join('');
+
+  const tittel = x => `${x.e.navn}
+          ${KP_FUNNGRUPPER.slice().reverse().filter(g => x[g.id].length).map(g => kpFunnTag(g, x[g.id].length)).join('')}`;
+
+  return `
+    <h2 class="hb-h2 kp-seksjon">2. Slik fungerer boligen din</h2>
+    <p class="kp-hjelp__tekst">
+      Hva fungerer for deg i dag, og hva kan bli en utfordring om du får
+      redusert bevegelighet i fremtiden. Åpne et steg for å se svarene dine,
+      og trykk på et svar for å få tips til hva du bør tenke på.
+    </p>
+    ${steg.length ? `
+    <div class="hb-accordion hb-accordion--kantlinje kp-steg">
+      ${steg.map(x => kpTrekkElement({ id: `steg-${x.e.id}`, tittel: tittel(x), innhold: innhold(x) })).join('')}
+    </div>`
+    : '<p class="hb-text--secondary">Du har ikke svart på noe ennå. Gå tilbake og svar på spørsmålene, så kommer oppsummeringen her.</p>'}`;
+}
+
+/* ═══ Handlingsplanen ═════════════════════════════════════════════
+   Tiltakene står for seg, ikke inni et trekkspill. Tilbakemeldingen 29.
+   oktober: avkrysning hører ikke hjemme i et trekkspill, og ett
+   spørsmålstegn per tiltak ble for mye. Fem forslag til hvordan
+   handlingsplanen kan se ut, fra forslag-handlingsplan.html, med en
+   velger øverst så de kan prøves her. Valget huskes i nettleseren.
+   ─────────────────────────────────────────────────────────────────── */
+
+const KP_PLAN_STANDARD = 'Her kommer det frem forslag til enkle og større grep du kan gjøre i boligen. Kryss av for tiltakene du ønsker å gjennomføre.';
+
+/* Byggeklosser for forslagene */
+const kpPf = {
+  fag: t => t.tekst.replace(KP_SOK_HUSBANKEN, ' ').trim(),
+  /* Første setning av fagteksten, som en kort beskrivelse */
+  kort: t => { const f = kpPf.fag(t); const m = f.match(/^.*?[.!?](\s|$)/); return (m ? m[0] : f).trim(); },
+  sok: t => KP_SOK_HUSBANKEN.test(t.tekst),
+  tilskudd: t => (KP_SOK_HUSBANKEN.test(t.tekst) ? kpKoderListe(t.koder) : []),
+  tag: t => (KP_SOK_HUSBANKEN.test(t.tekst) ? kpTag('positive', 'Tilskudd fra Husbanken') : ''),
+  steg: t => (KOMPASS_ETAPPER.find(e => e.id === t.etappe) || {}).navn || '',
+  valgt: t => (S.handlingsplan || []).includes(t.id),
+  boks: (t, etikett, under = '') => `
+            <input class="hb-checkbox" id="tiltak-${t.id}" type="checkbox" name="handlingsplan" value="${t.id}" ${kpPf.valgt(t) ? 'checked' : ''}>
+            <div class="hb-label"><label class="hb-label-tekst" for="tiltak-${t.id}">${etikett}</label>${under}</div>`,
+  grupper: (forslag, fn) => KP_TILTAKSTYPER.filter(ty => forslag[ty.id].length).map(ty => fn(ty, forslag[ty.id])).join('')
+};
+
+const KP_PLANFORSLAG = [
+  { navn: 'Beskrivelse under', tekst: KP_PLAN_STANDARD,
+    html: f => kpPf.grupper(f, (ty, liste) => `
+      <fieldset class="hb-felt hb-felt-checkboxgruppe kp-tiltaksgruppe kp-pf-liste">
+        <legend class="hb-legend"><span class="hb-legend-tekst">${ty.tittel}</span></legend>
+        <ul class="hb-feltliste">${liste.map(t => `<li>${kpPf.boks(t, t.tittel, `<span class="kp-pf-beskrivelse">${kpPf.kort(t)}</span>${kpPf.sok(t) ? `<span class="kp-pf-merker">${kpPf.tag(t)}</span>` : ''}`)}</li>`).join('')}</ul>
+      </fieldset>`) },
+
+  { navn: 'Tabell', tekst: KP_PLAN_STANDARD + ' Hele beskrivelsen av hvert tiltak står på utskriften.',
+    html: f => kpPf.grupper(f, (ty, liste) => `
+      <h3 class="hb-h4 kp-pf-gruppetittel">${ty.tittel}</h3>
+      <div class="hb-scrollbox">
+        <table class="hb-table kp-pf-tabell">
+          <thead><tr><th scope="col"><span class="hb-screenreader-only">Velg</span></th><th scope="col">Tiltak</th><th scope="col">Steg</th><th scope="col">Tilskudd</th></tr></thead>
+          <tbody>
+            ${liste.map(t => `<tr>
+              <td><input class="hb-checkbox" id="tiltak-${t.id}" type="checkbox" name="handlingsplan" value="${t.id}" ${kpPf.valgt(t) ? 'checked' : ''}><div class="hb-label"><label class="hb-label-tekst" for="tiltak-${t.id}"><span class="hb-screenreader-only">${t.tittel}</span></label></div></td>
+              <td><label for="tiltak-${t.id}">${t.tittel}</label></td>
+              <td>${kpPf.steg(t)}</td>
+              <td>${kpPf.sok(t) ? 'Ja' : '–'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`) },
+
+  { navn: 'Kort', tekst: KP_PLAN_STANDARD,
+    html: f => kpPf.grupper(f, (ty, liste) => `
+      <fieldset class="hb-felt kp-tiltaksgruppe kp-pf-gruppe">
+        <legend class="hb-legend"><span class="hb-legend-tekst">${ty.tittel}</span></legend>
+        <ul class="kp-pf-kort">
+          ${liste.map(t => `
+          <li><div class="hb-card">
+            <div class="hb-card-body">
+              <h4 class="hb-h5 hb-mb--none">${t.tittel}</h4>
+              <p class="hb-text--sm">${kpPf.kort(t)}</p>
+              ${kpPf.sok(t) ? `<div class="kp-pf-merker">${kpPf.tag(t)}</div>` : ''}
+              <div class="kp-pf-velg">${kpPf.boks(t, 'Ta med i planen')}</div>
+            </div>
+          </div></li>`).join('')}
+        </ul>
+      </fieldset>`) },
+
+  { navn: 'Velg, så les', tekst: KP_PLAN_STANDARD + ' Det du velger, kommer opp under med mer informasjon.',
+    html: f => `
+      ${kpPf.grupper(f, (ty, liste) => `
+      <fieldset class="hb-felt hb-felt-checkboxgruppe kp-tiltaksgruppe kp-pf-liste">
+        <legend class="hb-legend"><span class="hb-legend-tekst">${ty.tittel}</span></legend>
+        <ul class="hb-feltliste">${liste.map(t => `<li>${kpPf.boks(t, t.tittel)}</li>`).join('')}</ul>
+      </fieldset>`)}
+      <div class="hb-card kp-pf-valgte" aria-live="polite">
+        <div class="hb-card-header hb-card-header--positiv"><h3 class="hb-card-tittel">Dette har du valgt</h3></div>
+        <div class="hb-card-body" data-pf-valgte></div>
+      </div>`,
+    etter: f => {
+      const el = document.querySelector('[data-pf-valgte]');
+      if (!el) return;
+      const v = [...f.enkel, ...f.stor].filter(kpPf.valgt);
+      el.innerHTML = v.length ? `<ol>${v.map(t => `<li><strong>${t.tittel}</strong><p>${kpPf.fag(t)}</p>${kpPf.tilskudd(t).length ? `<p class="kp-pf-tilskudd"><strong>Du kan søke tilskudd fra Husbanken til:</strong> ${kpPf.tilskudd(t).join(', ').toLowerCase()}.</p>` : ''}</li>`).join('')}</ol>`
+        : '<p class="hb-text--secondary hb-mb--none">Kryss av for et tiltak, så kommer det her med mer informasjon.</p>';
+    } },
+
+  { navn: 'Faner per steg', tekst: KP_PLAN_STANDARD + ' Tiltakene er delt etter stegene i kartleggingen.',
+    html: f => {
+      const alle = [...f.enkel, ...f.stor];
+      const steg = KOMPASS_ETAPPER.filter(e => alle.some(t => t.etappe === e.id));
+      return `
+      <div class="hb-tabs kp-pf-faner" role="tablist">
+        ${steg.map((e, i) => {
+          const t = alle.filter(x => x.etappe === e.id);
+          return `
+        <button type="button" class="hb-tabs-tab${i ? '' : ' hb-tabs-tab--active'}" role="tab" aria-selected="${!i}" data-fane="${i}">${e.navn} (${t.length})</button>
+        <div class="hb-tabs-panel${i ? '' : ' hb-tabs-panel--active'}" role="tabpanel" ${i ? 'hidden' : ''}>
+          ${KP_TILTAKSTYPER.filter(ty => t.some(x => x.type === ty.id)).map(ty => `
+          <fieldset class="hb-felt hb-felt-checkboxgruppe kp-tiltaksgruppe kp-pf-liste">
+            <legend class="hb-legend"><span class="hb-legend-tekst">${ty.tittel}</span></legend>
+            <ul class="hb-feltliste">${t.filter(x => x.type === ty.id).map(x => `<li>${kpPf.boks(x, x.tittel, `<span class="kp-pf-beskrivelse">${kpPf.kort(x)}</span>`)}</li>`).join('')}</ul>
+          </fieldset>`).join('')}
+        </div>`;
+        }).join('')}
+      </div>`;
+    } }
+];
+
+const KP_PLANFORSLAG_LAGER = 'boligkompasset-planforslag';
+function kpPlanforslagNr() {
+  let n = 0;
+  try { n = Number(localStorage.getItem(KP_PLANFORSLAG_LAGER)) || 0; } catch { /* privat vindu */ }
+  return Math.min(Math.max(n, 0), KP_PLANFORSLAG.length - 1);
+}
+
+/* Innholdet som byttes når et annet forslag velges */
+function kpPlanforslagHtml(nr) {
+  const pf = KP_PLANFORSLAG[nr];
+  const forslag = kpTiltakForslag();
+  return `
+      <p class="kp-hjelp__tekst">${pf.tekst}</p>
+      ${S.eieform === 'leier' ? `
+      <div class="hb-callout hb-callout--info kp-planvarsel">
+        <div class="hb-callout-body"><div class="hb-callout-content">
+          <p>Du leier boligen. Endringer i boligen må avklares med utleier.</p>
+        </div></div>
+      </div>` : ''}
+      <form class="kp-handlingsplan" data-handlingsplan novalidate>${pf.html(forslag)}</form>`;
+}
+
 function kpHandlingsplanHtml() {
   const forslag = kpTiltakForslag();
-  const valgt = new Set(S.handlingsplan || []);
-  const antall = forslag.enkel.length + forslag.stor.length;
-
-  /* Fagteksten bak «Les mer», og hva du kan søke tilskudd til hos
-     Husbanken i en egen boks, når arket sier at det kan søkes. Den grå
-     teksten om hvilke svar tiltaket gjelder, er tatt bort etter
-     tilbakemeldingen 28. oktober. */
-  const mer = t => {
-    const sok = KP_SOK_HUSBANKEN.test(t.tekst);
-    const koder = kpKoderListe(t.koder);
-    return kpLesMer(`
-              <p>${t.tekst.replace(KP_SOK_HUSBANKEN, ' ').trim()}</p>
-              ${sok ? `
-              <div class="kp-sok">
-                <p class="kp-sok__tittel">Dette kan du søke om tilskudd til fra Husbanken</p>
-                ${koder.length ? `<ul>${koder.map(k => `<li>${k}</li>`).join('')}</ul>` : ''}
-                <p class="hb-mb--none"><a href="${KOMPASS_ORDNINGER.aldersvennlig.lenke}">Tilskudd til aldersvennlig oppgradering av egen bolig</a></p>
-              </div>` : ''}`);
-  };
-
-  const tiltak = t => `
-          <li>
-            <input class="hb-checkbox" id="tiltak-${t.id}" type="checkbox" name="handlingsplan" value="${t.id}" ${valgt.has(t.id) ? 'checked' : ''}>
-            <div class="hb-label">
-              <label class="hb-label-tekst" for="tiltak-${t.id}">${t.tittel}</label>
-              ${mer(t)}
-            </div>
-          </li>`;
+  const nr = kpPlanforslagNr();
+  if (!forslag.enkel.length && !forslag.stor.length) return `
+    <h2 class="hb-h2 kp-seksjon">3. Handlingsplan</h2>
+    <p class="hb-text--secondary">Svarene dine gir ingen tiltak å gå videre med.</p>`;
 
   return `
     <h2 class="hb-h2 kp-seksjon">3. Handlingsplan</h2>
-    <p class="kp-hjelp__tekst">
-      Her kommer det frem forslag til enkle og større grep du kan gjøre i
-      boligen. Kryss av for tiltakene du ønsker å gjennomføre.
-    </p>
-    <p class="kp-hjelp__tekst">
-      Trykk på «Les mer» for å få informasjon om mulige tiltak.
-    </p>
 
-    ${S.eieform === 'leier' ? `
-    <div class="hb-callout hb-callout--info kp-planvarsel">
-      <div class="hb-callout-body"><div class="hb-callout-content">
-        <p>Du leier boligen. Endringer i boligen må avklares med utleier.</p>
-      </div></div>
-    </div>` : ''}
+    <fieldset class="hb-felt kp-pf-velger kp-utskrift-skjul">
+      <legend class="kp-pf-velger__tittel">Prototype: velg forslag til handlingsplanen</legend>
+      <div class="hb-buttongroup hb-buttongroup--gap-none">
+        ${KP_PLANFORSLAG.map((pf, i) => `
+        <input class="hb-radiobutton" type="radio" name="kp-planforslag" id="kp-planforslag-${i}" value="${i}" ${i === nr ? 'checked' : ''}>
+        <label class="hb-button hb-button--standard" for="kp-planforslag-${i}">${i + 1}. ${pf.navn}</label>`).join('')}
+      </div>
+    </fieldset>
 
-    ${antall ? `
-    <form class="kp-handlingsplan" data-handlingsplan novalidate>
-      ${KP_TILTAKSTYPER.filter(ty => forslag[ty.id].length).map(ty => `
-      <fieldset class="hb-felt hb-felt-checkboxgruppe kp-tiltaksgruppe kp-tiltaksgruppe--${ty.id}">
-        <legend class="hb-legend"><span class="hb-legend-tekst">${ty.tittel}</span></legend>
-        <ul class="hb-feltliste">${forslag[ty.id].map(tiltak).join('')}</ul>
-      </fieldset>`).join('')}
-    </form>
-    <div class="kp-knapper kp-utskrift-skjul">
-      ${kpKnapp('Skriv ut tiltakene jeg har valgt', 'data-lag-plan="valgte"')}
-      ${kpKnapp('Skriv ut alle tiltakene', 'data-lag-plan="alle"', 'standard')}
-    </div>
-    <p class="hb-text--sm hb-text--secondary kp-utskrift-skjul" data-plan-antall aria-live="polite"></p>`
-    : '<p class="hb-text--secondary">Svarene dine gir ingen tiltak å gå videre med.</p>'}`;
+    <div data-plan-forslag>${kpPlanforslagHtml(nr)}</div>
+
+    <div class="hb-panel hb-panel--noytral kp-planpanel kp-utskrift-skjul">
+      <h3 class="hb-h4">Handlingsplanen din</h3>
+      <p class="hb-mb--xs" data-plan-antall aria-live="polite"></p>
+      <p>
+        Skriv ut handlingsplanen eller lagre den som PDF. Ta den med når du
+        snakker med en entreprenør, kommunen eller familien.
+      </p>
+      <div class="hb-felt kp-planfeil" data-plan-feil-felt>
+        <p class="hb-felt-feilmelding" data-plan-feil role="alert"></p>
+      </div>
+      <div class="hb-knappesamling">
+        <div class="hb-knappesamling-gruppe hb-knappesamling-gruppe--horisontal">
+          <div class="hb-knappesamling-element">${kpKnapp('Skriv ut handlingsplanen', 'data-lag-plan="valgte"')}</div>
+          <div class="hb-knappesamling-element">${kpKnapp('Skriv ut alle tiltakene', 'data-lag-plan="alle"', 'standard')}</div>
+        </div>
+      </div>
+    </div>`;
 }
 
 /* Handlingsplanen til utskrift: alle tiltakene vi foreslår, eller bare
-   dem som er krysset av. Tilbakemeldingen 21. oktober ba om begge. */
+   dem som er krysset av. Tilbakemeldingen 21. oktober ba om begge, og
+   29. oktober om en utskrift som ser ordentlig ut. Ett A4-ark i
+   Husbankens farger, uten kompasset: tiltakene steg for steg med
+   en rute å krysse av når det er gjort, hva du kan søke tilskudd til,
+   felt for navn og adresse, og plass til notater. */
 function kpPlanUtskriftHtml(alle) {
   const forslag = kpTiltakForslag();
   const valgt = new Set(S.handlingsplan || []);
   const dato = new Date().toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' });
-  const del = ty => {
-    const t = forslag[ty.id].filter(x => alle || valgt.has(x.id));
-    return t.length ? `
-    <h2>${ty.tittel}</h2>
-    <ol>${t.map(x => `<li><p><strong>${x.tittel}</strong></p><p>${x.tekst}</p><p class="kp-planutskrift__om">Gjelder ${x.gjelder.join(', ')}.${x.koder ? ` Tiltak ${kpKoderTekst(x.koder)}.` : ''}</p></li>`).join('')}</ol>` : '';
+  const tiltak = [...forslag.enkel, ...forslag.stor].filter(x => alle || valgt.has(x.id));
+
+  const rad = x => {
+    const koder = KP_SOK_HUSBANKEN.test(x.tekst) ? kpKoderListe(x.koder) : [];
+    return `
+      <li class="kp-pu__tiltak">
+        <span class="kp-pu__rute" aria-hidden="true"></span>
+        <div>
+          <p class="kp-pu__tittel">${x.tittel} <span class="kp-pu__type">${x.type === 'enkel' ? 'Enkelt tiltak' : 'Større tiltak'}</span></p>
+          <p>${x.tekst.replace(KP_SOK_HUSBANKEN, ' ').trim()}</p>
+          ${koder.length ? `<p class="kp-pu__tilskudd"><strong>Du kan søke tilskudd fra Husbanken til:</strong> ${koder.join(', ').toLowerCase()}.</p>` : ''}
+        </div>
+      </li>`;
   };
+
   return `
-  <header>
-    <p class="kp-planutskrift__over">Husbanken · Boligkompasset</p>
-    <h1>Ditt boligkompass – handlingsplan</h1>
-    <p>${alle ? 'Tiltakene Boligkompasset anbefaler ut fra svarene mine' : 'Tiltakene jeg har bestemt meg for å gjennomføre'}. Laget ${dato}.</p>
+  <header class="kp-pu__topp">
+    <img src="ds/logo/husbanken-primary.png" alt="Husbanken" class="kp-pu__logo">
+    <div>
+      <p class="kp-pu__over">Boligkompasset</p>
+      <h1>Min handlingsplan</h1>
+      <p class="kp-pu__under">${alle ? 'Alle tiltakene Boligkompasset foreslår ut fra svarene mine' : 'Tiltakene jeg vil gjennomføre'} · ${dato}</p>
+    </div>
   </header>
-  <div class="kp-planutskrift__felter">
-    <p><span>Navn</span><span></span></p>
-    <p><span>Adresse</span><span></span></p>
-    <p><span>Telefon</span><span></span></p>
+
+  <div class="kp-pu__felter">
+    <p><span>Navn</span></p>
+    <p><span>Adresse</span></p>
+    <p><span>Telefon</span></p>
   </div>
-  ${KP_TILTAKSTYPER.map(del).join('')}
-  <p class="kp-planutskrift__om">Tilskudd til aldersvennlig oppgradering av egen bolig: ${KOMPASS_ORDNINGER.aldersvennlig.lenke}</p>
-  <div class="kp-planutskrift__notat">Notater</div>`;
+
+  ${KOMPASS_ETAPPER.map(e => {
+    const t = tiltak.filter(x => x.etappe === e.id);
+    return t.length ? `
+  <section class="kp-pu__steg">
+    <h2>${e.navn}</h2>
+    <ol>${t.map(rad).join('')}</ol>
+  </section>` : '';
+  }).join('')}
+
+  <section class="kp-pu__videre">
+    <h2>Hvem kan hjelpe deg?</h2>
+    <ul>
+      <li><strong>${KOMPASS_ORDNINGER.aldersvennlig.navn}</strong> fra Husbanken: husbanken.no</li>
+      <li><strong>Kommunen din</strong> kan gi råd om tilpasning, og har ofte egne tilskudd og tjenester.</li>
+      <li><strong>${KOMPASS_ORDNINGER.hjelpemiddel.navn}:</strong> nav.no</li>
+    </ul>
+  </section>
+
+  <div class="kp-pu__notat"><h2>Notater</h2></div>
+
+  <p class="kp-pu__forbehold">${KP_FORBEHOLD}</p>`;
 }
 
 function kpInitHandlingsplan() {
-  const skjema = document.querySelector('[data-handlingsplan]');
-  if (!skjema) return;
+  const omrade = document.querySelector('[data-plan-forslag]');
+  if (!omrade) return;
   const antall = document.querySelector('[data-plan-antall]');
-  const tell = () => {
+  const oppdater = () => {
     const n = (S.handlingsplan || []).length;
-    if (antall) antall.textContent = n ? `${n} tiltak krysset av.` : '';
+    if (antall) antall.textContent = n
+      ? `Du har krysset av for ${n} tiltak.`
+      : 'Du har ikke krysset av for noen tiltak ennå.';
+    const pf = KP_PLANFORSLAG[kpPlanforslagNr()];
+    if (pf.etter) pf.etter(kpTiltakForslag());
   };
-  skjema.addEventListener('change', () => {
-    S.handlingsplan = [...skjema.querySelectorAll('input[name="handlingsplan"]:checked')].map(i => i.value);
+  omrade.addEventListener('change', ev => {
+    if (ev.target.name !== 'handlingsplan') return;
+    const valgt = new Set(S.handlingsplan || []);
+    ev.target.checked ? valgt.add(ev.target.value) : valgt.delete(ev.target.value);
+    S.handlingsplan = [...valgt];
     kpLagre();
-    tell();
+    if (S.handlingsplan.length) kpPlanFeil('');
+    oppdater();
   });
-  tell();
+  /* Velgeren bytter bare innholdet. Det som er krysset av, står. */
+  const velger = document.querySelector('.kp-pf-velger');
+  if (velger) velger.addEventListener('change', ev => {
+    try { localStorage.setItem(KP_PLANFORSLAG_LAGER, ev.target.value); } catch { /* privat vindu */ }
+    omrade.innerHTML = kpPlanforslagHtml(Number(ev.target.value));
+    oppdater();
+  });
+  oppdater();
+}
+
+/* Feilmeldingen ved utskriftsknappene, som Fasadens feilmelding i et
+   felt. Tilbakemeldingen 29. oktober: den skal se ut som en feil, ikke
+   stå som vanlig tekst i stedet for antallet. */
+function kpPlanFeil(tekst) {
+  const felt = document.querySelector('[data-plan-feil-felt]');
+  if (!felt) return;
+  felt.querySelector('[data-plan-feil]').textContent = tekst;
+  felt.classList.toggle('hb-felt--med-feil', !!tekst);
 }
 
 /* Skriver ut bare handlingsplanen. Vanlig utskrift av siden er som før. */
 function kpLagPlan(alle) {
   if (!alle && !(S.handlingsplan || []).length) {
-    const antall = document.querySelector('[data-plan-antall]');
-    if (antall) antall.textContent = 'Kryss av for minst ett tiltak først.';
+    kpPlanFeil('Du må krysse av for minst ett tiltak, eller skrive ut alle tiltakene.');
     return;
   }
+  kpPlanFeil('');
   let ark = document.querySelector('.kp-planutskrift');
   if (!ark) { ark = document.createElement('div'); ark.className = 'kp-planutskrift'; document.body.appendChild(ark); }
   ark.innerHTML = kpPlanUtskriftHtml(alle);
@@ -1049,8 +1265,6 @@ function kpStegForStegHtml() {
 function kpUtregningHtml(kurs) {
   const { rader, porter } = kpUtregning();
   if (!rader.length) return '<p>Du har ikke svart på noe som flytter nåla ennå.</p>';
-  const grader = g => g === 0 ? 'Ingen endring'
-    : `${String(Math.abs(g)).replace('.', ',')} grader ${g < 0 ? 'tilbake' : 'med klokken'}`;
   return `
     <p>
       Nåla starter rett opp, på «${kpKursnavn('N')}». Hvert svar vrir den litt.
@@ -1064,11 +1278,10 @@ function kpUtregningHtml(kurs) {
       lenger enn til «${kpKursnavn('V')}».
     </p>
     <table class="kp-utregning">
-      <thead><tr><th scope="col">Spørsmål</th><th scope="col">Svaret ditt</th><th scope="col">Nåla</th></tr></thead>
+      <thead><tr><th scope="col">Spørsmål</th><th scope="col">Svaret ditt</th></tr></thead>
       <tbody>
-        ${rader.map(r => `<tr><td>${r.sporsmal}</td><td>${r.svar}</td><td>${grader(r.grader)}</td></tr>`).join('')}
+        ${rader.map(r => `<tr><td>${r.sporsmal}</td><td>${r.svar}</td></tr>`).join('')}
       </tbody>
-      <tfoot><tr><th scope="row" colspan="2">Sum</th><td>${grader(kurs.sum)}${porter.length ? '' : (kurs.sum > KP_MAKS_GRADER ? `, stopper på «${kpKursnavn('V')}»` : kurs.sum < 0 ? ', stopper på toppen' : '')}</td></tr></tfoot>
     </table>
     ${porter.length ? `<p>Ett svar veier tyngre enn resten, så nåla går helt til «${kpKursnavn('V')}»: ${porter.join(' ')}</p>` : ''}`;
 }
@@ -1121,29 +1334,27 @@ function kpOppsummeringHtml() {
       </div>
     </div>
 
-    ${kpResultatHtml()}
+    ${kpStegForStegSeksjonHtml()}
 
     ${kpHandlingsplanHtml()}
 
     <h2 class="hb-h2 kp-seksjon">4. Ressurser</h2>
     ${kpKommuneHtml()}
-    <ul class="kp-ressurser">
+    <div class="hb-grid hb-grid--gap-sm kp-ressurser">
       ${ordninger.map(o => {
         const ord = KOMPASS_ORDNINGER[o];
-        return `<li><a class="kp-ressurs" href="${ord.lenke}">
-          <span>${ord.navn}</span><span data-ikon="pil"></span>
-        </a></li>`;
+        return `
+      <div class="hb-cell hb-cell--12of12 hb-cell--6of12@md">
+        <a class="hb-entry hb-entry--level2 hb-entry--full-height hb-card" href="${ord.lenke}">
+          <span class="hb-entry-title">${ord.navn}</span>
+          <span class="hb-entry-description">${ord.kort}</span>
+        </a>
+      </div>`;
       }).join('')}
-    </ul>
+    </div>
 
     <div class="kp-utskrift-notat">
       <strong>Plass til dine egne notater</strong>
-    </div>
-
-    <div class="kp-knapper kp-seksjon kp-utskrift-skjul">
-      ${kpKnapp('Skriv ut eller lagre som PDF', 'data-skriv-ut')}
-      ${kpKnapp('Endre svarene mine', 'data-tilbake-svar', 'standard')}
-      ${kpKnapp('Start på nytt', 'data-nullstill', 'standard')}
     </div>
 
     <div class="kp-svardetaljer kp-utskrift-skjul">
@@ -1482,6 +1693,11 @@ function kpKlikk(ev) {
     const aapen = !el.classList.contains('hb-hjelpetekst--utvidet');
     el.classList.toggle('hb-hjelpetekst--utvidet', aapen);
     t.setAttribute('aria-expanded', String(aapen));
+  }
+  else if (d.fane !== undefined) {
+    const faner = t.closest('.hb-tabs');
+    faner.querySelectorAll('.hb-tabs-tab').forEach(b => { const p = b === t; b.classList.toggle('hb-tabs-tab--active', p); b.setAttribute('aria-selected', String(p)); });
+    faner.querySelectorAll('.hb-tabs-panel').forEach((p, j) => { const a = j === Number(d.fane); p.classList.toggle('hb-tabs-panel--active', a); p.hidden = !a; });
   }
   else if (d.mer) {
     const p = document.getElementById(d.mer);

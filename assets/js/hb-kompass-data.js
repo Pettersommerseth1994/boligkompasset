@@ -343,9 +343,10 @@ const KOMPASS_SPORSMAL = [
     hjelp: 'Et bad bør ha nok plass til at du kan bevege deg fritt og bruke badet på en trygg måte. Tenk på om det er god plass rundt toalettet, vasken og dusjen. Se også på om du lett kommer deg inn og ut av dusjen/badekaret. Tenk over om badet kan brukes dersom du får problemer med å bevege deg, trenger hjelpemidler eller hjelp fra andre.',
     undertekst: 'Kryss av for det som passer.',
     type: 'flervalg',
-    /* «utelukker» tar bort kryss som ikke kan stå samtidig: badet kan
-       ikke både være stort nok og lite. Dørene hører til det lille
-       badet og forsvinner med det. */
+    /* Flervalg. «utelukker» tar bort kryss som ikke kan stå samtidig:
+       døren til det lille badet slår enten innover eller utover.
+       Tilbakemeldingen 29. oktober: «stort nok» og «lite» utelukker ikke
+       lenger hverandre. */
     valg: [
       { v: 'terskel',      tittel: 'Kan bli vanskelig, baderomsdøren har terskel',
         tiltak: {
@@ -360,9 +361,9 @@ const KOMPASS_SPORSMAL = [
           stor: 'Om du tenker å bygge om eller bygge ut badet, er det lurt å vurdere behov for plassering av vask, toalett og dusj. Vurder gjerne en bredere terskelfri dør.',
           storKoder: '3.b. og 4.a. og 4.b. og 4.c.'
         }, gruppe: 'bra',
-        veiledning: 'Badet ditt har god plass og dette gir deg fleksibilitet dersom behovene endrer seg. Vurder om du har god nok plass til å bevege deg mellom toalett, vask og dusj. Dette vil gjøre det enklere om du skulle trenge hjelpemidler i fremtiden.', utelukker: ['lite', 'dor-innover', 'dor-utover'],
+        veiledning: 'Badet ditt har god plass og dette gir deg fleksibilitet dersom behovene endrer seg. Vurder om du har god nok plass til å bevege deg mellom toalett, vask og dusj. Dette vil gjøre det enklere om du skulle trenge hjelpemidler i fremtiden.',
         popover: 'Større enn 4,5 kvm og plass til alle baderomsfunksjoner, for eksempel toalett, vask, dusj.' },
-      { v: 'lite',         tittel: 'Kan bli vanskelig, badet er lite', utelukker: ['stort'],
+      { v: 'lite',         tittel: 'Kan bli vanskelig, badet er lite',
         popover: 'Mindre enn 4,5 kvm og har ikke plass til alle baderomsfunksjoner, for eksempel kan toalett være på eget rom.' },
       { v: 'dor-innover',  tittel: 'Baderomsdøren slår innover i rommet',
         tiltak: {

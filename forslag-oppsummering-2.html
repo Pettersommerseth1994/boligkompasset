@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forslag 2 til oppsummeringen | Boligkompasset</title>
+<meta name="robots" content="noindex">
+<!-- Arbeidsside: forslag 2 av 10, «Trekkspill per steg», valgt 29.
+     oktober. Med tilbakemeldingen 28. oktober om oppsummeringen: tekst
+     under «Slik fungerer boligen din» og i handlingsplanen, veiledning og
+     tiltak bak «Les mer», uten den grå «Gjelder»-teksten, og ressursene
+     med startlån, lån og bostøtte. Kompasset øverst er det samme som i
+     tjenesten. Ikke lenket fra tjenesten. -->
+<link rel="stylesheet" href="fasaden/boligkompasset-stiler.css?v=46">
+</head>
+<body>
+
+<div id="hb-topp"></div>
+
+<main id="hovedinnhold" class="fasaden">
+  <div id="fo-side"></div>
+</main>
+
+<div id="hb-bunn"></div>
+
+<script src="assets/js/hb.js"></script>
+<script src="assets/js/hb-kompass-data.js?v=31"></script>
+<script src="assets/js/hb-kompass.js?v=44"></script>
+<script>
+/* ═══ Svarene ═════════════════════════════════════════════════════
+   Har du svart i Boligkompasset i denne nettleseren, brukes svarene
+   dine. Ellers et fast sett med tilfeldige svar. */
+S = kpLes();
+if (!KOMPASS_SPORSMAL.some(kpBesvart)) {
+  let fro = 7;
+  const gammel = Math.random;
+  Math.random = () => (fro = (fro * 16807) % 2147483647) / 2147483647;
+  const tegn = kpTegn, lagre = kpLagre;
+  kpTegn = () => {}; kpLagre = () => {};
+  kpFyllTilfeldig();
+  kpTegn = tegn; kpLagre = lagre; Math.random = gammel;
+}
+
+/* ═══ Felles byggeklosser ═════════════════════════════════════════ */
+
+/* Svar på samme spørsmål i samme gruppe slås sammen, så «Rommene på
+   inngangsplanet» står én gang med alle rommene som mangler */
+const slaaSammen = liste => {
+  const ut = [];
+  liste.forEach(f => {
+    const fra = ut.find(x => x.sporsmal === f.sporsmal);
+    if (!fra) { ut.push(Object.assign({ svarListe: [f.svar] }, f)); return; }
+    fra.svarListe.push(f.svar);
+    fra.tekst += '<br><br>' + f.tekst;
+  });
+  ut.forEach(f => {
+    const a = f.svarListe;
+    const mangler = a.every(x => x.startsWith('Mangler '));
+    const deler = mangler ? a.map(x => x.slice(8)) : a;
+    const og = deler.length < 2 ? deler[0] : `${deler.slice(0, -1).join(', ')} og ${deler[deler.length - 1]}`;
+    f.svar = mangler ? 'Mangler ' + og : og;
+  });
+  return ut;
+};
+const kpVeiledningSamlet = id => { const f = kpVeiledningFor(id); return { bra: slaaSammen(f.bra), utfordring: slaaSammen(f.utfordring), usikker: slaaSammen(f.usikker) }; };
+
+const ETAPPER = KOMPASS_ETAPPER.map(e => ({ e, funn: kpVeiledningSamlet(e.id) }))
+  .filter(x => x.funn.bra.length + x.funn.utfordring.length + x.funn.usikker.length);
+const ALLE = { bra: [], utfordring: [], usikker: [] };
+ETAPPER.forEach(x => ['bra', 'utfordring', 'usikker'].forEach(g => ALLE[g].push(...x.funn[g].map(f => Object.assign({ etappe: x.e }, f)))));
+const TILTAK = kpTiltakForslag();
+const ALLE_TILTAK = [...TILTAK.enkel, ...TILTAK.stor];
+const VALGT = () => new Set(S.handlingsplan || []);
+
+const TAG = { bra: ['positive', 'Fungerer'], utfordring: ['warning', 'Kan bli en utfordring'], usikker: ['neutral', 'Usikker'] };
+const tag = (tone, tekst) => `<span class="hb-tag hb-tag--${tone}"><span class="hb-tag-text">${tekst}</span></span>`;
+const merke = (tone, tall) => `<span class="hb-badge hb-badge--${tone}">${tall}</span>`;
+const typeTag = t => t.type === 'enkel' ? tag('info', 'Enkelt tiltak') : tag('neutral', 'Større tiltak');
+const kanSoke = t => KP_SOK_HUSBANKEN.test(t.tekst);
+const fagtekst = t => t.tekst.replace(KP_SOK_HUSBANKEN, ' ').trim();
+const sokTekst = t => {
+  if (!kanSoke(t)) return '';
+  const koder = kpKoderListe(t.koder);
+  return `<p class="hb-mb--xs"><strong>Du kan søke om tilskudd til dette fra Husbanken.</strong></p>
+    ${koder.length ? `<ul class="hb-list hb-list--gap-sm hb-mb--sm">${koder.map(k => `<li>${k}</li>`).join('')}</ul>` : ''}
+    <p class="hb-mb--none"><a href="${KOMPASS_ORDNINGER.aldersvennlig.lenke}">Tilskudd til aldersvennlig oppgradering av egen bolig</a></p>`;
+};
+
+let nr = 0;
+const id = p => `${p}-${++nr}`;
+
+const avkrysning = (t, etikett, etter = '') => `
+  <li>
+    <input class="hb-checkbox" id="fo-${t.id}-${nr}" type="checkbox" name="handlingsplan" value="${t.id}" ${VALGT().has(t.id) ? 'checked' : ''}>
+    <div class="hb-label"><label class="hb-label-tekst" for="fo-${t.id}-${nr++}">${etikett || t.tittel}</label>${etter}</div>
+  </li>`;
+
+const trekkspill = (elementer, kant = true) => `
+  <div class="hb-accordion ${kant ? 'hb-accordion--kantlinje' : ''} hb-accordion--gap-sm">
+    ${elementer.map(({ tittel, innhold, aapen }) => { const i = id('trekk'); return `
+    <div class="hb-accordion-element${aapen ? ' hb-accordion-element--utvidet' : ''}">
+      <button type="button" class="hb-accordion-header" aria-expanded="${aapen ? 'true' : 'false'}" aria-controls="${i}" data-trekk>
+        <span class="hb-accordion-tittel">${tittel}</span>
+        <span class="hb-icon hb-accordion-toggle" aria-hidden="true">${KP_PIL_NED}</span>
+      </button>
+      <div class="hb-accordion-body" id="${i}">${innhold}</div>
+    </div>`; }).join('')}
+  </div>`;
+
+const leier = () => S.eieform === 'leier' ? `
+  <div class="hb-callout hb-callout--info hb-mb--lg">
+    <div class="hb-callout-body"><div class="hb-callout-content"><p>Du leier boligen. Endringer i boligen må avklares med utleier.</p></div></div>
+  </div>` : '';
+
+const utskrift = () => `
+  <div class="hb-knappesamling hb-mt--lg">
+    <div class="hb-knappesamling-gruppe hb-knappesamling-gruppe--horisontal">
+      <div class="hb-knappesamling-element">${kpKnapp('Skriv ut tiltakene jeg har valgt', 'data-lag-plan="valgte"')}</div>
+      <div class="hb-knappesamling-element">${kpKnapp('Skriv ut alle tiltakene', 'data-lag-plan="alle"', 'standard')}</div>
+    </div>
+  </div>
+  <p class="hb-text--sm hb-text--secondary" data-plan-antall aria-live="polite"></p>`;
+
+const ressurslenker = () => ['aldersvennlig', 'komtilskudd', 'startlaan', 'husbanklaan', 'bostotte', 'hjelpemiddel'].map(o => KOMPASS_ORDNINGER[o]);
+
+const ressurserEntry = () => `
+  ${kpKommuneHtml()}
+  <div class="hb-grid hb-grid--gap-sm">
+    ${ressurslenker().map(o => `
+    <div class="hb-cell hb-cell--12of12 hb-cell--6of12@md">
+      <a class="hb-entry hb-entry--level2 hb-entry--full-height hb-card" href="${o.lenke}">
+        <span class="hb-entry-title">${o.navn}</span>
+        <span class="hb-entry-description">${o.kort}</span>
+      </a>
+    </div>`).join('')}
+  </div>`;
+
+const ressurserListe = () => `
+  ${kpKommuneHtml()}
+  <ul class="hb-list hb-list--gap-sm">
+    ${ressurslenker().map(o => `<li><a href="${o.lenke}">${o.navn}</a></li>`).join('')}
+  </ul>`;
+
+const avslutning = () => `
+  <div class="hb-knappesamling hb-avstand--gruppe hb-mt--xl">
+    <div class="hb-knappesamling-gruppe hb-knappesamling-gruppe--horisontal">
+      <div class="hb-knappesamling-element"><a class="hb-button hb-button--standard hb-button--l" href="boligkompasset.html?modus=kompass"><span class="hb-button-text">Endre svarene mine</span></a></div>
+      <div class="hb-knappesamling-element"><button type="button" class="hb-button hb-button--subtle hb-button--l" data-skriv-ut><span class="hb-button-text">Skriv ut hele oppsummeringen</span></button></div>
+    </div>
+  </div>`;
+
+const funnListe = (liste, medTekst = 'hjelpetekst') => `
+  <ul class="hb-list hb-list--minimal hb-list--gap-sm">
+    ${liste.map(f => `<li><strong>${f.sporsmal}</strong>${medTekst === 'hjelpetekst' ? ' ' + kpHjelpetekst(f.tekst) : ''}<br><span class="hb-text--secondary hb-text--sm">${f.svar}</span>${medTekst === 'under' ? `<p class="hb-mt--xs">${f.tekst}</p>` : ''}</li>`).join('')}
+  </ul>`;
+
+const h2 = (n, t) => `<h2 class="hb-h2 hb-mt--xl hb-mb--md">${n}. ${t}</h2>`;
+
+
+/* ═══ Forslag 2: trekkspill per steg ══════════════════════════════
+   Ett trekkspill per steg. Tittelen sier hvor mange ting som fungerer
+   og ikke. Inni står svarene med tagger og veiledningen bak «Les mer»,
+   og så tiltakene for steget, delt i enkle og større, med fagteksten
+   og tilskuddsboksen bak «Les mer». Tilbakemeldingen 28. oktober. */
+
+/* Fagteksten, og hva du kan søke tilskudd til fra Husbanken i den
+   grønne boksen. Samme oppsett som i tjenesten. */
+const tiltakMer = t => {
+  const koder = kpKoderListe(t.koder);
+  return kpLesMer(`
+    <p>${fagtekst(t)}</p>
+    ${kanSoke(t) ? `
+    <div class="kp-sok">
+      <p class="kp-sok__tittel">Dette kan du søke om tilskudd til fra Husbanken</p>
+      ${koder.length ? `<ul>${koder.map(k => `<li>${k}</li>`).join('')}</ul>` : ''}
+      <p class="hb-mb--none"><a href="${KOMPASS_ORDNINGER.aldersvennlig.lenke}">Tilskudd til aldersvennlig oppgradering av egen bolig</a></p>
+    </div>` : ''}`);
+};
+
+const stegInnhold = ({ e, funn }) => {
+  const tiltak = ALLE_TILTAK.filter(t => t.etappe === e.id);
+  return `
+    <ul class="hb-list hb-list--minimal">
+      ${[...funn.utfordring.map(f => ['utfordring', f]), ...funn.usikker.map(f => ['usikker', f]), ...funn.bra.map(f => ['bra', f])].map(([g, f]) => `
+      <li class="hb-mb--md">${tag(...TAG[g])}<p class="hb-mt--xs hb-mb--none"><strong>${f.sporsmal}:</strong> ${f.svar}</p>${kpLesMer(`<p>${f.tekst}</p>`)}</li>`).join('')}
+    </ul>
+    ${tiltak.length ? `
+    <div class="kp-handlingsplan hb-mt--lg">
+      ${KP_TILTAKSTYPER.filter(ty => tiltak.some(t => t.type === ty.id)).map(ty => `
+      <fieldset class="hb-felt hb-felt-checkboxgruppe hb-mb--md">
+        <legend class="hb-legend"><span class="hb-legend-tekst">${ty.tittel}</span></legend>
+        <ul class="hb-feltliste">${tiltak.filter(t => t.type === ty.id).map(t => avkrysning(t, t.tittel, tiltakMer(t))).join('')}</ul>
+      </fieldset>`).join('')}
+    </div>` : ''}`;
+};
+
+const tittel = ({ e, funn }) => {
+  const n = ALLE_TILTAK.filter(t => t.etappe === e.id).length;
+  return `${e.navn} &nbsp; ${funn.bra.length ? tag('positive', `${funn.bra.length} fungerer`) : ''} ${funn.utfordring.length ? tag('warning', `${funn.utfordring.length} kan bli en utfordring`) : ''} ${n ? tag('info', `${n} tiltak`) : ''}`;
+};
+
+const forslag2 = () => `
+  ${h2(2, 'Slik fungerer boligen din')}
+  <div class="hb-tekstgruppe hb-tekstgruppe--optimal-linjelengde hb-mb--lg">
+    <p>
+      Hva fungerer for deg i dag, og hva kan bli en utfordring om du får
+      redusert bevegelighet i fremtiden. Trykk på «Les mer» for å få tips til
+      hva du bør tenke på.
+    </p>
+    <p>
+      Her kommer det frem forslag til enkle og større grep du kan gjøre i
+      boligen. Kryss av for tiltakene du ønsker å gjennomføre. Trykk på
+      «Les mer» for å få informasjon om mulige tiltak.
+    </p>
+  </div>
+  ${leier()}
+  ${ETAPPER.length ? trekkspill(ETAPPER.map(x => ({ tittel: tittel(x), innhold: stegInnhold(x) })))
+    : '<p class="hb-text--secondary">Du har ikke svart på noe ennå.</p>'}
+  ${utskrift()}
+  ${h2(3, 'Ressurser')}
+  ${ressurserEntry()}
+  ${avslutning()}`;
+
+/* ═══ Tegning ═════════════════════════════════════════════════════ */
+
+/* Kompasset tas rett fra oppsummeringen i tjenesten: overskriften,
+   «1. Kompasset ditt» og boksen med kompasset. Alt under er forslag 2. */
+function kompassdelen() {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = kpOppsummeringHtml();
+  const shell = tmp.querySelector('.hb-shell');
+  const ut = [];
+  for (const el of shell.children) {
+    ut.push(el.outerHTML);
+    if (el.classList.contains('kp-resultat')) break;
+  }
+  return ut.join('');
+}
+
+function oppdaterAntall() {
+  const n = (S.handlingsplan || []).length;
+  document.querySelectorAll('[data-plan-antall]').forEach(p => { p.textContent = n ? `${n} tiltak krysset av.` : ''; });
+}
+
+document.getElementById('fo-side').innerHTML = `
+  <section class="hb-section" style="padding-top:var(--space-4)">
+    <div class="hb-shell">${kompassdelen()}${forslag2()}</div>
+  </section>`;
+
+document.addEventListener('change', ev => {
+  if (ev.target.name !== 'handlingsplan') return;
+  const valgt = VALGT();
+  ev.target.checked ? valgt.add(ev.target.value) : valgt.delete(ev.target.value);
+  S.handlingsplan = [...valgt];
+  kpLagre();
+  oppdaterAntall();
+});
+
+document.addEventListener('click', ev => {
+  const t = ev.target.closest('button, a');
+  if (!t) return;
+  const d = t.dataset;
+  if (d.trekk !== undefined) {
+    const el = t.closest('.hb-accordion-element');
+    const aapen = !el.classList.contains('hb-accordion-element--utvidet');
+    el.classList.toggle('hb-accordion-element--utvidet', aapen);
+    t.setAttribute('aria-expanded', String(aapen));
+  } else if (d.mer) {
+    const p = document.getElementById(d.mer);
+    const aapen = t.getAttribute('aria-expanded') === 'true';
+    t.setAttribute('aria-expanded', String(!aapen));
+    p.hidden = aapen;
+  } else if (d.tilbakeSvar !== undefined) location.href = 'boligkompasset.html?modus=kompass';
+  else if (d.lagPlan !== undefined) kpLagPlan(d.lagPlan === 'alle');
+  else if (d.skrivUt !== undefined) window.print();
+});
+
+hbMonter({ kontekst: 'Boligkompasset' });
+oppdaterAntall();
+kpInitKommune();
+</script>
+</body>
+</html>
