@@ -25,10 +25,14 @@
 @media screen and (min-width: 30em) {
   .fasaden .kp-tittel .hb-h1-overtittel { margin-bottom: 0.25rem; }
 }
-/* «Spørsmål 3 av 12» er en tag, Fasadens hb-tag, med god luft ned til
-   spørsmålet. Møtet 27. oktober. Den ligger inni h1-en, så
-   skjermleseren leser begge. */
-.fasaden .kp-tittel .kp-tag { display: flex; width: fit-content; margin-bottom: var(--space-4); font-weight: 600; }
+/* «SPØRSMÅL 3 AV 12» i store bokstaver, uten boks, og med god luft ned
+   til spørsmålet. Tilbakemeldingen 28. oktober. Den ligger inni h1-en,
+   så skjermleseren leser begge. */
+.fasaden .kp-tittel .kp-overtittel {
+  display: block; margin-bottom: var(--space-4);
+  font-size: var(--text-sm); font-weight: 600; line-height: 1.4;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--fg-subtle);
+}
 
 /* Hjelpeteksten under et spørsmål er brødtekst, like stor som resten */
 .kp-hjelp__tekst { font-size: var(--text-base); line-height: var(--lh-base); color: var(--fg-default); max-width: 62ch; margin: 0 0 var(--space-3); }
@@ -389,9 +393,10 @@
 .kp-forbehold { color: var(--fg-subtle); font-size: var(--text-sm); line-height: var(--lh-sm); max-width: 62ch; margin: var(--space-3) 0; }
 .kp-forbehold--start { color: var(--fg-default); }
 
-.kp-flytte { border-left: 4px solid var(--hb-green-600); padding: 2px 0 2px var(--space-3); margin: 0 0 var(--space-3); max-width: 62ch; }
+.kp-flytte { border-left: 4px solid var(--hb-green-600); padding: 2px 0 2px var(--space-3); margin: var(--space-5) 0 var(--space-3); max-width: 62ch; }
 .kp-flytte__tittel { font: 600 var(--text-base)/var(--lh-base) var(--font-sans); margin: 0 0 4px; }
 .kp-flytte p { margin: 0; }
+.kp-flytte p + p { margin-top: var(--space-2); }
 
 .kp-utregning { width: 100%; border-collapse: collapse; margin: var(--space-3) 0; font-size: var(--text-sm); line-height: var(--lh-sm); }
 .kp-utregning th, .kp-utregning td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--hb-slate-200); vertical-align: top; }
@@ -418,7 +423,8 @@
 .kp-lesmer__pil svg { width: 12px; height: 12px; }
 .kp-lesmer[aria-expanded="true"] .kp-lesmer__pil { transform: rotate(180deg); }
 .kp-lesmer__innhold { margin: 4px 0 var(--space-2); max-width: 62ch; font-weight: 400; font-size: var(--text-base); line-height: var(--lh-base); }
-.kp-handlingsplan .kp-lesmer { margin-left: var(--space-2); vertical-align: baseline; }
+/* Tett inntil tiltaket. Tilbakemeldingen 28. oktober: avstanden var for stor. */
+.kp-handlingsplan .kp-lesmer { margin-left: 2px; vertical-align: baseline; }
 .kp-lesmer__innhold p { margin: 0 0 var(--space-2); }
 .kp-tiltak__gjelder { font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--fg-subtle); }
 .kp-sok { background: var(--hb-green-100); border-radius: var(--radius-lg); padding: var(--space-3); }
@@ -487,7 +493,28 @@
 .kp-oversikt__seg--midt  { background: var(--hb-slate-300); }
 /* Oransje fra Husbankens palett, Orange/50. Kontrast mot hvitt 4,9:1,
    og den skiller seg fra grønn også for de som ikke ser rødt og grønt. */
-.kp-oversikt__seg--tung  { background: #c0560a; }
+.kp-oversikt__seg--tung  { background: var(--hb-red-700); }
+
+/* Steg for steg: ett kort per steg. Kortet er en kolonne, og stolpen
+   skyves ned, så den står like langt nede på alle kortene, uansett
+   hvor lange navnene er. Tilbakemeldingen 28. oktober. */
+.kp-etappekort {
+  list-style: none; margin: var(--space-3) 0 0; padding: 0;
+  display: grid; gap: var(--space-2);
+  grid-template-columns: repeat(2, 1fr);
+}
+@media (min-width: 620px) { .kp-etappekort { grid-template-columns: repeat(3, 1fr); } }
+.kp-etappekort__kort {
+  display: flex; flex-direction: column;
+  border: 1px solid var(--hb-slate-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  background: #fff;
+}
+.kp-etappekort__rose { width: 76px; margin: 0 0 2px; }
+.kp-etappekort__navn { margin: 0; font-size: var(--text-sm); line-height: 1.35; color: var(--fg-subtle); }
+.kp-etappekort__kurs { margin: 2px 0 var(--space-2); font-weight: 600; font-size: var(--text-sm); line-height: 1.35; }
+.kp-etappekort__kort .kp-oversikt__spor { margin-top: auto; height: 18px; flex-shrink: 0; }
 .kp-oversikt__dom { font-size: var(--text-sm); color: var(--fg-subtle); }
 
 .kp-tegnforklaring { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-3); font-size: var(--text-sm); color: var(--fg-subtle); }

@@ -1,0 +1,226 @@
+/* ──────────────────────────────────────────────────────────────────
+   Boligkompasset, versjonsvelger
+
+   Samme boks som i papirsøknaden for aldersvennlig oppgradering. Den
+   ligger nede til venstre i stedet for oppe, så den ikke dekker logoen
+   og stegene. Dette er verktøy for designarbeidet, ikke en del av
+   tjenesten, så den skjules i utskrift.
+
+   Ligger utenfor iterasjonene, så velgeren ser lik ut i alle, også de
+   gamle.
+   ────────────────────────────────────────────────────────────────── */
+
+.versjoner {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  z-index: 100;
+  width: 264px;
+  box-sizing: border-box;
+  background: #fff;
+  border: 1px solid var(--hb-slate-300);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  padding: 9px 11px 10px;
+  font-family: var(--font-sans);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.versjoner__rad {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.versjoner__hint {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--hb-slate-500);
+  white-space: nowrap;
+}
+
+.versjoner__celler {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  width: 100%;
+}
+
+.versjoner__celle {
+  flex: 0 0 34px;
+  height: 34px;
+  border: 1px solid var(--hb-slate-200);
+  border-radius: 8px;
+  background: var(--hb-slate-50);
+  color: var(--hb-slate-700);
+  text-decoration: none;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+a.versjoner__celle:hover {
+  background: var(--hb-slate-100);
+  border-color: var(--hb-slate-400);
+}
+a.versjoner__celle:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+
+/* Ellipsen mellom hoppene. Samme høyde som cellene, men uten ramme,
+   så raden holder linja uten å se ut som en knapp man kan trykke på. */
+.versjoner__hopp {
+  flex: 0 0 14px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--hb-slate-400);
+  user-select: none;
+}
+
+/* Den man står på */
+.versjoner__celle[aria-current="page"] {
+  background: var(--hb-green-100);
+  border-color: var(--hb-green-600);
+  box-shadow: inset 0 0 0 1px var(--hb-green-600);
+  color: var(--hb-green-800);
+}
+
+.versjoner__endring {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--hb-slate-500);
+}
+.versjoner__endring b {
+  display: block;
+  font-weight: 600;
+  color: var(--hb-slate-700);
+}
+.versjoner__eldre {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--hb-red-700);
+}
+.versjoner__endring a { color: var(--fg-link); }
+
+/* ───────── Bryteren «Vis endringene» ───────── */
+.versjoner__bryter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding-top: 2px;
+  border-top: 1px solid var(--hb-slate-100);
+  margin-top: 1px;
+}
+.versjoner__bryter input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.versjoner__spor {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--hb-slate-300);
+  position: relative;
+  transition: background 0.14s;
+}
+.versjoner__spor::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform 0.14s;
+}
+.versjoner__bryter input:checked + .versjoner__spor { background: var(--hb-purple-500); }
+.versjoner__bryter input:checked + .versjoner__spor::after { transform: translateX(14px); }
+.versjoner__bryter input:focus-visible + .versjoner__spor {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.versjoner__bryter-tekst {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--hb-slate-700);
+}
+.versjoner__antall {
+  font-weight: 400;
+  color: var(--hb-slate-500);
+}
+
+/* ───────── Lista over endringer ───────── */
+.versjoner__liste {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 34vh;
+  overflow-y: auto;
+}
+/* display: flex over overstyrer hidden-attributtet, så lista må skjules
+   eksplisitt. Uten denne står endringene framme selv når bryteren er av. */
+.versjoner__liste[hidden] { display: none; }
+.versjoner__liste li {
+  display: flex;
+  gap: 7px;
+  padding: 4px 5px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--hb-slate-700);
+}
+
+.versjoner__liste .nr {
+  flex: 0 0 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--hb-purple-500);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.versjoner__tomt {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--hb-slate-500);
+}
+
+/* På små skjermer skal ikke boksen ligge oppå innholdet. Den legger seg
+   i flyten nederst i stedet. */
+@media screen and (max-width: 840px) {
+  .versjoner {
+    position: static;
+    bottom: auto;
+    width: auto;
+    margin: 8px 8px 0;
+  }
+  .versjoner__liste { max-height: none; }
+}
+
+@media print {
+  .versjoner { display: none; }
+}

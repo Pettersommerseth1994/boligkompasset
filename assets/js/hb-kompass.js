@@ -82,14 +82,14 @@ function kpEnheter() {
 
 /* ═══ Fra svar til grader ═════════════════════════════════════════
    Nåla begynner rett opp, på «Fungerer godt», og hvert svar vrir den
-   et bestemt antall grader. Gradene fra alle svarene legges sammen, og
-   summen holdes mellom 0 og 180, så nåla aldri går forbi hverken toppen
-   eller bunnen. Møtet 27. oktober: kompasset kommer bare til slutt,
+   et bestemt antall grader med klokken. Gradene fra alle svarene
+   legges sammen. Møtet 27. oktober: kompasset kommer bare til slutt,
    regnet av alle svarene, og med en forklaring på hvordan.
 
-   Hvilken vei rundt den går, avgjøres av hva slags arbeid svarene
-   peker på: enkle grep tar den til høyre, større grep til venstre.
-   Begge veiene ender i «Omfattende grep» nederst.
+   Tilbakemeldingen 28. oktober: retningene følger klokken, Fungerer
+   godt, Enkle grep, Større grep og Omfattende grep. Nåla går derfor én
+   vei rundt, fra toppen og til venstre side, og summen holdes mellom 0
+   og 270 grader, så den aldri går forbi «Omfattende grep».
    ─────────────────────────────────────────────────────────────────── */
 
 /* Hvor mange grader nedover ett svar drar. Et svar som fungerer godt,
@@ -102,8 +102,7 @@ function kpGraderNed(n) {
   return 90;
 }
 
-/* Veien rundt: høyre for enkle grep, venstre for større. */
-const kpSideAv = e => (e <= -0.3 ? -1 : (e >= 0.3 ? 1 : 0));
+const KP_MAKS_GRADER = 270;
 
 function kpKursAvVinkel(grader, ekstra = {}) {
   const rad = grader * Math.PI / 180;
@@ -132,31 +131,35 @@ function kpUtregning() {
       sporsmal: felt ? felt.ledetekst : (sp.stikkord || sp.tittel),
       svar: kpSvarTekst(sp, felt),
       grader: sp.graderNed ? sp.graderNed(S[sp.id]) : kpGraderNed(p.n),
-      side: kpSideAv(p.e)
+      etappe: sp.etappe
     });
   });
 
   /* To porter fra innsiktsarbeidet. Er inngangen stengt, eller er
      nærmiljøet tomt og du har ingen som kan hjelpe, holder det ikke at
-     resten er bra. Nåla går da minst 135 grader ned. */
+     resten er bra. Nåla går da minst til «Omfattende grep». */
   const porter = [];
   if (kpInngangStengt(S)) porter.push('Du må gå i trapp for å komme inn, og bygget har ikke heis.');
-  if (S.tjenester === 'sterkt' && S.hjelp === 'nei') porter.push('Du har sterkt begrenset tilgang til tilbudene, og ingen som kan hjelpe deg.');
+  if (S.tjenester === 'sterkt' && S.hjelp === 'nei') porter.push('Det blir svært vanskelig å komme deg frem til tilbudene, og du har ingen som kan hjelpe deg.');
   return { rader, porter };
 }
 
-/* Kursen for alle svarene samlet */
-function kpBeregnKurs() {
-  const { rader, porter } = kpUtregning();
-  const kompassSp = KOMPASS_SPORSMAL.filter(sp => !sp.ikkeKompass);
+/* Kursen for alle svarene samlet, eller for ett steg. Kompasset per
+   steg står under «Kompasset ditt», som i iterasjon 10 til 25.
+   Tilbakemeldingen 28. oktober ba om å få dem tilbake. Portene gjelder
+   bare det samlede kompasset. */
+function kpBeregnKurs(etappeId) {
+  const alt = kpUtregning();
+  const rader = etappeId ? alt.rader.filter(r => r.etappe === etappeId) : alt.rader;
+  const porter = etappeId ? [] : alt.porter;
+  const kompassSp = KOMPASS_SPORSMAL.filter(sp => !sp.ikkeKompass && (!etappeId || sp.etappe === etappeId));
   const felles = { antall: rader.length, svart: kompassSp.filter(kpBesvart).length, totalt: kompassSp.length };
   if (!rader.length) return Object.assign({}, KP_TOMKURS, felles);
 
   const sum = rader.reduce((n, r) => n + r.grader, 0);
-  let ned = Math.max(0, Math.min(180, sum));
-  if (porter.length) ned = Math.max(ned, 135);
-  const side = rader.reduce((n, r) => n + r.side, 0);
-  return kpKursAvVinkel((side < 0 ? -1 : 1) * ned, Object.assign({ sum, side }, felles));
+  let grader = Math.max(0, Math.min(KP_MAKS_GRADER, sum));
+  if (porter.length) grader = KP_MAKS_GRADER;
+  return kpKursAvVinkel(grader, Object.assign({ sum }, felles));
 }
 
 function kpRetning(x, y, grense = 0.18) {
@@ -174,13 +177,10 @@ const kpKursnavn = retning =>
 
 /* ═══ Kompasset som figur ═════════════════════════════════════════ */
 
-/* Grønn nål i øvre halvdel, rød i nedre. Fargen skal si det samme
-   som etikettene: opp er en kurs man vil ha, ned er en man bør se
-   nærmere på. */
+/* Grønn nål til og med «Enkle grep», rød fra «Større grep» og videre
+   rundt. Fargen skal si det samme som etikettene. */
 const kpNaalVei = kurs =>
-  /* Litt slingringsmonn, ellers gjør cos(270°) = -1.8e-16 at nåla blir
-     rød på strek vest. Den vannrette aksen er nøytral, ikke negativ. */
-  kurs.tom ? 'tom' : (kurs.y >= -1e-6 ? 'opp' : 'ned');
+  kurs.tom ? 'tom' : (kurs.grader < 112.5 ? 'opp' : 'ned');
 
 function kpKompassTekst(kurs) {
   if (kurs.tom) return 'Kompass. Nåla står i ro, i påvente av svar.';
@@ -198,10 +198,10 @@ function kpKompassSvg(kurs, opt = {}) {
   const liten = !!opt.liten;
   const vinkel = (Math.atan2(kurs.x, kurs.y) * 180 / Math.PI) || 0;
   const skala = 0.52 + 0.48 * (kurs.r || 0);
-  /* Bredden er satt av den lengste etiketten, «Ombygging», ikke av
-     rosa. Blir boksen smalere, skjæres den av i kanten. */
-  const vb = liten ? '0 0 200 200' : '0 0 316 210';
-  const cx = liten ? 100 : 158, cy = liten ? 100 : 103, r = liten ? 88 : 70;
+  /* Bredden er satt av den lengste etiketten, «Omfattende grep» til
+     venstre, ikke av rosa. Blir boksen smalere, skjæres den av i kanten. */
+  const vb = liten ? '0 0 200 200' : '0 0 380 210';
+  const cx = liten ? 100 : 190, cy = liten ? 100 : 103, r = liten ? 88 : 70;
 
   const felt = (d, navn, aktiv) =>
     `<path class="kp-kompass__felt${aktiv ? ' kp-kompass__felt--aktiv' : ''}" data-kv="${navn}" d="${d}"
@@ -458,7 +458,7 @@ function kpStartHtml() {
           Trykk på en retning for å se hva den betyr.
         </p>
         <div class="kp-kurser">
-          ${['N', 'Ø', 'V', 'S'].map(kursKnapp).join('')}
+          ${['N', 'Ø', 'S', 'V'].map(kursKnapp).join('')}
         </div>
         <p class="hb-text--sm hb-text--secondary kp-kursforklaring" id="kurs-forklaring">
           Nåla under står i ro til du begynner å svare.
@@ -497,6 +497,10 @@ function kpStartHtml() {
    Stepperen tegnes på nytt for hver skjerm, og da spilte Fasadens animasjon
    av det aktive steget hver gang, også mellom to spørsmål i samme steg.
    Nå får den bare spille når du går videre til et nytt steg.
+
+   Stegene du er ferdig med, er lenker, slik Fasaden gjør det med
+   a.hb-progress-stepper-valg. Tilbakemeldingen 28. oktober: står du på
+   steg 4 og vil se steg 2 igjen, trykker du på 2.
    ─────────────────────────────────────────────────────────────────── */
 
 let kpForrigeSteg = null;
@@ -515,13 +519,20 @@ function kpFramdriftHtml() {
       <nav class="hb-progress-stepper-nav" aria-label="Stegene i Boligkompasset">
         <ol class="hb-progress-stepper-list">
           ${KOMPASS_ETAPPER.map((e, i) => {
-            const ferdig = i + 1 < etappeNr, aktiv = i + 1 === etappeNr;
+            /* Et steg lenger fram er også ferdig når alle spørsmålene i det
+               er besvart, så du kommer tilbake dit du var */
+            const aktiv = i + 1 === etappeNr;
+            const ferdig = !aktiv && (i + 1 < etappeNr
+              || KOMPASS_SPORSMAL.filter(sp => sp.etappe === e.id).every(kpBesvart));
+            const innhold = `
+              <span class="hb-icon hb-icon--size400 hb-icon--encapsulated" aria-hidden="true"><span class="hb-text--lg">${i + 1}</span></span>
+              <span class="hb-progress-stepper-list-item-text">${e.navn}</span>`;
             return `
           <li class="hb-progress-stepper-list-item${ferdig ? ' hb-is-valid' : ''}${aktiv ? ' hb-is-active' : ''}">
-            <span class="hb-progress-stepper-valg${!ferdig && !aktiv ? ' hb-progress-stepper--deactivated' : ''}"${aktiv ? ' aria-current="step"' : ''}>
-              <span class="hb-icon hb-icon--size400 hb-icon--encapsulated" aria-hidden="true"><span class="hb-text--lg">${i + 1}</span></span>
-              <span class="hb-progress-stepper-list-item-text">${e.navn}</span>
-            </span>
+            ${ferdig ? `<a class="hb-progress-stepper-valg" href="#steg-${i + 1}" data-til-steg="${e.id}">${innhold}
+              <span class="hb-screenreader-only">, gå tilbake til steget</span></a>`
+            : `<span class="hb-progress-stepper-valg${!aktiv ? ' hb-progress-stepper--deactivated' : ''}"${aktiv ? ' aria-current="step"' : ''}>${innhold}
+            </span>`}
           </li>`;
           }).join('')}
         </ol>
@@ -552,9 +563,11 @@ const KP_ETAPPEFIG = {
 const kpTittel = (over, tittel, storrelse = 'hb-h1') =>
   `<h1 class="${storrelse} kp-tittel">${over ? `<small class="hb-h1-overtittel">${over}</small> ` : ''}${tittel}</h1>`;
 
-/* Spørsmålet med «Spørsmål 3 av 12» som en tag over */
-const kpSporsmalTittel = (tag, tittel) =>
-  `<h1 class="hb-h2 kp-tittel"><span class="hb-tag hb-tag--positive kp-tag">${tag}</span> ${tittel}</h1>`;
+/* Spørsmålet med «SPØRSMÅL 3 AV 12» over. Tilbakemeldingen 28.
+   oktober: uten den grønne boksen, i store bokstaver og med mer luft
+   ned til spørsmålet. */
+const kpSporsmalTittel = (over, tittel) =>
+  `<h1 class="hb-h2 kp-tittel"><small class="kp-overtittel">${over}</small> ${tittel}</h1>`;
 
 /* Begge knappene står til venstre, «Forrige» først og «Neste» rett
    ved siden av. Designgjennomgangen 21. oktober: helt til høyre blir
@@ -742,8 +755,9 @@ function kpResultatHtml() {
   return `
     <h2 class="hb-h2 kp-seksjon">2. Slik fungerer boligen din</h2>
     <p class="kp-hjelp__tekst">
-      Hva som fungerer i dag, og hva som kan bli en utfordring om du får
-      redusert bevegelighet. Trykk på «Les mer» for å lese hva svaret betyr.
+      Hva fungerer for deg i dag, og hva kan bli en utfordring om du får
+      redusert bevegelighet i fremtiden. Trykk på «Les mer» for å få tips til
+      hva du bør tenke på.
     </p>
     ${KP_GRUPPER.some(g => funn[g.id].length) ? `
     <div class="kp-bokser">${boks(KP_GRUPPER[0])}${boks(KP_GRUPPER[1])}</div>
@@ -763,8 +777,6 @@ function kpResultatHtml() {
      («KOBLES MOT SVAR 1a og 2a»). Den brukes når du deler det tiltaket
      gjelder: adkomstveien for 7a, inngangspartiet for 8a og 9a.
    - Samme tiltak fra flere svar står én gang, med alt det gjelder.
-   - Steg 4: svarene merket «flytting» gir, sammen med utfordringer i de
-     andre stegene, rådet «Vurder flytting til en mer egnet bolig».
    ─────────────────────────────────────────────────────────────────── */
 
 const KP_TILTAKSTYPER = [
@@ -809,7 +821,7 @@ function kpTiltakForslag() {
     const id = kpTiltakId(type, tittel);
     const gjelder = `${sporsmal}: ${svar}`;
     if (finnes[id]) { if (!finnes[id].gjelder.includes(gjelder)) finnes[id].gjelder.push(gjelder); return; }
-    finnes[id] = { id, type, tittel, tekst, koder: t[type + 'Koder'] || '', blokk: !!blokk, gjelder: [gjelder] };
+    finnes[id] = { id, type, tittel, tekst, etappe: sp.etappe, koder: t[type + 'Koder'] || '', blokk: !!blokk, gjelder: [gjelder] };
     liste[type].push(finnes[id]);
   });
 
@@ -837,29 +849,20 @@ function kpTiltakForslag() {
   return liste;
 }
 
-/* Rådet om å vurdere flytting, etter regelen i steg 4 */
-function kpFlyttegrunner() {
-  const steg4 = KOMPASS_SPORSMAL.filter(sp => sp.etappe === 'naermiljo');
-  const grunner = steg4.map(sp => sp.valg.find(v => v.flytting && v.v === S[sp.id]))
-    .filter(Boolean).map(v => v.tittel.toLowerCase());
-  if (!grunner.length) return null;
-  const utfordringer = ['inne', 'adkomst'].reduce((n, e) => n + kpVeiledningFor(e).utfordring.length, 0);
-  return utfordringer ? { grunner, utfordringer } : null;
-}
-
 function kpHandlingsplanHtml() {
   const forslag = kpTiltakForslag();
   const valgt = new Set(S.handlingsplan || []);
   const antall = forslag.enkel.length + forslag.stor.length;
 
   /* Fagteksten bak «Les mer», og hva du kan søke tilskudd til hos
-     Husbanken i en egen boks, når arket sier at det kan søkes */
+     Husbanken i en egen boks, når arket sier at det kan søkes. Den grå
+     teksten om hvilke svar tiltaket gjelder, er tatt bort etter
+     tilbakemeldingen 28. oktober. */
   const mer = t => {
     const sok = KP_SOK_HUSBANKEN.test(t.tekst);
     const koder = kpKoderListe(t.koder);
     return kpLesMer(`
               <p>${t.tekst.replace(KP_SOK_HUSBANKEN, ' ').trim()}</p>
-              <p class="kp-tiltak__gjelder">Gjelder ${t.gjelder.join(', ')}.</p>
               ${sok ? `
               <div class="kp-sok">
                 <p class="kp-sok__tittel">Dette kan du søke om tilskudd til fra Husbanken</p>
@@ -879,11 +882,12 @@ function kpHandlingsplanHtml() {
 
   return `
     <h2 class="hb-h2 kp-seksjon">3. Handlingsplan</h2>
-    <p class="hb-text--ingress kp-planingress">Vi anbefaler at du gjør dette nå.</p>
     <p class="kp-hjelp__tekst">
-      Kryss av for tiltakene du vil gjennomføre. Da kan du skrive ut en plan
-      og ta den med til for eksempel en entreprenør for å få pris. Trykk på
-      «Les mer» for å se hva tiltaket går ut på, og om du kan søke tilskudd.
+      Her kommer det frem forslag til enkle og større grep du kan gjøre i
+      boligen. Kryss av for tiltakene du ønsker å gjennomføre.
+    </p>
+    <p class="kp-hjelp__tekst">
+      Trykk på «Les mer» for å få informasjon om mulige tiltak.
     </p>
 
     ${S.eieform === 'leier' ? `
@@ -977,22 +981,68 @@ const KP_FORBEHOLD = 'Boligkompasset er en hjelp til å tenke gjennom boligen di
   + 'Det er du som bestemmer hva du vil gjøre.';
 
 /* Boligbytte nevnes forsiktig, som et avsnitt i oppsummeringen, og
-   bare når svarene peker mot omfattende grep eller nærmiljøet blir
-   vanskelig. Aldri som en advarsel midt i kartleggingen. Utkast. */
+   aldri som en advarsel midt i kartleggingen. Tilbakemeldingen 28.
+   oktober: bare når kompasset peker mot «Omfattende grep», og du har
+   svart «Svært vanskelig» om nærmiljøet i steg 4. */
 function kpFlytteavsnittHtml(kurs) {
-  const omfattende = !kurs.tom && ['S', 'SV', 'SØ'].includes(kurs.retning);
-  if (!omfattende && !kpFlyttegrunner()) return '';
+  const steg4 = KOMPASS_SPORSMAL.filter(sp => sp.etappe === 'naermiljo');
+  const vanskelig = steg4.some(sp => sp.valg.some(v => v.flytting && v.v === S[sp.id]));
+  if (kurs.tom || kurs.retning !== 'V' || !vanskelig) return '';
   return `
         <div class="kp-flytte">
           <h3 class="kp-flytte__tittel">Hva passer best for deg på sikt?</h3>
           <p>
-            Svarene dine viser at det kan kreve større grep før boligen og
-            nærmiljøet er godt tilpasset deg. For noen kan en annen bolig, som er
-            enklere å bo i når bevegeligheten endrer seg, være verdt å tenke på
-            etter hvert. Det er ingenting du må bestemme nå, og du vet best selv
-            hva som er viktig for deg.
+            Den totale kartleggingen viser at du har en del utfordringer og at du
+            må gjøre større grep i boligen. Disse grepene må til for at boligen din
+            skal fungere godt for deg i fremtiden om du skulle få redusert
+            bevegelighet.
+          </p>
+          <p class="hb-mb--none">
+            Har du vurdert muligheten for om en mer tilrettelagt og sentrumsnær
+            bolig kan være noe for deg? For noen kan en annen bolig være den beste
+            løsningen, men det er ingenting du må bestemme nå.
           </p>
         </div>`;
+}
+
+/* Ett lite kompass per steg, med en stolpe for hvor mange svar som
+   fungerer godt, til en viss grad og dårlig. Fra iterasjon 10 til 25,
+   tatt tilbake etter tilbakemeldingen 28. oktober. Stolpen står like
+   langt nede på alle kortene. */
+const KP_FARGEKODER = [
+  { id: 'god',  navn: 'Fungerer godt' },
+  { id: 'midt', navn: 'Fungerer til en viss grad' },
+  { id: 'tung', navn: 'Fungerer dårlig' }
+];
+
+function kpStegForStegHtml() {
+  const kort = KOMPASS_ETAPPER.filter(e => kpEnheter().some(u => u.sp.etappe === e.id)).map(e => {
+    const telling = { god: 0, midt: 0, tung: 0 };
+    kpEnheter().filter(u => u.sp.etappe === e.id).forEach(({ sp, felt }) => {
+      const p = kpPoengFor(sp, felt);
+      if (!p) return;
+      telling[p.n > 0.33 ? 'god' : p.n < -0.33 ? 'tung' : 'midt']++;
+    });
+    const sum = telling.god + telling.midt + telling.tung;
+    const kurs = kpBeregnKurs(e.id);
+    return `
+    <li class="kp-etappekort__kort">
+      <div class="kp-etappekort__rose">${kpKompassSvg(kurs, { liten: true })}</div>
+      <p class="kp-etappekort__navn">${e.navn}</p>
+      <p class="kp-etappekort__kurs">${sum ? kpKursnavn(kurs.retning) : 'Ikke besvart'}</p>
+      <span class="kp-oversikt__spor" role="img"
+            aria-label="${e.navn}: ${KP_FARGEKODER.map(k => `${telling[k.id]} ${k.navn.toLowerCase()}`).join(', ')}.">
+        ${sum ? KP_FARGEKODER.map(k => `
+        <span class="kp-oversikt__seg kp-oversikt__seg--${k.id}" style="width:${(telling[k.id] / sum * 100).toFixed(1)}%"></span>`).join('') : ''}
+      </span>
+    </li>`;
+  });
+  return `
+        <h3 class="hb-h4">Steg for steg</h3>
+        <ul class="kp-etappekort">${kort.join('')}</ul>
+        <p class="kp-tegnforklaring">
+          ${KP_FARGEKODER.map(k => `<span><i class="kp-oversikt__seg--${k.id}"></i>${k.navn}</span>`).join('')}
+        </p>`;
 }
 
 /* Hvordan nåla er regnet ut, svar for svar */
@@ -1000,29 +1050,27 @@ function kpUtregningHtml(kurs) {
   const { rader, porter } = kpUtregning();
   if (!rader.length) return '<p>Du har ikke svart på noe som flytter nåla ennå.</p>';
   const grader = g => g === 0 ? 'Ingen endring'
-    : `${String(Math.abs(g)).replace('.', ',')} grader ${g < 0 ? 'opp' : 'ned'}`;
-  const side = n => n < 0 ? 'mot «' + kpKursnavn('V') + '»' : n > 0 ? 'mot «' + kpKursnavn('Ø') + '»' : '';
+    : `${String(Math.abs(g)).replace('.', ',')} grader ${g < 0 ? 'tilbake' : 'med klokken'}`;
   return `
     <p>
       Nåla starter rett opp, på «${kpKursnavn('N')}». Hvert svar vrir den litt.
-      Et svar som fungerer godt, drar den 22,5 grader opp. Et svar som kan bli
-      en utfordring, drar den 22,5 til 90 grader ned, etter hvor stor
-      utfordringen er. Vi legger sammen alle svarene. Nåla går aldri forbi
-      toppen eller bunnen.
+      Et svar som fungerer godt, drar den 22,5 grader tilbake. Et svar som kan
+      bli en utfordring, drar den 22,5 til 90 grader med klokken, etter hvor
+      stor utfordringen er. Vi legger sammen alle svarene.
     </p>
     <p>
-      Om nåla går til høyre eller venstre, avgjøres av hva slags tiltak svarene
-      peker på: enkle grep drar den mot «${kpKursnavn('Ø')}», større grep mot
-      «${kpKursnavn('V')}».
+      Med klokken kommer først «${kpKursnavn('Ø')}», så «${kpKursnavn('S')}» og
+      til slutt «${kpKursnavn('V')}». Nåla går aldri forbi toppen, og aldri
+      lenger enn til «${kpKursnavn('V')}».
     </p>
     <table class="kp-utregning">
       <thead><tr><th scope="col">Spørsmål</th><th scope="col">Svaret ditt</th><th scope="col">Nåla</th></tr></thead>
       <tbody>
-        ${rader.map(r => `<tr><td>${r.sporsmal}</td><td>${r.svar}</td><td>${grader(r.grader)}${r.side ? `, ${side(r.side)}` : ''}</td></tr>`).join('')}
+        ${rader.map(r => `<tr><td>${r.sporsmal}</td><td>${r.svar}</td><td>${grader(r.grader)}</td></tr>`).join('')}
       </tbody>
-      <tfoot><tr><th scope="row" colspan="2">Sum</th><td>${grader(kurs.sum)}${porter.length ? '' : (kurs.sum > 180 ? ', stopper på bunnen' : kurs.sum < 0 ? ', stopper på toppen' : '')}</td></tr></tfoot>
+      <tfoot><tr><th scope="row" colspan="2">Sum</th><td>${grader(kurs.sum)}${porter.length ? '' : (kurs.sum > KP_MAKS_GRADER ? `, stopper på «${kpKursnavn('V')}»` : kurs.sum < 0 ? ', stopper på toppen' : '')}</td></tr></tfoot>
     </table>
-    ${porter.length ? `<p>Ett svar veier tyngre enn resten, så nåla går minst 135 grader ned: ${porter.join(' ')}</p>` : ''}`;
+    ${porter.length ? `<p>Ett svar veier tyngre enn resten, så nåla går helt til «${kpKursnavn('V')}»: ${porter.join(' ')}</p>` : ''}`;
 }
 
 function kpOppsummeringHtml() {
@@ -1030,8 +1078,10 @@ function kpOppsummeringHtml() {
   const info = KOMPASS_RETNINGER[kurs.retning] || KOMPASS_RETNINGER.MIDT;
   const ubesvart = kpAntallSporsmal() - KOMPASS_SPORSMAL.filter(kpBesvart).length;
   /* Ressursene står fast. Tilskuddet til aldersvennlig oppgradering er
-     det masterfila lenker til fra tiltakene. */
-  const ordninger = ['aldersvennlig', 'komtilskudd', 'hjelpemiddel'];
+     det masterfila lenker til fra tiltakene. Startlån, lån og bostøtte
+     kom med etter tilbakemeldingen 28. oktober, og telefonnummeret
+     ble tatt bort. */
+  const ordninger = ['aldersvennlig', 'komtilskudd', 'startlaan', 'husbanklaan', 'bostotte', 'hjelpemiddel'];
 
   return `
 <div class="kp-utskrift-topp">
@@ -1065,8 +1115,8 @@ function kpOppsummeringHtml() {
         </div>
       </div>
       <div class="kp-resultat__bunn">
+        ${kpStegForStegHtml()}
         ${kpFlytteavsnittHtml(kurs)}
-        <p class="kp-forbehold">${KP_FORBEHOLD}</p>
         ${kpTrekkspill([{ id: 'utregning', tittel: 'Slik har vi regnet ut hvor nåla peker', innhold: kpUtregningHtml(kurs) }])}
       </div>
     </div>
@@ -1084,9 +1134,6 @@ function kpOppsummeringHtml() {
           <span>${ord.navn}</span><span data-ikon="pil"></span>
         </a></li>`;
       }).join('')}
-      <li><a class="kp-ressurs" href="tel:${HB_REGLER.telefonRaw}">
-        <span>Ring Husbanken, ${HB_REGLER.telefon}</span><span data-ikon="pil"></span>
-      </a></li>
     </ul>
 
     <div class="kp-utskrift-notat">
@@ -1118,10 +1165,6 @@ function kpKommuneHtml() {
   return `
     <form class="hb-felt kp-kommune kp-utskrift-skjul" data-kommune novalidate>
       <label class="hb-label" for="kp-kommune">Finn din kommune</label>
-      <p class="hb-felt-beskrivelse">
-        Kommunen kan gi råd om tilpasning av boligen, og har ofte egne
-        tilskudd og tjenester.
-      </p>
       <div class="kp-kommune__rad">
         <input class="hb-inputfelt" id="kp-kommune" name="kommune" type="text"
                autocomplete="address-level2" placeholder="For eksempel Drammen">
@@ -1418,6 +1461,11 @@ function kpKlikk(ev) {
   else if (d.tilStart !== undefined) { kpModus = 'start'; kpTegn(); }
   else if (d.tilbakeSvar !== undefined) { kpModus = 'kompass'; kpPos = Math.max(0, KP_FLYT.length - 2); kpTegn(); }
   else if (d.endre) kpTilSporsmal(d.endre);
+  else if (d.tilSteg) {
+    ev.preventDefault();
+    kpModus = 'kompass';
+    kpGaaTil(KP_FLYT.findIndex(f => f.t === 'etappe' && f.e.id === d.tilSteg));
+  }
   else if (d.skrivUt !== undefined) window.print();
   else if (d.lagPlan !== undefined) kpLagPlan(d.lagPlan === 'alle');
 

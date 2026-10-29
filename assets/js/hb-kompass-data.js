@@ -12,16 +12,18 @@
    ────────────────────────────────────────────────────────────────── */
 
 /* ═══ Kompasset ════════════════════════════════════════════════════
-   To akser. Den loddrette sier om boligen passer for deg videre. Den
-   vannrette sier hvor stort arbeidet er. Hvert svar flytter nåla litt.
+   Én vei rundt, med klokken: jo mer arbeid boligen krever, jo lenger
+   rundt går nåla. Hvert svar flytter nåla litt.
    Himmelretningene er ikke navngitt utad, bare kursene, men kodene N,
    Ø, S og V brukes fortsatt internt som korte navn på de åtte feltene.
    ─────────────────────────────────────────────────────────────────── */
 
 /* Navnene er forslag 1 av 5 fra møtet 27. oktober, se
-   forslag-26.html: «grep» i stedet for «Rett kurs» og «Ny kurs».
+   forslag-26.html. Tilbakemeldingen 28. oktober: retningene følger
+   klokken, Fungerer godt, Enkle grep, Større grep og Omfattende grep.
    Ingen av tekstene sier at du bør flytte. Det står, om det passer,
-   som et eget avsnitt i oppsummeringen. */
+   som et eget avsnitt i oppsummeringen. NV nås ikke, for nåla stopper
+   på «Omfattende grep». */
 const KOMPASS_RETNINGER = {
   N:  { navn: 'Fungerer godt',
         kort: 'Boligen passer deg godt',
@@ -32,21 +34,21 @@ const KOMPASS_RETNINGER = {
   Ø:  { navn: 'Enkle grep',
         kort: 'Mye kan løses enkelt',
         tekst: 'Det meste av det som kan bli tungvint hos deg, kan løses uten å bygge om. Begynn med det enkleste.' },
-  SØ: { navn: 'Enkle grep nå, mer på sikt',
+  SØ: { navn: 'Enkle grep nå, større på sikt',
         kort: 'Begynn enkelt, planlegg videre',
         tekst: 'Mye kan gjøres enkelt med én gang. Noe krever et større arbeid. Begynn med det enkle, og bruk tiden til å planlegge resten.' },
-  S:  { navn: 'Omfattende grep',
-        kort: 'Boligen krever mye arbeid',
-        tekst: 'Flere av utfordringene i og rundt boligen din krever omfattende grep. Det er lurt å tenke gjennom hva som er viktigst for deg, og planlegge i god tid.' },
+  S:  { navn: 'Større grep',
+        kort: 'Boligen kan bli godt tilpasset',
+        tekst: 'Boligen din kan bli god å bo i også når du blir eldre, men det krever bygging. Bad, planløsning eller inngang kan måtte gjøres om. Det er lurt å begynne å planlegge tidlig.' },
   SV: { navn: 'Større og omfattende grep',
         kort: 'Det krever et stort arbeid',
         tekst: 'Boligen kan tilpasses, men det krever et omfattende arbeid. Det er verdt å regne på løsningene og tenke gjennom hva som passer deg best.' },
-  V:  { navn: 'Større grep',
-        kort: 'Boligen kan bli godt tilpasset',
-        tekst: 'Boligen din kan bli god å bo i også når du blir eldre, men det krever bygging. Bad, planløsning eller inngang kan måtte gjøres om. Det er lurt å begynne å planlegge tidlig.' },
-  NV: { navn: 'Fungerer godt med ett større grep',
-        kort: 'Ett større grep holder lenge',
-        tekst: 'Boligen fungerer godt, men ett større arbeid, oftest på badet eller ved inngangen, bør gjøres før behovet melder seg.' },
+  V:  { navn: 'Omfattende grep',
+        kort: 'Boligen krever mye arbeid',
+        tekst: 'Flere av utfordringene i og rundt boligen din krever omfattende grep. Det er lurt å tenke gjennom hva som er viktigst for deg, og planlegge i god tid.' },
+  NV: { navn: 'Omfattende grep',
+        kort: 'Boligen krever mye arbeid',
+        tekst: 'Flere av utfordringene i og rundt boligen din krever omfattende grep. Det er lurt å tenke gjennom hva som er viktigst for deg, og planlegge i god tid.' },
   MIDT: { navn: 'Litt av hvert',
         kort: 'Noe fungerer, noe ikke',
         tekst: 'Svarene dine peker i flere retninger. Noe fungerer godt, annet kan bli en utfordring. Se gjennom oppsummeringen og tiltakene under.' }
@@ -564,14 +566,17 @@ const KOMPASS_SPORSMAL = [
     grep: 'Dette kan ikke bygges om. Det teller hvis du en dag vurderer å flytte',
     etappe: 'naermiljo',
     kilde: 'Fane 4, spørsmål 10a.',
-    tittel: 'Hvor lett vil du komme deg til tilbudene du trenger?',
-    hjelp: 'Tenk deg at du en periode får redusert bevegelighet, for eksempel etter en operasjon. Vil du da fortsatt komme deg til tilbudene du er avhengig av i hverdagen?\n\nEksempler på tilbud som er viktige for de fleste, er matbutikk, apotek, lege og offentlige tjenester. Ta gjerne hensyn til gangavstand, transportmuligheter, leveringsmuligheter og digitale alternativer.',
+    /* Tittel og svar fra tilbakemeldingen 28. oktober. Hjelpeteksten
+       er den fra iterasjon 25. Kodene bak svarene er de samme som før,
+       så lagrede svar gjelder fortsatt. */
+    tittel: 'Kommer du deg lett frem til tilbudene du trenger om du får redusert bevegelighet?',
+    hjelp: 'Eksempler på tilbud som er viktige for de fleste er matbutikk, apotek, lege, offentlige tjenester og andre steder du er avhengig av i hverdagen. Vurder om du fortsatt vil kunne komme deg dit eller få tilgang til de tilbudene du ønsker, dersom bevegeligheten din blir redusert. I vurderingen kan du gjerne ta hensyn til gangavstand, transportmuligheter, tilgjengelighet, leveringsmuligheter eller digitale alternativer.',
     valg: [
-      { v: 'god',       tittel: 'God tilgang', gruppe: 'bra',
+      { v: 'god',       tittel: 'Lett', gruppe: 'bra',
         veiledning: 'Du har god tilgang til tilbudene selv om du får redusert bevegelighet. Det kan gjøre det enklere å bo godt og selvstendig over tid.',              n: 1,    e: 0 },
-      { v: 'begrenset', tittel: 'Begrenset tilgang', gruppe: 'utfordring',
+      { v: 'begrenset', tittel: 'Litt vanskelig', gruppe: 'utfordring',
         veiledning: 'Du får begrenset tilgang til tilbudene om du skulle få redusert bevegelighet. Dette kan påvirke hvor lenge du klarer deg selv og kan bli boende. Tenk over om du har transportmuligheter eller leveringsmuligheter.',        n: -0.5, e: 0 },
-      { v: 'sterkt',    tittel: 'Sterkt begrenset tilgang', flytting: true, gruppe: 'utfordring',
+      { v: 'sterkt',    tittel: 'Svært vanskelig', flytting: true, gruppe: 'utfordring',
         veiledning: 'Du har svært begrenset tilgang til tilbudene om du skulle få redusert bevegelighet. Dette kan gjøre det vanskelig å bli boende uten å være avhengig av hjelp fra andre.', n: -1,   e: 0 },
       { v: 'usikker',   tittel: 'Usikker', gruppe: 'usikker',
         veiledning: 'Vi forstår at du er usikker på hvor tilgjengelige tilbudene vil være om behovene dine endrer seg. Snakk med noen eller bruk litt tid på å tenke over gåavstand, transport- og leveringsmuligheter om du får problemer med å gå uten hjelpemidler. Gå gjerne tilbake til kartleggingen og se om du nå klarer å svare på spørsmål 10.',                  n: 0,    e: 0 }
@@ -583,13 +588,13 @@ const KOMPASS_SPORSMAL = [
     grep: 'Sjekk transporttjenesten i kommunen din',
     etappe: 'naermiljo',
     kilde: 'Fane 4, spørsmål 11a.',
-    tittel: 'Hvor lett vil du kunne delta på aktivitetene du ønsker?',
-    hjelp: 'Tenk deg igjen at du en periode får redusert bevegelighet. Vil du da fortsatt kunne delta på det som er viktig for deg?\n\nDet kan være kulturtilbud, idrett, frivillige aktiviteter, tros- og livssynstilbud, bibliotek, natur, kafé eller å treffe familie og venner. Ta gjerne hensyn til gangavstand, tilgjengelighet og transportmuligheter.',
+    tittel: 'Hvor lett vil du kunne delta på aktivitetene du ønsker om du får redusert bevegelighet?',
+    hjelp: 'Tenk på aktiviteter og møteplasser som er viktige for deg, for eksempel kulturtilbud, idrett, frivillige aktiviteter, tros- og livssynstilbud, bibliotek, natur- og parkområder, kafé eller å bare kunne treffe familie og venner. I vurderingen kan du gjerne ta hensyn til gangavstand, tilgjengelighet og transportmuligheter. Ved å planlegge tidlig kan du legge til rette for å opprettholde sosial kontakt og fortsette med aktiviteter som gir deg glede og mening i hverdagen.',
     valg: [
       { v: 'lett',      tittel: 'Lett', gruppe: 'bra',
         veiledning: 'Du har et godt utgangspunkt siden det er lett for deg å delta på aktivitetene du ønsker, selv om du får redusert bevegelighet. Det å kunne delta på aktiviteter og møte andre mennesker er viktig for trivsel, helse og livskvalitet.',            n: 1,    e: 0 },
-      { v: 'noe',       tittel: 'Noe vanskelig', gruppe: 'utfordring',
-        veiledning: 'Det kan bli noe vanskelig å delta på aktivitetene du ønsker, om du får redusert bevegelighet. Det å ikke kunne delta på aktiviteter og møte andre mennesker kan påvirke trivsel, helse og livskvalitet.',   n: 0.3,  e: 0.5 },
+      { v: 'noe',       tittel: 'Litt vanskelig', gruppe: 'utfordring',
+        veiledning: 'Det kan bli litt vanskelig å delta på aktivitetene du ønsker, om du får redusert bevegelighet. Det å ikke kunne delta på aktiviteter og møte andre mennesker kan påvirke trivsel, helse og livskvalitet.',   n: 0.3,  e: 0.5 },
       { v: 'svaert',    tittel: 'Svært vanskelig', flytting: true, gruppe: 'utfordring',
         veiledning: 'Det kan bli svært vanskelig å delta på aktivitetene du ønsker, om du får redusert bevegelighet. Det å ikke kunne delta på aktiviteter og møte andre mennesker kan i stor grad påvirke trivsel, helse og livskvalitet.', n: -1,   e: 0 },
       { v: 'usikker',   tittel: 'Usikker', gruppe: 'usikker',
@@ -640,12 +645,12 @@ const KOMPASS_ORDNINGER = {
     lenke: 'https://husbanken.no/person/startlaan/', lenketekst: 'Les om startlån'
   },
   komtilskudd: {
-    navn: 'Tilskudd fra kommunen',
+    navn: 'Kommunale boligtilskudd',
     kort: 'Kommunen kan gi tilskudd til alt fra enkle tiltak til større ombygginger, og til å få saken utredet av fagfolk.',
     lenke: 'https://husbanken.no/person/startlaan/tilskudd-fra-kommunen/', lenketekst: 'Les om tilskudd fra kommunen'
   },
   husbanklaan: {
-    navn: 'Lån fra Husbanken',
+    navn: 'Lån til å oppgradere bolig',
     kort: 'For deg som skal bygge om, oppgradere eller kjøpe bolig. Boligen må oppfylle visse krav.',
     lenke: 'https://husbanken.no/person/laan-fra-husbanken/', lenketekst: 'Les om lån fra Husbanken'
   },
@@ -665,7 +670,7 @@ const KOMPASS_ORDNINGER = {
     lenke: 'https://www.nav.no/', lenketekst: 'Les om tilskudd fra Nav'
   },
   hjelpemiddel: {
-    navn: 'Hjelpemiddelsentralen',
+    navn: 'Hjelpemidler og tilskudd fra Nav',
     kort: 'Gratis råd om rampe, løfteplattform, heis og hjelpemidler i boligen. De kommer også hjem til deg.',
     lenke: 'https://www.nav.no/hjelpemiddelsentral', lenketekst: 'Finn hjelpemiddelsentralen din'
   },
@@ -844,7 +849,7 @@ const KOMPASS_ANBEFALINGER = [
     tittel: 'Nærmiljøet er det eneste du ikke kan bygge om',
     tekst: 'Du kan gjøre boligen din så god du vil, men du kan ikke flytte butikken nærmere. Når det er langt til alt, og transporten er tungvint, blir hverdagen liten selv i en velfungerende bolig. Snakk med kommunen om transporttjeneste og levering, og la dette veie tungt hvis du en dag vurderer å flytte.',
     hvorfor: S => ['begrenset', 'sterkt'].includes(S.tjenester)
-      ? 'Du svarte at du vil ha ' + (S.tjenester === 'sterkt' ? 'sterkt begrenset' : 'begrenset') + ' tilgang til service og tjenester ved redusert bevegelighet.'
+      ? 'Du svarte at det blir ' + (S.tjenester === 'sterkt' ? 'svært vanskelig' : 'litt vanskelig') + ' å komme deg frem til tilbudene du trenger ved redusert bevegelighet.'
       : 'Du svarte at det vil være ' + 'svært vanskelig' + ' å delta på aktivitetene du ønsker ved redusert bevegelighet.',
     tiltak: [],
     ordninger: ['ergoterapeut', 'bostotte']

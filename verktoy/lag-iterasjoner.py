@@ -41,7 +41,7 @@ TIL_ROT = '../../'
 
 # Versjonen av velgeren, så GitHub Pages ikke gir en gammel utgave fra
 # hurtiglageret. Økes når kp-versjoner.js eller -.css endres.
-VELGER_V = 8
+VELGER_V = 9
 
 # Store delte filer som hentes fra roten i stedet for å kopieres, så
 # lenge de finnes der

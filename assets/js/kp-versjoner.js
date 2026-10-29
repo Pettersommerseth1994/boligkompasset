@@ -271,7 +271,7 @@ const KP_VERSJONER = [
     ]
   },
   {
-    nr: 26,
+    nr: 26, commit: '1fd3f85', mappe: 'iterasjoner/26/',
     navn: 'Møtet 27. oktober', dato: '27. oktober 2026',
     endringer: [
       'Kompasset kommer bare til slutt, øverst i oppsummeringen. Kompassene etter hvert steg er tatt ut.',
@@ -287,6 +287,23 @@ const KP_VERSJONER = [
       'Stegsidene er midtstilt igjen, med kortere ingress i steg 3 og 4.',
       'Spørsmål 10 og 11 er kortere, og forklaringen om redusert bevegelighet står først i hjelpeteksten. «Service og tjenester» heter «tilbudene».',
       'Ergoterapeut er tatt ut av ressursene.'
+    ]
+  },
+  {
+    nr: 27,
+    navn: 'Tilbakemeldingen 28. oktober', dato: '29. oktober 2026',
+    endringer: [
+      'Du kan trykke på et steg du er ferdig med i stepperen, og gå tilbake dit.',
+      '«SPØRSMÅL 3 AV 12» står i store bokstaver uten boks, med mer luft ned til spørsmålet.',
+      'Spørsmål 10: «Kommer du deg lett frem til tilbudene du trenger om du får redusert bevegelighet?», med svarene Lett, Litt vanskelig, Svært vanskelig og Usikker. Hjelpeteksten fra iterasjon 25.',
+      'Spørsmål 11: «Hvor lett vil du kunne delta på aktivitetene du ønsker om du får redusert bevegelighet?», med hjelpeteksten fra iterasjon 25. «Noe vanskelig» heter «Litt vanskelig».',
+      'Retningene følger klokken: Fungerer godt, Enkle grep, Større grep og Omfattende grep. Nåla går én vei rundt.',
+      '«Hva passer best for deg på sikt?» har ny tekst, og vises bare når kompasset peker mot «Omfattende grep» og du har svart «Svært vanskelig» om nærmiljøet.',
+      'Forbeholdet er tatt ut av oppsummeringen. Det står fortsatt på forsiden.',
+      'De små kompassene per steg er tilbake under «Kompasset ditt». Stolpen står like langt nede på alle kortene, og fargene heter Fungerer godt, Fungerer til en viss grad og Fungerer dårlig, i grønt, grått og rødt.',
+      'Ny tekst under «Slik fungerer boligen din» og i handlingsplanen. «Vi anbefaler at du gjør dette nå» er tatt bort.',
+      'Mindre avstand mellom tiltaket og «Les mer», og den grå teksten om hva tiltaket gjelder er tatt bort.',
+      'Ressursene: uten den grå teksten om kommunen og uten telefonnummeret. Nye lenker til startlån, lån til å oppgradere bolig og bostøtte. «Kommunale boligtilskudd» og «Hjelpemidler og tilskudd fra Nav» har nye navn.'
     ]
   }
 ];
