@@ -221,6 +221,11 @@ a.versjoner__celle:focus-visible {
   .versjoner__liste { max-height: none; }
 }
 
+/* Hovedbryteren slår velgeren av og på. Av står bare bryteren igjen. */
+.versjoner__innhold { display: flex; flex-direction: column; gap: 7px; }
+.versjoner--av { width: max-content; padding: 7px 11px; }
+.versjoner--av .versjoner__innhold { display: none; }
+
 @media print {
   .versjoner { display: none; }
 }

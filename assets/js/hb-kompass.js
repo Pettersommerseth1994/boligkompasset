@@ -884,12 +884,12 @@ function kpResultatHtml() {
 }
 
 /* ═══ Handlingsplanen ═════════════════════════════════════════════
-   Tabellen, forslag 2 av 5 fra 29. oktober, valgt 30. oktober: én rad
-   per tiltak med avkrysning, og om du kan søke tilskudd. Fagteksten
-   står bak «Les mer» i raden, uten den grønne tilskuddsboksen. Stegene
-   er tatt ut av tabellen.
+   Fasadens utvidbare tabell, hb-table--expandable: én rad per tiltak
+   med avkrysning, om du kan søke tilskudd, og «Les mer» i en egen
+   kolonne til høyre. Hele raden kan trykkes, og fagteksten folder seg
+   ut i en rad under, uten den grønne tilskuddsboksen. Variant 2 på
+   forslag-lesmer.html, valgt 3. november.
    ─────────────────────────────────────────────────────────────────── */
-const kpTag = (tone, tekst) => `<span class="hb-tag hb-tag--${tone}"><span class="hb-tag-text">${tekst}</span></span>`;
 
 function kpHandlingsplanHtml() {
   const forslag = kpTiltakForslag();
@@ -899,10 +899,19 @@ function kpHandlingsplanHtml() {
     <p class="hb-text--secondary">Svarene dine gir ingen tiltak å gå videre med.</p>`;
 
   const rad = t => `
-            <tr>
+            <tr class="hb-table-row--expandable" data-plan-rad="${t.id}">
               <td><input class="hb-checkbox" id="tiltak-${t.id}" type="checkbox" name="handlingsplan" value="${t.id}" ${valgt.has(t.id) ? 'checked' : ''}><div class="hb-label"><label class="hb-label-tekst" for="tiltak-${t.id}"><span class="hb-screenreader-only">${t.tittel}</span></label></div></td>
-              <td><label for="tiltak-${t.id}">${t.tittel}</label> ${kpLesMer(`<p>${t.tekst.replace(KP_SOK_HUSBANKEN, ' ').trim()}</p>`)}</td>
+              <td><label for="tiltak-${t.id}">${t.tittel}</label></td>
               <td>${KP_SOK_HUSBANKEN.test(t.tekst) ? 'Ja' : '–'}</td>
+              <td>
+                <button type="button" class="hb-button hb-button--link kp-lesmer" aria-expanded="false" aria-controls="tiltak-tekst-${t.id}" data-plan-mer="${t.id}">
+                  <span class="hb-button-text">Les mer</span><span class="kp-lesmer__pil" aria-hidden="true">${KP_PIL_NED}</span>
+                </button>
+              </td>
+            </tr>
+            <tr class="hb-table-row--expansion" id="tiltak-tekst-${t.id}">
+              <td></td>
+              <td colspan="3"><p>${t.tekst.replace(KP_SOK_HUSBANKEN, ' ').trim()}</p></td>
             </tr>`;
 
   return `
@@ -924,8 +933,8 @@ function kpHandlingsplanHtml() {
       ${KP_TILTAKSTYPER.filter(ty => forslag[ty.id].length).map(ty => `
       <h3 class="hb-h4 kp-plangruppe">${ty.tittel}</h3>
       <div class="hb-scrollbox">
-        <table class="hb-table kp-plantabell">
-          <thead><tr><th scope="col"><span class="hb-screenreader-only">Velg</span></th><th scope="col">Tiltak</th><th scope="col">Tilskudd</th></tr></thead>
+        <table class="hb-table--expandable kp-plantabell">
+          <thead><tr><th scope="col"><span class="hb-screenreader-only">Velg</span></th><th scope="col">Tiltak</th><th scope="col">Tilskudd</th><th scope="col"><span class="hb-screenreader-only">Les mer</span></th></tr></thead>
           <tbody>${forslag[ty.id].map(rad).join('')}</tbody>
         </table>
       </div>`).join('')}
@@ -1514,6 +1523,13 @@ function kpNullstill() {
 /* ═══ Hendelser ═══════════════════════════════════════════════════ */
 
 function kpKlikk(ev) {
+  /* Handlingsplanen: et trykk i raden, utenom avkrysningen og «Les
+     mer», gjør det samme som «Les mer» */
+  const planrad = ev.target.closest('[data-plan-rad]');
+  if (planrad && !ev.target.closest('input, label, button, a')) {
+    planrad.querySelector('[data-plan-mer]').click();
+    return;
+  }
   const t = ev.target.closest('button, a');
   if (!t) return;
   const d = t.dataset;
@@ -1550,6 +1566,12 @@ function kpKlikk(ev) {
     const el = t.closest('.hb-hjelpetekst');
     const aapen = !el.classList.contains('hb-hjelpetekst--utvidet');
     el.classList.toggle('hb-hjelpetekst--utvidet', aapen);
+    t.setAttribute('aria-expanded', String(aapen));
+  }
+  else if (d.planMer) {
+    const rad = t.closest('[data-plan-rad]');
+    const aapen = !rad.classList.contains('hb-table-row--expanded');
+    rad.classList.toggle('hb-table-row--expanded', aapen);
     t.setAttribute('aria-expanded', String(aapen));
   }
   /* «Se flere» viser resten av punktene i boksen, og «Se færre» tar dem bort igjen */

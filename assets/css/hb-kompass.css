@@ -414,14 +414,22 @@
 .kp-boks__punkt span { display: block; color: var(--fg-subtle); font-size: var(--text-sm); line-height: var(--lh-sm); }
 .fasaden .kp-flere { margin-top: var(--space-2); padding-top: var(--space-2); border-top: 1px solid var(--hb-slate-200); width: 100%; justify-content: flex-start; font-weight: 600; }
 
-/* Handlingsplanen som Fasadens tabell. «Les mer» står ved navnet, og
-   teksten folder seg ut i samme celle. */
+/* Handlingsplanen som Fasadens utvidbare tabell. Teksten bak «Les mer»
+   folder seg ut i en rad under. */
 .kp-plangruppe { margin: var(--space-4) 0 var(--space-3); }
 .kp-plangruppe ~ .kp-plangruppe { margin-top: var(--space-5); }
+.fasaden .kp-plantabell { width: 100%; }
 .kp-plantabell td, .kp-plantabell th { vertical-align: top; }
 .kp-plantabell td:first-child { width: 2.5rem; }
-.kp-plantabell td:last-child { width: 6rem; }
-.kp-plantabell .kp-lesmer { margin-left: 2px; vertical-align: baseline; }
+.kp-plantabell td:nth-child(3), .kp-plantabell td:last-child { width: 6.5rem; }
+.kp-plantabell .hb-table-row--expansion p { margin: 0; max-width: 62ch; }
+.fasaden .kp-plantabell .kp-lesmer { padding: 0; }
+.hb-table-row--expanded .kp-lesmer__pil { transform: rotate(180deg); }
+/* Fasaden legger en 0,5 rem tykk linje over raden som åpnes og raden
+   etter. Tilbakemeldingen 3. november: vanlig 1 px linje. */
+.fasaden .kp-plantabell .hb-table-row--expanded td,
+.fasaden .kp-plantabell .hb-table-row--expanded + .hb-table-row--expansion + tr td { border-top-width: 1px; }
+.fasaden .kp-plantabell .hb-table-row--expansion td { border-top: 0; }
 
 /* «Handlingsplanen din» med utskriftsknappene */
 .kp-planpanel { margin-top: var(--space-5); }
@@ -436,6 +444,7 @@
   .kp-lesmer { display: none !important; }
   .kp-lesmer__innhold { display: block !important; }
   .kp-boks { break-inside: avoid; }
+  .kp-plantabell .hb-table-row--expansion { display: table-row !important; }
   .kp-boks [data-flere-punkt] { display: block !important; }
   .kp-flere { display: none !important; }
 }
@@ -706,6 +715,3 @@
 
 /* «Du leier boligen» sto helt inntil trekkspillet under. */
 .kp-planvarsel { margin-bottom: var(--space-3); }
-
-/* Teksten bak «Les mer» i tabellen har tabellens skriftstørrelse */
-.kp-plantabell .kp-lesmer__innhold { font-size: inherit; line-height: inherit; margin-bottom: 0; }

@@ -323,7 +323,7 @@ const KP_VERSJONER = [
     ]
   },
   {
-    nr: 29,
+    nr: 29, commit: '8c05616', mappe: 'iterasjoner/29/',
     navn: 'Tilbakemeldingen 30. oktober', dato: '3. november 2026',
     endringer: [
       '«1. Kompasset ditt» heter «1. Ditt boligkompass».',
@@ -335,6 +335,17 @@ const KP_VERSJONER = [
       'Utskriften: «Handlingsplan» uten «Min», uten linjen under tittelen, logoen like langt fra toppen som fra høyre kant, og mer luft over navn, adresse og telefon.',
       'Utskriften: uten avkrysning, uten «Enkelt tiltak» og «Større tiltak», og uten teksten om tilskudd ved tiltakene.',
       'Utskriften: «Hvem kan hjelpe deg?» har bare tilskudd til aldersvennlig oppgradering, og forbeholdet under notatfeltet er tatt bort.'
+    ]
+  },
+  {
+    nr: 30,
+    navn: 'Handlingsplanen som utvidbar tabell', dato: '3. november 2026',
+    endringer: [
+      'Handlingsplanen er Fasadens utvidbare tabell. «Les mer» står i en egen kolonne til høyre, og teksten folder seg ut i en rad under.',
+      'Hele raden kan trykkes for å lese mer, og blir grønn når musa er over. Avkrysningen virker for seg.',
+      'Uten den tykke grå linjen over og under en åpen rad.',
+      'Versjonsvelgeren nede til venstre har en bryter som slår den av og på. Den er av som standard.',
+      'Arbeidssider: forslag-handlingsplan-29.html og forslag-lesmer.html.'
     ]
   }
 ];
@@ -379,6 +390,12 @@ const KP_VERSJONER = [
   boks.className = 'versjoner';
   boks.setAttribute('aria-label', 'Iterasjoner av Boligkompasset');
   boks.innerHTML = `
+    <label class="versjoner__bryter versjoner__hovedbryter">
+      <input type="checkbox" id="vis-velger">
+      <span class="versjoner__spor"></span>
+      <span class="versjoner__bryter-tekst">Iterasjon ${gjeldende.nr}</span>
+    </label>
+    <div class="versjoner__innhold">
     <div class="versjoner__rad">
       <span class="versjoner__hint">Iterasjon</span>
       <div class="versjoner__celler">${celler}</div>
@@ -396,9 +413,25 @@ const KP_VERSJONER = [
     </label>
     <ol class="versjoner__liste" hidden>
       ${endringer.map((t, i) => `<li><span class="nr">${i + 1}</span><span class="tekst">${t}</span></li>`).join('')}
-    </ol>` : ''}`;
+    </ol>` : ''}
+    </div>`;
 
   kropp.appendChild(boks);
+
+  /* Bryteren øverst slår hele velgeren av og på. Av er den bare en liten
+     bryter nede i hjørnet. Av som standard, 3. november, så den ikke
+     ligger over tjenesten når den vises fram. Valget huskes. */
+  const VIS_VELGER = 'kp-vis-velger';
+  const hovedbryter = boks.querySelector('#vis-velger');
+  const visVelger = paa => boks.classList.toggle('versjoner--av', !paa);
+  let velgerPaa = false;
+  try { velgerPaa = localStorage.getItem(VIS_VELGER) === '1'; } catch (e) { /* privat modus */ }
+  hovedbryter.checked = velgerPaa;
+  visVelger(velgerPaa);
+  hovedbryter.addEventListener('change', () => {
+    visVelger(hovedbryter.checked);
+    try { localStorage.setItem(VIS_VELGER, hovedbryter.checked ? '1' : '0'); } catch (e) { /* privat modus */ }
+  });
 
   /* ── Bli på samme skjerm når man bytter iterasjon ──────────────────
      Uten dette åpnet hver iterasjon på forsiden. Når man trykker på en

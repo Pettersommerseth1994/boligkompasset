@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fem varianter av Les mer-kolonnen | Boligkompasset</title>
+<meta name="robots" content="noindex">
+<!-- Arbeidsside: fem varianter av forslag 2 på
+     forslag-handlingsplan-29.html, «Les mer» i en egen kolonne, valgt
+     3. november. Alle er Fasadens tabell. Ikke lenket fra tjenesten. -->
+<link rel="stylesheet" href="fasaden/boligkompasset-stiler.css?v=48">
+<style>
+  /* Velgeren øverst, og det lille som Fasaden ikke har */
+  .ft-velger { position: sticky; top: 0; z-index: 30; background: #fff; border-bottom: 1px solid var(--hb-slate-200); padding: var(--space-3) 0; }
+  .ft-velger .hb-buttongroup { flex-wrap: wrap; }
+  .ft-om { margin: var(--space-2) 0 0; max-width: 70ch; }
+
+  .ft-gruppe { margin: var(--space-4) 0 var(--space-3); }
+  .ft-gruppe ~ .ft-gruppe { margin-top: var(--space-5); }
+  .ft-tabell { width: 100%; }
+  .ft-tabell td, .ft-tabell th { vertical-align: top; }
+  .ft-tabell td.ft-velg { width: 2.5rem; }
+  .ft-tabell td.ft-smal, .ft-tabell th.ft-smal { width: 6.5rem; }
+  .ft-tabell .kp-lesmer__innhold { font-size: inherit; line-height: inherit; margin-bottom: 0; }
+
+  /* Raden folder ut en rad under, som Fasadens utvidbare tabell */
+  .hb-table-row--expanded .kp-lesmer__pil { transform: rotate(180deg); }
+  .ft-utvidet td { padding-top: 0; }
+  .ft-utvidet p { margin: 0; max-width: 62ch; }
+  .fasaden .ft-tabell .hb-table-row--expandable { cursor: default; }
+  .fasaden .ft-tabell .hb-table-row--expandable:hover { background: none; }
+
+  /* 1: teksten i et grått felt */
+  .ft-utvidet--graa td + td > div { background: var(--hb-slate-100); border-radius: var(--radius-md); padding: var(--space-3); }
+  /* 2: Fasadens utvidbare tabell, hb-table--expandable, der hele raden
+     kan trykkes. Fasaden legger en 0,5 rem tykk linje over raden som
+     åpnes og raden etter. Den er tatt bort: vanlig 1 px linje. */
+  .fasaden .ft-tabell--rad .hb-table-row--expandable { cursor: pointer; }
+  .fasaden .ft-tabell--rad .hb-table-row--expandable:hover { background: #ddedcf; }
+  .fasaden .ft-tabell--rad.hb-table--expandable { width: 100%; }
+  .fasaden .ft-tabell .hb-table-row--expanded td,
+  .fasaden .ft-tabell .hb-table-row--expanded + .hb-table-row--expansion + tr td { border-top-width: 1px; }
+  .fasaden .ft-tabell .hb-table-row--expansion td { border-top: 0; }
+  /* 5: knapp i stedet for lenke */
+  .ft-knapp { white-space: nowrap; }
+  .ft-knapp svg { width: 14px; height: 14px; margin-left: 6px; transition: transform .2s; }
+  .hb-table-row--expanded .ft-knapp svg { transform: rotate(180deg); }
+  .ft-tabell td.ft-bred, .ft-tabell th.ft-bred { width: 8.5rem; }
+
+  /* 3: tilskudd som merke ved navnet */
+  .ft-merke { margin-left: 6px; vertical-align: middle; }
+
+</style>
+</head>
+<body>
+
+<div id="hb-topp"></div>
+
+<div class="ft-velger fasaden">
+  <div class="hb-shell">
+    <fieldset class="hb-felt">
+      <legend class="hb-text--semibold hb-mb--sm">Forslag til handlingsplanen</legend>
+      <div class="hb-buttongroup hb-buttongroup--gap-none" id="ft-knapper"></div>
+    </fieldset>
+    <p class="ft-om hb-text--sm" id="ft-om" aria-live="polite"></p>
+  </div>
+</div>
+
+<main id="hovedinnhold" class="fasaden">
+  <section class="hb-section" style="padding-top:var(--space-5)">
+    <div class="hb-shell" id="ft-side"></div>
+  </section>
+</main>
+
+<div id="hb-bunn"></div>
+
+<script src="assets/js/hb.js"></script>
+<script src="assets/js/hb-kompass-data.js?v=32"></script>
+<script src="assets/js/hb-kompass.js?v=46"></script>
+<script>
+/* ═══ Svarene ═════════════════════════════════════════════════════
+   Har du svart i Boligkompasset i denne nettleseren, brukes svarene
+   dine. Ellers et fast sett med tilfeldige svar, så alle fem viser det
+   samme. */
+S = kpLes();
+if (!KOMPASS_SPORSMAL.some(kpBesvart)) {
+  let fro = 7;
+  const gammel = Math.random;
+  Math.random = () => (fro = (fro * 16807) % 2147483647) / 2147483647;
+  const tegn = kpTegn, lagre = kpLagre;
+  kpTegn = () => {}; kpLagre = () => {};
+  kpFyllTilfeldig();
+  kpTegn = tegn; kpLagre = lagre; Math.random = gammel;
+}
+
+/* ═══ Felles ══════════════════════════════════════════════════════ */
+
+const T = kpTiltakForslag();
+const ALLE = [...T.enkel, ...T.stor];
+const valgt = t => (S.handlingsplan || []).includes(t.id);
+const fag = t => t.tekst.replace(KP_SOK_HUSBANKEN, ' ').trim();
+const sok = t => KP_SOK_HUSBANKEN.test(t.tekst);
+const tag = (tone, tekst, klasse = '') => `<span class="hb-tag hb-tag--${tone} ${klasse}"><span class="hb-tag-text">${tekst}</span></span>`;
+const typenavn = t => t.type === 'enkel' ? 'Enkelt' : 'Større';
+
+const boks = t => `<input class="hb-checkbox" id="ft-${t.id}" type="checkbox" name="handlingsplan" value="${t.id}" ${valgt(t) ? 'checked' : ''}><div class="hb-label"><label class="hb-label-tekst" for="ft-${t.id}"><span class="hb-screenreader-only">${t.tittel}</span></label></div>`;
+const navn = t => `<label for="ft-${t.id}">${t.tittel}</label>`;
+
+const tabell = (hode, rader, klasse = '') => `
+  <div class="hb-scrollbox">
+    <table class="${klasse.includes('hb-table--expandable') ? '' : 'hb-table '}ft-tabell ${klasse}">
+      ${hode ? `<thead><tr>${hode}</tr></thead>` : ''}
+      <tbody>${rader}</tbody>
+    </table>
+  </div>`;
+const VELG = '<th scope="col" class="ft-velg"><span class="hb-screenreader-only">Velg</span></th>';
+
+const grupper = fn => KP_TILTAKSTYPER.filter(ty => T[ty.id].length).map(ty => `
+  <h3 class="hb-h4 ft-gruppe" data-ft-gruppe="${ty.id}">${ty.tittel}</h3>
+  ${fn(T[ty.id], ty)}`).join('');
+
+const innledning = `
+  <h2 class="hb-h2 kp-seksjon" style="margin-top:0">3. Handlingsplan</h2>
+  <p class="kp-hjelp__tekst">Her kommer det frem forslag til enkle og større grep du kan gjøre i boligen. Kryss av for tiltakene du ønsker å gjennomføre.</p>
+  <p class="kp-hjelp__tekst">Trykk på «Les mer» for å få tips om mulige tiltak.</p>
+  ${S.eieform === 'leier' ? `
+  <div class="hb-callout hb-callout--info kp-planvarsel">
+    <div class="hb-callout-body"><div class="hb-callout-content"><p>Du leier boligen. Endringer i boligen må avklares med utleier.</p></div></div>
+  </div>` : ''}`;
+
+const panel = `
+  <div class="hb-panel hb-panel--noytral kp-planpanel">
+    <h3 class="hb-h4">Handlingsplanen din</h3>
+    <p class="hb-mb--xs" data-plan-antall aria-live="polite"></p>
+    <p>Skriv ut handlingsplanen eller lagre den som PDF. Ta den med når du snakker med en entreprenør, kommunen eller familien.</p>
+    <div class="hb-felt kp-planfeil" data-plan-feil-felt>
+      <p class="hb-felt-feilmelding" data-plan-feil role="alert"></p>
+    </div>
+    <div class="hb-knappesamling">
+      <div class="hb-knappesamling-gruppe hb-knappesamling-gruppe--horisontal">
+        <div class="hb-knappesamling-element">${kpKnapp('Skriv ut handlingsplanen', 'data-lag-plan="valgte"')}</div>
+        <div class="hb-knappesamling-element">${kpKnapp('Skriv ut alle tiltakene', 'data-lag-plan="alle"', 'standard')}</div>
+      </div>
+    </div>
+  </div>`;
+
+const lesmerknapp = t => `<button type="button" class="hb-button hb-button--link kp-lesmer" aria-expanded="false" aria-controls="ft-tekst-${t.id}" data-ft-pil="${t.id}"><span class="hb-button-text">Les mer</span><span class="kp-lesmer__pil" aria-hidden="true">${KP_PIL_NED}</span></button>`;
+
+/* ═══ De fem variantene ═══════════════════════════════════════════ */
+
+/* Rad som folder ut en rad under. «aapen» er teksten på knappen når
+   raden er åpen, for variantene som bytter «Les mer» med «Lukk». */
+const rad = (t, celler, kolonner, klasse = '') => `
+        <tr class="hb-table-row--expandable" data-ft-rad="${t.id}">${celler}</tr>
+        <tr class="hb-table-row--expansion ft-utvidet ${klasse}" id="ft-tekst-${t.id}"><td></td><td colspan="${kolonner - 1}"><div><p>${fag(t)}</p></div></td></tr>`;
+const lukkknapp = t => `<button type="button" class="hb-button hb-button--link kp-lesmer" aria-expanded="false" aria-controls="ft-tekst-${t.id}" data-ft-pil="${t.id}" data-ft-lukk><span class="hb-button-text">Les mer</span><span class="kp-lesmer__pil" aria-hidden="true">${KP_PIL_NED}</span></button>`;
+const knapp = t => `<button type="button" class="hb-button hb-button--standard hb-button--s ft-knapp" aria-expanded="false" aria-controls="ft-tekst-${t.id}" data-ft-pil="${t.id}"><span class="hb-button-text">Les mer</span>${KP_PIL_NED}</button>`;
+const HODE = `${VELG}<th scope="col">Tiltak</th><th scope="col" class="ft-smal">Tilskudd</th><th scope="col" class="ft-smal"><span class="hb-screenreader-only">Les mer</span></th>`;
+const ja = t => (sok(t) ? 'Ja' : '–');
+
+const FORSLAG = [
+
+/* 1 ─ Grått felt og «Lukk» */
+{ navn: 'Grått felt', om: 'Som forslag 2, men teksten står i et grått felt under raden, og «Les mer» blir til «Lukk» når den er åpen. Lettere å se hva som hører til hvilket tiltak.',
+  html: () => grupper(liste => tabell(HODE,
+    liste.map(t => rad(t, `<td class="ft-velg">${boks(t)}</td><td>${navn(t)}</td><td class="ft-smal">${ja(t)}</td><td class="ft-smal">${lukkknapp(t)}</td>`, 4, 'ft-utvidet--graa')).join(''))) },
+
+/* 2 ─ Hele raden kan trykkes */
+{ navn: 'Hele raden', om: 'Fasadens utvidbare tabell (hb-table--expandable): hele raden kan trykkes for å lese mer, og blir grønn når musa er over. Avkrysningen virker for seg, og «Les mer» kan nås med tastaturet. Uten den tykke grå linjen over og under en åpen rad.',
+  html: () => grupper(liste => tabell(HODE,
+    liste.map(t => rad(t, `<td class="ft-velg">${boks(t)}</td><td>${navn(t)}</td><td class="ft-smal">${ja(t)}</td><td class="ft-smal">${lesmerknapp(t)}</td>`, 4)).join(''), 'hb-table--expandable ft-tabell--rad')) },
+
+/* 3 ─ Uten tilskuddskolonne */
+{ navn: 'Tilskudd som merke', om: 'Tre kolonner: avkrysning, tiltaket og «Les mer». At du kan søke tilskudd, står som et grønt merke ved navnet. Mer plass til navnene.',
+  html: () => grupper(liste => tabell(`${VELG}<th scope="col">Tiltak</th><th scope="col" class="ft-smal"><span class="hb-screenreader-only">Les mer</span></th>`,
+    liste.map(t => rad(t, `<td class="ft-velg">${boks(t)}</td><td>${navn(t)}${sok(t) ? tag('positive', 'Tilskudd', 'ft-merke') : ''}</td><td class="ft-smal">${lesmerknapp(t)}</td>`, 3)).join(''))) },
+
+/* 4 ─ Én tabell */
+{ navn: 'Én tabell', om: 'Enkle og større tiltak i én tabell, med en kolonne for typen. Én overskrift mindre, og «Les mer» til høyre som i forslag 2.',
+  html: () => tabell(`${VELG}<th scope="col">Tiltak</th><th scope="col" class="ft-smal">Type</th><th scope="col" class="ft-smal">Tilskudd</th><th scope="col" class="ft-smal"><span class="hb-screenreader-only">Les mer</span></th>`,
+    ALLE.map(t => rad(t, `<td class="ft-velg">${boks(t)}</td><td>${navn(t)}</td><td class="ft-smal">${typenavn(t)}</td><td class="ft-smal">${ja(t)}</td><td class="ft-smal">${lesmerknapp(t)}</td>`, 5)).join('')) },
+
+/* 5 ─ Knapp */
+{ navn: 'Knapp', om: '«Les mer» som en liten Fasaden-knapp i stedet for en lenke. Tydeligere å trykke på, særlig på mobil og for den som ser dårlig.',
+  html: () => grupper(liste => tabell(`${VELG}<th scope="col">Tiltak</th><th scope="col" class="ft-smal">Tilskudd</th><th scope="col" class="ft-bred"><span class="hb-screenreader-only">Les mer</span></th>`,
+    liste.map(t => rad(t, `<td class="ft-velg">${boks(t)}</td><td>${navn(t)}</td><td class="ft-smal">${ja(t)}</td><td class="ft-bred">${knapp(t)}</td>`, 4)).join(''))) }
+];
+
+/* ═══ Tegning og velger ═══════════════════════════════════════════ */
+
+let gjeldende = 0;
+function tegn(i) {
+  gjeldende = i;
+  const f = FORSLAG[i];
+  document.getElementById('ft-side').innerHTML = `${innledning}<form class="kp-handlingsplan" novalidate>${f.html()}</form>${panel}`;
+  document.getElementById('ft-om').innerHTML = `<strong>${i + 1}. ${f.navn}.</strong> ${f.om}`;
+  document.querySelectorAll('#ft-knapper input').forEach((r, j) => { r.checked = j === i; });
+  try { history.replaceState(null, '', '#' + (i + 1)); } catch (e) { /* lokal fil */ }
+  oppdater();
+}
+
+function oppdater() {
+  const n = (S.handlingsplan || []).length;
+  document.querySelectorAll('[data-plan-antall]').forEach(p => {
+    p.textContent = n ? `Du har krysset av for ${n} tiltak.` : 'Du har ikke krysset av for noen tiltak ennå.';
+  });
+  if (FORSLAG[gjeldende].etter) FORSLAG[gjeldende].etter();
+}
+
+document.getElementById('ft-knapper').innerHTML = FORSLAG.map((f, i) => `
+  <input class="hb-radiobutton" type="radio" name="ft-forslag" id="ft-v${i}" value="${i}">
+  <label class="hb-button hb-button--standard" for="ft-v${i}" title="${f.navn}">${i + 1}. ${f.navn}</label>`).join('');
+document.getElementById('ft-knapper').addEventListener('change', ev => { tegn(Number(ev.target.value)); window.scrollTo(0, 0); });
+
+document.addEventListener('change', ev => {
+  if (ev.target.name !== 'handlingsplan') return;
+  const v = new Set(S.handlingsplan || []);
+  ev.target.checked ? v.add(ev.target.value) : v.delete(ev.target.value);
+  S.handlingsplan = [...v];
+  kpLagre();
+  if (v.size) kpPlanFeil('');
+  oppdater();
+});
+
+document.addEventListener('click', ev => {
+  /* Forslag 2: et trykk et annet sted i raden enn på avkrysningen gjør
+     det samme som «Les mer» */
+  const radTrykk = ev.target.closest('.ft-tabell--rad [data-ft-rad]');
+  if (radTrykk && !ev.target.closest('input, label, button, a')) {
+    radTrykk.querySelector('[data-ft-pil]').click();
+    return;
+  }
+  const t = ev.target.closest('button, a');
+  if (!t) return;
+  const d = t.dataset;
+  if (d.ftPil) {
+    const rad = document.querySelector(`[data-ft-rad="${d.ftPil}"]`);
+    const aapen = !rad.classList.contains('hb-table-row--expanded');
+    rad.classList.toggle('hb-table-row--expanded', aapen);
+    t.setAttribute('aria-expanded', String(aapen));
+    if (d.ftLukk !== undefined) t.querySelector('.hb-button-text').textContent = aapen ? 'Lukk' : 'Les mer';
+  } else if (d.mer) {
+    const p = document.getElementById(d.mer);
+    const aapen = t.getAttribute('aria-expanded') === 'true';
+    t.setAttribute('aria-expanded', String(!aapen));
+    p.hidden = aapen;
+  } else if (d.lagPlan !== undefined) kpLagPlan(d.lagPlan === 'alle');
+});
+
+hbMonter({ kontekst: 'Boligkompasset' });
+tegn(Math.min(Math.max(Number(location.hash.slice(1)) || 1, 1), FORSLAG.length) - 1);
+</script>
+</body>
+</html>
