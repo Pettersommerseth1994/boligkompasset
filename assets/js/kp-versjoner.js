@@ -307,7 +307,7 @@ const KP_VERSJONER = [
     ]
   },
   {
-    nr: 28,
+    nr: 28, commit: 'a1bb60b', mappe: 'iterasjoner/28/',
     navn: 'Oppsummeringen, forslag 2', dato: '29. oktober 2026',
     endringer: [
       'Oppsummeringen bygger på forslag 2 av 10: «Slik fungerer boligen din» er ett trekkspill per steg, med tagger for hvor mye som fungerer og hvor mange utfordringer.',
@@ -320,6 +320,21 @@ const KP_VERSJONER = [
       'Spørsmål 6: «Badet er stort nok» og «Badet er lite» kan krysses av samtidig.',
       'Forsiden: «Ingenting sendes til Husbanken før du selv velger det» er tatt bort, og overskriften har luft ned til ingressen.',
       'Arbeidssider: forslag-oppsummering-10.html, forslag-oppsummering-2.html og forslag-handlingsplan.html.'
+    ]
+  },
+  {
+    nr: 29,
+    navn: 'Tilbakemeldingen 30. oktober', dato: '3. november 2026',
+    endringer: [
+      '«1. Kompasset ditt» heter «1. Ditt boligkompass».',
+      '«2. Slik fungerer boligen din» er tilbake til boksene fra iterasjon 27, med «Les mer». Hver boks viser tre punkter, og «Se flere» viser resten.',
+      '«3. Handlingsplan» er tabellen, forslag 2. Velgeren og de andre forslagene er tatt bort, og stegene er tatt ut av tabellen.',
+      '«Les mer» står i tabellen ved hvert tiltak, uten den grønne boksen om tilskudd.',
+      'Ny tekst i handlingsplanen: «Trykk på «Les mer» for å få tips om mulige tiltak.»',
+      '«Bedre dørhåndtak» er tatt ut som tiltak.',
+      'Utskriften: «Handlingsplan» uten «Min», uten linjen under tittelen, logoen like langt fra toppen som fra høyre kant, og mer luft over navn, adresse og telefon.',
+      'Utskriften: uten avkrysning, uten «Enkelt tiltak» og «Større tiltak», og uten teksten om tilskudd ved tiltakene.',
+      'Utskriften: «Hvem kan hjelpe deg?» har bare tilskudd til aldersvennlig oppgradering, og forbeholdet under notatfeltet er tatt bort.'
     ]
   }
 ];

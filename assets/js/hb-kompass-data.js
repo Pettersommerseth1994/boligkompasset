@@ -501,8 +501,8 @@ const KOMPASS_SPORSMAL = [
         veiledning: 'Du har allerede funnet ut at du må gjøre noe med terskler eller trinn inn til boligen din. Se oppsummering med forslag til tiltak du kan gjøre for å tilpasse inngangen din.' },
       { v: 'dor-tung',    tittel: 'Kan bli vanskelig, døren er tung å åpne',
         tiltak: {
-          enkel: 'Du kan vurdere om håndtak kan erstattes med et nytt og bedre. Det kan også være lurt å smøre hengslene samtidig.',
-          enkelBlokk: 'Du kan vurdere om håndtak kan erstattes med et nytt og bedre. Det kan også være lurt å smøre hengslene samtidig. Du kan for eksempel ta kontakt med styret for å høre om det er mulig å gjøre nødvendige tiltak.',
+          /* «Bedre dørhåndtak» er tatt ut som tiltak, tilbakemeldingen
+             30. oktober. Det større tiltaket, en lettere dør, står. */
           stor: 'Du kan sette inn en terskelfri dør som er lettere og bredere slik at den blir enklere å åpne. Du kan vurdere behovet for automatisk døråpner. Det kan søkes om tilskudd til dette fra Husbanken.',
           storKoder: '3.b. og 6.a.',
           storBlokk: 'Det kan settes inn en terskelfri dør som er lettere og bredere slik at den blir enklere å åpne. Det kan også vurderes automatisk døråpner. Du kan for eksempel ta kontakt med styret for å høre om det er mulig å gjøre nødvendige tiltak.'
@@ -960,7 +960,6 @@ const KOMPASS_TILTAK_TITLER = {
   'adkomst-inngang/trapp/stor': 'Trinnfri inngang, trappeheis eller heis',
   'adkomst-inngang/terskler/enkel': 'Fjerne terskelen ved inngangen',
   'adkomst-inngang/terskler/stor': 'Varig trinnfri inngang',
-  'adkomst-inngang/dor-tung/enkel': 'Bedre dørhåndtak',
   'adkomst-inngang/dor-tung/stor': 'Lettere og bredere inngangsdør',
   'adkomst-inngang/terreng/enkel': 'Jevnere underlag ved inngangen',
   'adkomst-inngang/terreng/stor': 'Slakere terreng eller trinnfri inngang',
