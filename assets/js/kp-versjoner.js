@@ -344,7 +344,7 @@ const KP_VERSJONER = [
       'Handlingsplanen er Fasadens utvidbare tabell. «Les mer» står i en egen kolonne til høyre, og teksten folder seg ut i en rad under.',
       'Hele raden kan trykkes for å lese mer, og blir grønn når musa er over. Avkrysningen virker for seg.',
       'Uten den tykke grå linjen over og under en åpen rad.',
-      'Versjonsvelgeren nede til venstre har en bryter som slår den av og på. Den er av som standard.',
+      'Versjonsvelgeren slås av og på med en bryter nederst i footeren. Den er av som standard.',
       'Arbeidssider: forslag-handlingsplan-29.html og forslag-lesmer.html.'
     ]
   }
@@ -389,12 +389,18 @@ const KP_VERSJONER = [
   const boks = document.createElement('nav');
   boks.className = 'versjoner';
   boks.setAttribute('aria-label', 'Iterasjoner av Boligkompasset');
-  boks.innerHTML = `
+  /* Bryteren som slår velgeren av og på, står fast i footeren. Har
+     siden ingen footer, står den øverst i boksen. */
+  const hovedbryterHtml = tekst => `
     <label class="versjoner__bryter versjoner__hovedbryter">
       <input type="checkbox" id="vis-velger">
       <span class="versjoner__spor"></span>
-      <span class="versjoner__bryter-tekst">Iterasjon ${gjeldende.nr}</span>
-    </label>
+      <span class="versjoner__bryter-tekst">${tekst}</span>
+    </label>`;
+  const fot = document.querySelector('.hb-footer .hb-shell');
+
+  boks.innerHTML = `
+    ${fot ? '' : hovedbryterHtml(`Iterasjon ${gjeldende.nr}`)}
     <div class="versjoner__innhold">
     <div class="versjoner__rad">
       <span class="versjoner__hint">Iterasjon</span>
@@ -417,13 +423,20 @@ const KP_VERSJONER = [
     </div>`;
 
   kropp.appendChild(boks);
+  if (fot) {
+    const plass = document.createElement('div');
+    plass.className = 'versjoner-fot';
+    plass.innerHTML = hovedbryterHtml(`Vis iterasjonsvelgeren (iterasjon ${gjeldende.nr})`);
+    fot.appendChild(plass);
+  }
 
-  /* Bryteren øverst slår hele velgeren av og på. Av er den bare en liten
-     bryter nede i hjørnet. Av som standard, 3. november, så den ikke
-     ligger over tjenesten når den vises fram. Valget huskes. */
+  /* Bryteren slår hele velgeren av og på. Av som standard, 3. november,
+     så den ikke ligger over tjenesten når den vises fram. Bryteren står
+     fast i footeren, og av er velgeren helt borte fra hjørnet. Uten
+     footer er den en liten bryter i hjørnet. Valget huskes. */
   const VIS_VELGER = 'kp-vis-velger';
-  const hovedbryter = boks.querySelector('#vis-velger');
-  const visVelger = paa => boks.classList.toggle('versjoner--av', !paa);
+  const hovedbryter = document.getElementById('vis-velger');
+  const visVelger = paa => boks.classList.toggle(fot ? 'versjoner--skjult' : 'versjoner--av', !paa);
   let velgerPaa = false;
   try { velgerPaa = localStorage.getItem(VIS_VELGER) === '1'; } catch (e) { /* privat modus */ }
   hovedbryter.checked = velgerPaa;

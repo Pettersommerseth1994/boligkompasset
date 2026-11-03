@@ -225,6 +225,14 @@ a.versjoner__celle:focus-visible {
 .versjoner__innhold { display: flex; flex-direction: column; gap: 7px; }
 .versjoner--av { width: max-content; padding: 7px 11px; }
 .versjoner--av .versjoner__innhold { display: none; }
+.versjoner--skjult { display: none; }
+
+/* Bryteren i footeren, på mørk bakgrunn */
+.versjoner-fot { margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.2); }
+.versjoner-fot .versjoner__bryter { display: inline-flex; cursor: pointer; border-top: 0; padding-top: 0; }
+.versjoner-fot .versjoner__bryter-tekst { color: #fff; font-size: 14px; font-weight: 400; }
+.versjoner-fot .versjoner__spor { background: rgba(255, 255, 255, 0.35); }
+@media print { .versjoner-fot { display: none; } }
 
 @media print {
   .versjoner { display: none; }
