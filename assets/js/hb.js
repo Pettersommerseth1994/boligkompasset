@@ -111,7 +111,7 @@ const HB_AVATAR = `
 
 const HB_NAV = [
   ['https://pettersommerseth1994.github.io/husbanken/index.html', 'Forside for privatpersoner'],
-  ['https://pettersommerseth1994.github.io/husbanken/tilskudd.html', 'Tilskudd til aldersvennlig oppgradering'],
+  ['https://www.husbanken.no/person/tilskudd-til-oppgradering-av-bolig/', 'Tilskudd til aldersvennlig oppgradering'],
   ['boligkompasset.html', 'Boligkompasset'],
   ['#', 'Bostøtte'],
   ['#', 'Startlån fra kommunen'],
@@ -187,7 +187,7 @@ function hbFooter() {
       <div>
         <h3>Snarveier</h3>
         <ul>
-          <li><a href="https://pettersommerseth1994.github.io/husbanken/tilskudd.html">Tilskudd til aldersvennlig oppgradering</a></li>
+          <li><a href="https://www.husbanken.no/person/tilskudd-til-oppgradering-av-bolig/">Tilskudd til aldersvennlig oppgradering</a></li>
           <li><a href="#">Bostøtte</a></li>
           <li><a href="#">Startlån fra kommunen</a></li>
           <li><a href="#">Lån fra Husbanken</a></li>

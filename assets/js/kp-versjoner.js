@@ -345,6 +345,7 @@ const KP_VERSJONER = [
       'Hele raden kan trykkes for å lese mer, og blir grønn når musa er over. Avkrysningen virker for seg.',
       'Uten den tykke grå linjen over og under en åpen rad.',
       'Versjonsvelgeren slås av og på med en bryter nederst i footeren. Den er av som standard.',
+      'Ressursene lenker til husbanken.no for tilskudd til aldersvennlig oppgradering og lån til oppgradering, og til nav.no for hjelpemidler. «Hjelpemidler og tilskudd fra Nav» heter «Hjelpemidler og tilrettelegging».',
       'Arbeidssider: forslag-handlingsplan-29.html og forslag-lesmer.html.'
     ]
   }

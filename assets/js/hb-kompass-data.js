@@ -638,7 +638,7 @@ const KOMPASS_ORDNINGER = {
   aldersvennlig: {
     navn: 'Tilskudd til aldersvennlig oppgradering',
     kort: 'Dekker 25 prosent av det du oppgraderer for, opptil 75 000 kroner. Tilskudd er penger du får, ikke et lån.',
-    lenke: 'https://pettersommerseth1994.github.io/husbanken/tilskudd.html', lenketekst: 'Se hva du kan få'
+    lenke: 'https://www.husbanken.no/person/tilskudd-til-oppgradering-av-bolig/', lenketekst: 'Se hva du kan få'
   },
   startlaan: {
     navn: 'Startlån fra kommunen',
@@ -653,7 +653,7 @@ const KOMPASS_ORDNINGER = {
   husbanklaan: {
     navn: 'Lån til å oppgradere bolig',
     kort: 'For deg som skal bygge om, oppgradere eller kjøpe bolig. Boligen må oppfylle visse krav.',
-    lenke: 'https://husbanken.no/person/laan-fra-husbanken/', lenketekst: 'Les om lån fra Husbanken'
+    lenke: 'https://www.husbanken.no/person/lan-fra-husbanken/oppgradering/', lenketekst: 'Les om lån til oppgradering'
   },
   bostotte: {
     navn: 'Bostøtte',
@@ -671,9 +671,9 @@ const KOMPASS_ORDNINGER = {
     lenke: 'https://www.nav.no/', lenketekst: 'Les om tilskudd fra Nav'
   },
   hjelpemiddel: {
-    navn: 'Hjelpemidler og tilskudd fra Nav',
+    navn: 'Hjelpemidler og tilrettelegging',
     kort: 'Gratis råd om rampe, løfteplattform, heis og hjelpemidler i boligen. De kommer også hjem til deg.',
-    lenke: 'https://www.nav.no/hjelpemiddelsentral', lenketekst: 'Finn hjelpemiddelsentralen din'
+    lenke: 'https://www.nav.no/hjelpemidler', lenketekst: 'Les om hjelpemidler fra Nav'
   },
   ergoterapeut: {
     navn: 'Ergoterapeut i kommunen',
