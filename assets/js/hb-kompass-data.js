@@ -671,7 +671,7 @@ const KOMPASS_ORDNINGER = {
     lenke: 'https://www.nav.no/', lenketekst: 'Les om tilskudd fra Nav'
   },
   hjelpemiddel: {
-    navn: 'Hjelpemidler og tilrettelegging',
+    navn: 'Hjelpemidler og tilrettelegging fra NAV',
     kort: 'Gratis råd om rampe, løfteplattform, heis og hjelpemidler i boligen. De kommer også hjem til deg.',
     lenke: 'https://www.nav.no/hjelpemidler', lenketekst: 'Les om hjelpemidler fra Nav'
   },
