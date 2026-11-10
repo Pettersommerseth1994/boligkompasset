@@ -320,9 +320,11 @@ function kpValgHtml(navn, valg, type, gjeldende, legend) {
       </li>`;
   };
 
+  /* Iterasjon 31: ved flervalg står det at du kan velge flere */
   return `
   <fieldset class="hb-felt ${flertall ? 'hb-felt-checkboxgruppe' : 'hb-felt-radio'}">
-    <legend class="hb-screenreader-only">${legend}</legend>
+    <legend class="hb-screenreader-only">${legend}${flertall ? '. Du kan velge flere alternativer.' : ''}</legend>
+    ${flertall ? '<p class="hb-felt-beskrivelse kp-flervalg" aria-hidden="true">Du kan velge flere alternativer.</p>' : ''}
     <ul class="hb-feltliste">
       ${synlige.filter(v => !v.under).map(rad).join('')}
     </ul>
@@ -409,7 +411,8 @@ function kpStartHtml() {
           ${kpKnapp('Start kartleggingen', 'data-start="kompass"', 'prominent', 'pil')}
         </div>
         <p class="hb-text--sm">
-          Du trenger ikke logge inn.
+          Du trenger ikke logge inn. Svarene lagres bare lokalt i nettleseren
+          på denne enheten.
         </p>
         <p class="hb-text--sm hb-mb--none kp-forbehold--start">${KP_FORBEHOLD}</p>
       </div>
@@ -902,7 +905,6 @@ function kpHandlingsplanHtml() {
             <tr class="hb-table-row--expandable" data-plan-rad="${t.id}">
               <td><input class="hb-checkbox" id="tiltak-${t.id}" type="checkbox" name="handlingsplan" value="${t.id}" ${valgt.has(t.id) ? 'checked' : ''}><div class="hb-label"><label class="hb-label-tekst" for="tiltak-${t.id}"><span class="hb-screenreader-only">${t.tittel}</span></label></div></td>
               <td><label for="tiltak-${t.id}">${t.tittel}</label></td>
-              <td>${KP_SOK_HUSBANKEN.test(t.tekst) ? 'Ja' : '–'}</td>
               <td>
                 <button type="button" class="hb-button hb-button--link kp-lesmer" aria-expanded="false" aria-controls="tiltak-tekst-${t.id}" data-plan-mer="${t.id}">
                   <span class="hb-button-text">Les mer</span><span class="kp-lesmer__pil" aria-hidden="true">${KP_PIL_NED}</span>
@@ -911,7 +913,7 @@ function kpHandlingsplanHtml() {
             </tr>
             <tr class="hb-table-row--expansion" id="tiltak-tekst-${t.id}">
               <td></td>
-              <td colspan="3"><p>${t.tekst.replace(KP_SOK_HUSBANKEN, ' ').trim()}</p></td>
+              <td colspan="2"><p>${t.tekst.replace(KP_SOK_HUSBANKEN, ' ').trim()}</p></td>
             </tr>`;
 
   return `
@@ -934,7 +936,7 @@ function kpHandlingsplanHtml() {
       <h3 class="hb-h4 kp-plangruppe">${ty.tittel}</h3>
       <div class="hb-scrollbox">
         <table class="hb-table--expandable kp-plantabell">
-          <thead><tr><th scope="col"><span class="hb-screenreader-only">Velg</span></th><th scope="col">Tiltak</th><th scope="col">Tilskudd</th><th scope="col"><span class="hb-screenreader-only">Les mer</span></th></tr></thead>
+          <thead class="hb-screenreader-only"><tr><th scope="col">Velg</th><th scope="col">Tiltak</th><th scope="col">Les mer</th></tr></thead>
           <tbody>${forslag[ty.id].map(rad).join('')}</tbody>
         </table>
       </div>`).join('')}
@@ -944,18 +946,47 @@ function kpHandlingsplanHtml() {
       <h3 class="hb-h4">Handlingsplanen din</h3>
       <p class="hb-mb--xs" data-plan-antall aria-live="polite"></p>
       <p>
-        Skriv ut handlingsplanen eller lagre den som PDF. Ta den med når du
-        snakker med en entreprenør, kommunen eller familien.
+        Skriv ut handlingsplanen, last den ned som PDF eller få den på
+        e-post. Ta den med når du snakker med en entreprenør, kommunen
+        eller familien.
       </p>
+      <fieldset class="hb-felt hb-felt-radio kp-planutvalg">
+        <legend class="kp-planutvalg__tittel">Hva vil du ta med?</legend>
+        <ul class="hb-feltliste">
+          <li>
+            <input class="hb-radiobutton" id="plan-valgte" type="radio" name="planutvalg" value="valgte" checked>
+            <div class="hb-label"><label class="hb-label-tekst" for="plan-valgte">Tiltakene du har krysset av for</label></div>
+          </li>
+          <li>
+            <input class="hb-radiobutton" id="plan-alle" type="radio" name="planutvalg" value="alle">
+            <div class="hb-label"><label class="hb-label-tekst" for="plan-alle">Alle tiltakene vi foreslår</label></div>
+          </li>
+        </ul>
+      </fieldset>
       <div class="hb-felt kp-planfeil" data-plan-feil-felt>
         <p class="hb-felt-feilmelding" data-plan-feil role="alert"></p>
       </div>
       <div class="hb-knappesamling">
         <div class="hb-knappesamling-gruppe hb-knappesamling-gruppe--horisontal">
-          <div class="hb-knappesamling-element">${kpKnapp('Skriv ut handlingsplanen', 'data-lag-plan="valgte"')}</div>
-          <div class="hb-knappesamling-element">${kpKnapp('Skriv ut alle tiltakene', 'data-lag-plan="alle"', 'standard')}</div>
+          <div class="hb-knappesamling-element">${kpKnapp('Skriv ut', 'data-skriv-plan')}</div>
+          <div class="hb-knappesamling-element">${kpKnapp('Last ned PDF', 'data-pdf-plan', 'standard')}</div>
         </div>
       </div>
+
+      <form class="hb-felt kp-planepost" data-plan-epost novalidate>
+        <label class="hb-label" for="plan-epost">Få handlingsplanen på e-post</label>
+        <div class="kp-kommune__rad">
+          <input class="hb-inputfelt" id="plan-epost" name="epost" type="email"
+                 autocomplete="email" inputmode="email" placeholder="navn@eksempel.no">
+          ${kpKnapp('Send på e-post', 'type="submit"', 'standard').replace('type="button" ', '')}
+        </div>
+        <p class="hb-felt-feilmelding" data-epost-feil role="alert"></p>
+        <div class="hb-callout hb-callout--positive kp-planepost__kvittering" data-epost-kvittering hidden>
+          <div class="hb-callout-body"><div class="hb-callout-content">
+            <p data-epost-kvittering-tekst></p>
+          </div></div>
+        </div>
+      </form>
     </div>`;
 }
 
@@ -1027,6 +1058,10 @@ function kpInitHandlingsplan() {
     tell();
     if (S.handlingsplan.length) kpPlanFeil('');
   });
+  document.querySelectorAll('input[name="planutvalg"]').forEach(r =>
+    r.addEventListener('change', () => kpPlanFeil('')));
+  const epost = document.querySelector('[data-plan-epost]');
+  if (epost) epost.addEventListener('submit', ev => { ev.preventDefault(); kpSendPlan(epost); });
   tell();
 }
 
@@ -1040,13 +1075,25 @@ function kpPlanFeil(tekst) {
   felt.classList.toggle('hb-felt--med-feil', !!tekst);
 }
 
-/* Skriver ut bare handlingsplanen. Vanlig utskrift av siden er som før. */
-function kpLagPlan(alle) {
+/* Iterasjon 31: hva som skal med, velges én gang, og så kan planen
+   skrives ut, lastes ned som PDF eller sendes på e-post. Uten noe
+   avkrysset og med «Tiltakene du har krysset av for» valgt, kommer
+   feilmeldingen, og ingenting skjer. */
+function kpPlanUtvalg() {
+  const alle = document.querySelector('input[name="planutvalg"]:checked')?.value === 'alle';
   if (!alle && !(S.handlingsplan || []).length) {
-    kpPlanFeil('Du må krysse av for minst ett tiltak, eller skrive ut alle tiltakene.');
-    return;
+    kpPlanFeil('Du må krysse av for minst ett tiltak, eller velge «Alle tiltakene vi foreslår».');
+    return null;
   }
   kpPlanFeil('');
+  return { alle };
+}
+
+/* Skriver ut bare handlingsplanen. Vanlig utskrift av siden er som før. */
+function kpLagPlan() {
+  const u = kpPlanUtvalg();
+  if (!u) return;
+  const alle = u.alle;
   let ark = document.querySelector('.kp-planutskrift');
   if (!ark) { ark = document.createElement('div'); ark.className = 'kp-planutskrift'; document.body.appendChild(ark); }
   ark.innerHTML = kpPlanUtskriftHtml(alle);
@@ -1054,6 +1101,79 @@ function kpLagPlan(alle) {
   const ferdig = () => { document.body.classList.remove('skriver-plan'); window.removeEventListener('afterprint', ferdig); };
   window.addEventListener('afterprint', ferdig);
   window.print();
+}
+
+/* Last ned PDF lager en ekte PDF-fil, ikke utskriftsdialogen. Arket er
+   det samme som til utskrift. html2pdf hentes først når knappen trykkes. */
+let kpHtml2pdf;
+function kpHentHtml2pdf() {
+  kpHtml2pdf = kpHtml2pdf || new Promise((ok, feil) => {
+    const sk = document.createElement('script');
+    sk.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+    sk.onload = () => ok(window.html2pdf);
+    sk.onerror = () => { kpHtml2pdf = null; feil(new Error('html2pdf')); };
+    document.head.appendChild(sk);
+  });
+  return kpHtml2pdf;
+}
+
+async function kpLastNedPlan(knapp) {
+  const u = kpPlanUtvalg();
+  if (!u) return;
+  const tekst = knapp.querySelector('.hb-button-text');
+  knapp.disabled = true;
+  tekst.textContent = 'Lager PDF …';
+  const ark = document.createElement('div');
+  ark.className = 'kp-planutskrift kp-planutskrift--pdf';
+  ark.innerHTML = kpPlanUtskriftHtml(u.alle);
+  const holder = document.createElement('div');
+  holder.className = 'kp-pdf-holder';
+  holder.appendChild(ark);
+  document.body.appendChild(holder);
+  try {
+    const html2pdf = await kpHentHtml2pdf();
+    await html2pdf().set({
+      margin: [16, 14, 16, 14],
+      filename: 'handlingsplan-boligkompasset.pdf',
+      image: { type: 'jpeg', quality: 0.95 },
+      /* Uten scrollX og scrollY blir arket blankt når siden er scrollet ned */
+      html2canvas: { scale: 2, useCORS: true, scrollX: 0, scrollY: 0 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: 'css', avoid: ['.kp-pu__tiltak', '.kp-pu__videre', '.kp-pu__notat'] }
+    }).from(ark).save();
+  } catch {
+    kpPlanFeil('Vi klarte ikke å lage PDF-en. Prøv «Skriv ut» og velg «Lagre som PDF».');
+  } finally {
+    holder.remove();
+    knapp.disabled = false;
+    tekst.textContent = 'Last ned PDF';
+  }
+}
+
+/* Send på e-post. Prototypen har ingen tjener, så ingenting sendes:
+   adressen sjekkes, og du får en kvittering slik tjenesten vil vise
+   den. Adressen lagres ikke. */
+function kpSendPlan(skjema) {
+  const felt = skjema.querySelector('#plan-epost');
+  const feil = skjema.querySelector('[data-epost-feil]');
+  const kvittering = skjema.querySelector('[data-epost-kvittering]');
+  const visFeil = t => {
+    feil.textContent = t;
+    skjema.classList.toggle('hb-felt--med-feil', !!t);
+    felt.setAttribute('aria-invalid', String(!!t));
+  };
+  kvittering.hidden = true;
+  const adresse = felt.value.trim();
+  if (!adresse) { visFeil('Skriv inn e-postadressen din.'); felt.focus(); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adresse)) {
+    visFeil('Skriv inn en gyldig e-postadresse, for eksempel navn@eksempel.no.'); felt.focus(); return;
+  }
+  visFeil('');
+  if (!kpPlanUtvalg()) return;
+  skjema.querySelector('[data-epost-kvittering-tekst]').textContent =
+    `Handlingsplanen er sendt til ${adresse}. Finner du den ikke, kan du se i søppelpost.`;
+  kvittering.hidden = false;
+  felt.value = '';
 }
 
 /* Forbeholdet, i starten og på slutten. Møtet 27. oktober: det må
@@ -1552,7 +1672,8 @@ function kpKlikk(ev) {
     kpGaaTil(KP_FLYT.findIndex(f => f.t === 'etappe' && f.e.id === d.tilSteg));
   }
   else if (d.skrivUt !== undefined) window.print();
-  else if (d.lagPlan !== undefined) kpLagPlan(d.lagPlan === 'alle');
+  else if (d.skrivPlan !== undefined) kpLagPlan();
+  else if (d.pdfPlan !== undefined) kpLastNedPlan(t);
 
   else if (d.tilfeldig !== undefined) kpFyllTilfeldig();
   /* Fasadens trekkspill: tilstanden står på elementet */

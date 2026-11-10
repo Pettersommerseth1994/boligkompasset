@@ -421,7 +421,7 @@
 .fasaden .kp-plantabell { width: 100%; }
 .kp-plantabell td, .kp-plantabell th { vertical-align: top; }
 .kp-plantabell td:first-child { width: 2.5rem; }
-.kp-plantabell td:nth-child(3), .kp-plantabell td:last-child { width: 6.5rem; }
+.kp-plantabell .hb-table-row--expandable td:last-child { width: 6.5rem; }
 .kp-plantabell .hb-table-row--expansion p { margin: 0; max-width: 62ch; }
 .fasaden .kp-plantabell .kp-lesmer { padding: 0; }
 .hb-table-row--expanded .kp-lesmer__pil { transform: rotate(180deg); }
@@ -435,6 +435,17 @@
 .kp-planpanel { margin-top: var(--space-5); }
 .kp-planpanel .hb-knappesamling { margin-top: var(--space-3); }
 .fasaden .kp-planfeil .hb-felt-feilmelding { margin: 0 0 var(--space-2); }
+.kp-planutvalg { margin: var(--space-3) 0 var(--space-2); }
+.kp-planutvalg__tittel { font-weight: 600; margin-bottom: var(--space-2); }
+/* «Få handlingsplanen på e-post» under knappene, skilt med en linje */
+.kp-planepost { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--hb-slate-200); }
+.kp-planepost .kp-kommune__rad { margin-top: var(--space-2); }
+.fasaden .kp-planepost .hb-felt-feilmelding:empty { display: none; }
+.fasaden .kp-planepost .hb-felt-feilmelding { margin: var(--space-2) 0 0; }
+.kp-planepost__kvittering { margin-top: var(--space-3); }
+.kp-planepost__kvittering p { margin: 0; }
+/* «Du kan velge flere alternativer» over avkrysningsboksene */
+.fasaden .kp-flervalg { margin: 0 0 var(--space-3); color: var(--fg-subtle); }
 
 .kp-lesmer__innhold p { margin: 0 0 var(--space-2); }
 .kp-sok { background: var(--hb-green-100); border-radius: var(--radius-lg); padding: var(--space-3); }
@@ -668,34 +679,39 @@
 @media print {
   body.skriver-plan > *:not(.kp-planutskrift) { display: none !important; }
   body.skriver-plan .kp-planutskrift { display: block; }
-  .kp-planutskrift { color: #2c4656; font-size: 10.5pt; line-height: 1.45; }
-  .kp-planutskrift * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .kp-planutskrift h1 { font-size: 22pt; line-height: 1.15; margin: 0; }
-  .kp-planutskrift h2 { font-size: 13pt; margin: 0 0 6pt; }
-  .kp-planutskrift p { margin: 0 0 4pt; }
-
-  .kp-pu__topp { display: flex; align-items: flex-start; justify-content: space-between; flex-direction: row-reverse;
-    border-bottom: 2pt solid #2B4554; padding-bottom: 8pt; margin-bottom: 22pt; }
-  /* Arket har 16 mm marg oppe og 14 mm på sidene. Logoen flyttes 2 mm
-     opp, så den står like langt fra toppen som fra høyre kant. */
-  .kp-pu__logo { height: 26pt; width: auto; margin-top: -2mm; }
-  .kp-pu__over { font-size: 8.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #5f6d78; }
-
-  .kp-pu__felter { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12pt; margin-bottom: 14pt; }
-  .kp-pu__felter p { border-bottom: .75pt solid #8c9aa5; padding-top: 16pt; font-size: 8.5pt; color: #5f6d78; }
-
-  .kp-pu__steg { margin-bottom: 12pt; }
-  .kp-pu__steg h2 { border-bottom: .75pt solid #d9dee2; padding-bottom: 3pt; }
-  .kp-pu__steg ol { list-style: none; margin: 0; padding: 0; }
-  .kp-pu__tiltak { padding: 6pt 0; border-bottom: .5pt solid #e6e9ec; break-inside: avoid; }
-  .kp-pu__tittel { font-weight: 600; }
-
-  .kp-pu__videre { break-inside: avoid; margin-bottom: 12pt; }
-  .kp-pu__videre ul { margin: 0; padding-left: 14pt; }
-  .kp-pu__notat { border: .75pt solid #8c9aa5; border-radius: 4pt; padding: 8pt 10pt; min-height: 110pt; break-inside: avoid;
-    background-image: repeating-linear-gradient(to bottom, transparent 0 21pt, #d9dee2 21pt 21.75pt); background-position: 0 28pt; }
-  .kp-pu__notat h2 { font-size: 10.5pt; }
 }
+/* Last ned PDF: det samme arket, lagt utenfor skjermen mens html2pdf
+   tar bilde av det. 182 mm er A4 minus margene. */
+.kp-pdf-holder { position: absolute; left: -10000px; top: 0; }
+.kp-planutskrift--pdf { display: block; width: 182mm; background: #fff; }
+
+.kp-planutskrift { color: #2c4656; font-size: 10.5pt; line-height: 1.45; }
+.kp-planutskrift * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.kp-planutskrift h1 { font-size: 22pt; line-height: 1.15; margin: 0; }
+.kp-planutskrift h2 { font-size: 13pt; margin: 0 0 6pt; }
+.kp-planutskrift p { margin: 0 0 4pt; }
+
+.kp-pu__topp { display: flex; align-items: flex-start; justify-content: space-between; flex-direction: row-reverse;
+  border-bottom: 2pt solid #2B4554; padding-bottom: 8pt; margin-bottom: 22pt; }
+/* Arket har 16 mm marg oppe og 14 mm på sidene. Logoen flyttes 2 mm
+   opp, så den står like langt fra toppen som fra høyre kant. */
+.kp-pu__logo { height: 26pt; width: auto; margin-top: -2mm; }
+.kp-pu__over { font-size: 8.5pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #5f6d78; }
+
+.kp-pu__felter { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12pt; margin-bottom: 14pt; }
+.kp-pu__felter p { border-bottom: .75pt solid #8c9aa5; padding-top: 16pt; font-size: 8.5pt; color: #5f6d78; }
+
+.kp-pu__steg { margin-bottom: 12pt; }
+.kp-pu__steg h2 { border-bottom: .75pt solid #d9dee2; padding-bottom: 3pt; }
+.kp-pu__steg ol { list-style: none; margin: 0; padding: 0; }
+.kp-pu__tiltak { padding: 6pt 0; border-bottom: .5pt solid #e6e9ec; break-inside: avoid; }
+.kp-pu__tittel { font-weight: 600; }
+
+.kp-pu__videre { break-inside: avoid; margin-bottom: 12pt; }
+.kp-pu__videre ul { margin: 0; padding-left: 14pt; }
+.kp-pu__notat { border: .75pt solid #8c9aa5; border-radius: 4pt; padding: 8pt 10pt; min-height: 110pt; break-inside: avoid;
+  background-image: repeating-linear-gradient(to bottom, transparent 0 21pt, #d9dee2 21pt 21.75pt); background-position: 0 28pt; }
+.kp-pu__notat h2 { font-size: 10.5pt; }
 
 /* ═══ Hjelpeteksten ═══════════════════════════════════════════════
    Fasadens hb-hjelpetekst, for det masterfila kaller Popover. I

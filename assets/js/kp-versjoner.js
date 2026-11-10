@@ -338,7 +338,7 @@ const KP_VERSJONER = [
     ]
   },
   {
-    nr: 30,
+    nr: 30, commit: 'f7c8034', mappe: 'iterasjoner/30/',
     navn: 'Handlingsplanen som utvidbar tabell', dato: '3. november 2026',
     endringer: [
       'Handlingsplanen er Fasadens utvidbare tabell. «Les mer» står i en egen kolonne til høyre, og teksten folder seg ut i en rad under.',
@@ -347,6 +347,18 @@ const KP_VERSJONER = [
       'Versjonsvelgeren slås av og på med en bryter nederst i footeren. Den er av som standard.',
       'Ressursene lenker til husbanken.no for tilskudd til aldersvennlig oppgradering og lån til oppgradering, og til nav.no for hjelpemidler. «Hjelpemidler og tilskudd fra Nav» heter «Hjelpemidler og tilrettelegging fra NAV».',
       'Arbeidssider: forslag-handlingsplan-29.html og forslag-lesmer.html.'
+    ]
+  },
+  {
+    nr: 31,
+    navn: 'Utskrift, PDF og e-post', dato: '9. november 2026',
+    endringer: [
+      'Handlingsplanen: «Skriv ut» og «Last ned PDF» er to knapper. «Last ned PDF» laster ned en PDF-fil, uten utskriftsdialogen.',
+      'Handlingsplanen: du velger om tiltakene du har krysset av for, eller alle tiltakene, skal være med. Det gjelder utskrift, PDF og e-post.',
+      'Handlingsplanen: «Få handlingsplanen på e-post», med felt for e-postadresse og «Send på e-post». I prototypen sendes ingenting, men du får kvitteringen.',
+      'Tabellen i handlingsplanen er uten overskriftene «Tiltak» og «Tilskudd», og uten «Ja» i tilskuddskolonnen.',
+      'Spørsmål med flervalg har teksten «Du kan velge flere alternativer.» over svarene.',
+      'Forsiden: «Svarene lagres bare lokalt i nettleseren på denne enheten.»'
     ]
   }
 ];
