@@ -273,6 +273,11 @@
 .kp-tittel { max-width: 30ch; margin-bottom: var(--space-3); }
 .kp-hjelp { max-width: 62ch; }
 .kp-hjelp .hb-felt-beskrivelse { margin-bottom: var(--space-3); }
+/* Hjelpeteksten i en grå boks, så den skiller seg fra svarene.
+   Tilbakemeldingen 18. november. */
+.kp-hjelp--boks { background: var(--hb-slate-100); border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); }
+.fasaden .kp-hjelp--boks p { margin: 0; }
+.fasaden .kp-hjelp--boks p + p { margin-top: var(--space-3); }
 
 .kp-sporsmal__under { color: var(--fg-default); margin: 0 0 var(--space-3); max-width: 56ch; }
 
@@ -421,15 +426,8 @@
 .fasaden .kp-plantabell { width: 100%; }
 .kp-plantabell td, .kp-plantabell th { vertical-align: top; }
 .kp-plantabell td:first-child { width: 2.5rem; }
-.kp-plantabell .hb-table-row--expandable td:last-child { width: 6.5rem; }
-.kp-plantabell .hb-table-row--expansion p { margin: 0; max-width: 62ch; }
-.fasaden .kp-plantabell .kp-lesmer { padding: 0; }
-.hb-table-row--expanded .kp-lesmer__pil { transform: rotate(180deg); }
-/* Fasaden legger en 0,5 rem tykk linje over raden som åpnes og raden
-   etter. Tilbakemeldingen 3. november: vanlig 1 px linje. */
-.fasaden .kp-plantabell .hb-table-row--expanded td,
-.fasaden .kp-plantabell .hb-table-row--expanded + .hb-table-row--expansion + tr td { border-top-width: 1px; }
-.fasaden .kp-plantabell .hb-table-row--expansion td { border-top: 0; }
+.kp-plantabell tr[data-plan-rad] { cursor: pointer; }
+.kp-plantabell label { cursor: pointer; }
 
 /* «Handlingsplanen din» med utskriftsknappene */
 .kp-planpanel { margin-top: var(--space-5); }
@@ -444,8 +442,8 @@
 .fasaden .kp-planepost .hb-felt-feilmelding { margin: var(--space-2) 0 0; }
 .kp-planepost__kvittering { margin-top: var(--space-3); }
 .kp-planepost__kvittering p { margin: 0; }
-/* «Du kan velge flere alternativer» over avkrysningsboksene */
-.fasaden .kp-flervalg { margin: 0 0 var(--space-3); color: var(--fg-subtle); }
+/* «Kryss av for det som passer.» over avkrysningsboksene, halvfet */
+.fasaden .kp-flervalg { margin: 0 0 var(--space-3); font-weight: 600; color: var(--fg-default); }
 
 .kp-lesmer__innhold p { margin: 0 0 var(--space-2); }
 .kp-sok { background: var(--hb-green-100); border-radius: var(--radius-lg); padding: var(--space-3); }
@@ -455,7 +453,6 @@
   .kp-lesmer { display: none !important; }
   .kp-lesmer__innhold { display: block !important; }
   .kp-boks { break-inside: avoid; }
-  .kp-plantabell .hb-table-row--expansion { display: table-row !important; }
   .kp-boks [data-flere-punkt] { display: block !important; }
   .kp-flere { display: none !important; }
 }
@@ -527,7 +524,11 @@
   grid-template-columns: repeat(2, 1fr);
 }
 @media (min-width: 620px) { .kp-etappekort { grid-template-columns: repeat(3, 1fr); } }
+.kp-etappekort__steg { display: flex; flex-direction: column; min-width: 0; }
+/* Navnet på steget står over kortet, halvfett og mørkt */
+.fasaden .kp-etappekort__navn { margin: 0 0 6px; font-size: var(--text-sm); line-height: 1.35; font-weight: 600; color: var(--fg-default); }
 .kp-etappekort__kort {
+  flex: 1;
   display: flex; flex-direction: column;
   border: 1px solid var(--hb-slate-200);
   border-radius: var(--radius-lg);
@@ -535,7 +536,6 @@
   background: #fff;
 }
 .kp-etappekort__rose { width: 76px; margin: 0 0 2px; }
-.kp-etappekort__navn { margin: 0; font-size: var(--text-sm); line-height: 1.35; color: var(--fg-subtle); }
 .kp-etappekort__kurs { margin: 2px 0 var(--space-2); font-weight: 600; font-size: var(--text-sm); line-height: 1.35; }
 .kp-etappekort__kort .kp-oversikt__spor { margin-top: auto; height: 18px; flex-shrink: 0; }
 .kp-oversikt__dom { font-size: var(--text-sm); color: var(--fg-subtle); }

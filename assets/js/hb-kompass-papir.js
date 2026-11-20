@@ -50,7 +50,7 @@ function paValg(valg, flervalg, nokkel) {
 }
 
 const paInstruks = flervalg => flervalg
-  ? 'Sett kryss ved alt som passer.'
+  ? 'Kryss av for det som passer.'
   : 'Sett ett kryss.';
 
 function paDelsporsmal(nr, ledetekst, hjelp, valg, flervalg, nokkel, betingelse) {
@@ -104,7 +104,7 @@ function paTegn() {
   <section class="pa-slik">
     <h2 class="pa-slik-tittel">Slik fyller du ut skjemaet</h2>
     <ul>
-      <li>Sett kryss i ruta ved svaret som passer best. Der det står «Sett kryss ved alt som passer», kan du krysse av for flere.</li>
+      <li>Sett kryss i ruta ved svaret som passer best. Der det står «Kryss av for det som passer», kan du krysse av for flere.</li>
       <li>Noen spørsmål og svar gjelder bare hvis du har svart noe bestemt før. Det står i parentes.</li>
       <li>Hopp over det du er usikker på. Du kan svare senere.</li>
       <li>Vil du ha kompasset og tiltakene regnet ut, kan svarene legges inn i Boligkompasset på nett.</li>

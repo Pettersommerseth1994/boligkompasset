@@ -267,7 +267,9 @@ const kpEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
    adskilt. Det masterfila kaller Popover på et spørsmål, er et eget
    avsnitt til slutt. Tilbakemeldingen 21. oktober: en blå boks ser ut
    som det viktigste på sida, og tar oppmerksomheten fra refleksjonen
-   i teksten over. */
+   i teksten over. Tilbakemeldingen 18. november: hjelpeteksten og
+   svarene var for like. Hjelpeteksten står derfor i en grå boks, ikke
+   blå, så den skiller seg fra svarene uten å ta over sida. */
 const kpAvsnitt = (tekst, klasse = 'hb-felt-beskrivelse', popover = '') =>
   [...String(tekst || '').split(/\n\s*\n/), popover].filter(a => a && a.trim())
     .map(a => `<p class="${klasse}">${a.trim()}</p>`).join('');
@@ -320,11 +322,12 @@ function kpValgHtml(navn, valg, type, gjeldende, legend) {
       </li>`;
   };
 
-  /* Iterasjon 31: ved flervalg står det at du kan velge flere */
+  /* Masterfila: over svarene på alle flervalg står «Kryss av for det
+     som passer», i halvfet som i iterasjon 29 */
   return `
   <fieldset class="hb-felt ${flertall ? 'hb-felt-checkboxgruppe' : 'hb-felt-radio'}">
-    <legend class="hb-screenreader-only">${legend}${flertall ? '. Du kan velge flere alternativer.' : ''}</legend>
-    ${flertall ? '<p class="hb-felt-beskrivelse kp-flervalg" aria-hidden="true">Du kan velge flere alternativer.</p>' : ''}
+    <legend class="hb-screenreader-only">${legend}${flertall ? '. Kryss av for det som passer.' : ''}</legend>
+    ${flertall ? '<p class="kp-flervalg" aria-hidden="true">Kryss av for det som passer.</p>' : ''}
     <ul class="hb-feltliste">
       ${synlige.filter(v => !v.under).map(rad).join('')}
     </ul>
@@ -338,7 +341,7 @@ function kpDelfeltHtml(navn, ledetekst, hjelp, valg, type, gjeldende, popover = 
   <div class="hb-felt kp-felt" data-felt="${navn}">
     <div class="hb-fieldset">
       <div class="hb-legend"><span class="hb-legend-tekst" aria-hidden="true">${ledetekst}</span></div>
-      ${kpAvsnitt(hjelp, 'hb-felt-beskrivelse', popover)}
+      ${hjelp || popover ? `<div class="kp-hjelp kp-hjelp--boks">${kpAvsnitt(hjelp, 'hb-felt-beskrivelse', popover)}</div>` : ''}
       ${kpValgHtml(navn, valg, type, gjeldende, ledetekst)}
     </div>
   </div>`;
@@ -652,7 +655,7 @@ function kpSporsmalHtml(f) {
   return `
 <div class="kp-sporsmal">
   ${kpSporsmalTittel(`Spørsmål ${nr} av ${kpAntallSporsmal()}`, sp.tittel)}
-  ${sp.hjelp || sp.popover ? `<div class="kp-hjelp">${kpAvsnitt(sp.hjelp, 'kp-hjelp__tekst', sp.popover)}</div>` : ''}
+  ${sp.hjelp || sp.popover ? `<div class="kp-hjelp kp-hjelp--boks">${kpAvsnitt(sp.hjelp, 'kp-hjelp__tekst', sp.popover)}</div>` : ''}
   ${sp.undertekst ? `<p class="hb-text--semibold kp-sporsmal__under">${sp.undertekst}</p>` : ''}
 
   <form id="sporsmalsform" novalidate>
@@ -684,30 +687,46 @@ function kpTegnSvarPaaNytt(sp, fokusId) {
    gir ingen tekst.
    ─────────────────────────────────────────────────────────────────── */
 
+/* Tilbakemeldingen 18. november: alt du har krysset av for, skal
+   kunne leses i boksene. Et svar uten egen veiledning, som dusj og
+   badekar i 5a og «badet er lite» i 6a, står derfor sammen med de
+   andre svarene på samme spørsmål, uten «Les mer». Før stod bare
+   «Vask» når både dusj og vask var krysset av, og det så ut som badet
+   bare hadde vask.
+
+   Det du IKKE har krysset av for, står som «Ikke …». «Mangler» var
+   for bastant: toalett utenfor badet eller vaskemaskin i et annet
+   rom er ikke nødvendigvis en mangel. */
 function kpVeiledningFor(etappeId) {
   const funn = { bra: [], utfordring: [], usikker: [] };
-  const legg = (sporsmal, svar, v, tekst) => funn[v.gruppe || 'utfordring'].push({ sporsmal, svar, tekst });
+  const legg = (sporsmal, svar, gruppe, tekst, uten = '') => funn[gruppe || 'utfordring'].push({ sporsmal, svar, tekst, uten });
+  const liten = t => t.charAt(0).toLowerCase() + t.slice(1);
 
-  const ettFelt = (sporsmal, valg, svar) => {
+  const ettFelt = (sporsmal, valg, svar, utenEtikett) => {
     if (svar === undefined || svar === null || svar === 'hoppet') return;
     if (Array.isArray(svar)) {
       if (!svar.length) return;
       valg.filter(v => !v.vis || v.vis(S)).forEach(v => {
         const valgt = svar.includes(v.v);
-        if (valgt && v.veiledning) legg(sporsmal, v.tittel, v, v.veiledning);
-        if (!valgt && v.veiledningUten && !svar.includes('usikker')) legg(sporsmal, `Mangler ${v.tittel.charAt(0).toLowerCase() + v.tittel.slice(1)}`, v, v.veiledningUten);
+        /* Et rom du har på inngangsplanet, eller plass til vaskemaskin
+           på badet, har bare tekst når det mangler. Krysset av står det
+           under det som fungerer i dag. */
+        if (valgt) legg(sporsmal, v.tittel, v.veiledningUten && !v.veiledning ? 'bra' : v.gruppe, v.veiledning || '');
+        if (!valgt && v.veiledningUten && !svar.includes('usikker')) {
+          legg(sporsmal, utenEtikett ? v.tittel : `Ikke ${liten(v.tittel)}`, v.gruppe, v.veiledningUten, utenEtikett || 'Ikke');
+        }
       });
       return;
     }
     const v = valg.find(x => x.v === svar);
-    if (v && v.veiledning) legg(sporsmal, v.tittel, v, v.veiledning);
+    if (v && v.veiledning) legg(sporsmal, v.tittel, v.gruppe, v.veiledning);
   };
 
   KOMPASS_SPORSMAL.filter(sp => sp.etappe === etappeId).forEach(sp => {
     if (sp.type === 'flerfelt') {
       sp.felt.forEach(f => ettFelt(f.ledetekst, f.valg, S[f.navn]));
     } else {
-      ettFelt(sp.stikkord || sp.tittel, sp.valg, S[sp.id]);
+      ettFelt(sp.stikkord || sp.tittel, sp.valg, S[sp.id], sp.utenEtikett);
     }
     const b = sp.betinget;
     if (b && b.naar(S)) ettFelt(b.ledetekst, b.valg, S[b.navn]);
@@ -780,7 +799,7 @@ function kpTiltakForslag() {
     if (!t[type]) return;
     const blokk = kpBrukBlokk(sp) && t[type + 'Blokk'];
     const tekst = blokk || t[type];
-    const tittel = KOMPASS_TILTAK_TITLER[`${sp.id}/${v}/${type}`] || tekst;
+    const tittel = tekst;
     const id = kpTiltakId(type, tittel);
     const gjelder = `${sporsmal}: ${svar}`;
     if (finnes[id]) { if (!finnes[id].gjelder.includes(gjelder)) finnes[id].gjelder.push(gjelder); return; }
@@ -820,29 +839,33 @@ function kpTiltakForslag() {
    ─────────────────────────────────────────────────────────────────── */
 
 /* Svar på samme spørsmål slås sammen, så «Rommene på inngangsplanet»
-   står én gang med alle rommene som mangler */
+   står én gang med alle rommene som ikke er i samme etasje */
 function kpSlaaSammen(liste) {
   const ut = [];
   liste.forEach(f => {
     const fra = ut.find(x => x.sporsmal === f.sporsmal);
-    if (!fra) { ut.push(Object.assign({ svarListe: [f.svar] }, f)); return; }
+    if (!fra) { ut.push(Object.assign({ svarListe: [f.svar], etiketter: [f.uten] }, f)); return; }
     fra.svarListe.push(f.svar);
-    fra.tekst += '<br><br>' + f.tekst;
+    fra.etiketter.push(f.uten);
+    if (f.tekst) fra.tekst = fra.tekst ? fra.tekst + '<br><br>' + f.tekst : f.tekst;
   });
   ut.forEach(f => {
-    const mangler = f.svarListe.every(x => x.startsWith('Mangler '));
+    /* Rommene står etter én felles etikett: «Ikke i samme etasje som
+       inngangsdøren: stue, kjøkken og fryser» */
+    const felles = f.etiketter[0] && f.etiketter[0] !== 'Ikke' && f.etiketter.every(e => e === f.etiketter[0]) ? f.etiketter[0] : '';
     /* Liten forbokstav etter den første, så det leses som én setning */
-    const deler = (mangler ? f.svarListe.map(x => x.slice(8)) : f.svarListe)
-      .map((x, i) => (i && !mangler ? x.charAt(0).toLowerCase() + x.slice(1) : x));
+    const deler = f.svarListe.map((x, i) => (i || felles ? x.charAt(0).toLowerCase() + x.slice(1) : x));
     const og = deler.length < 2 ? deler[0] : `${deler.slice(0, -1).join(', ')} og ${deler[deler.length - 1]}`;
-    f.svar = mangler ? 'Mangler ' + og : og;
+    f.svar = felles ? `${felles} ${og}` : og;
   });
   return ut;
 }
 
 const KP_GRUPPER = [
   { id: 'bra',        tittel: 'Dette fungerer i dag' },
-  { id: 'utfordring', tittel: 'Dette fungerer ikke i dag' },
+  /* Tilbakemeldingen 18. november: «Dette fungerer ikke i dag» blir
+     misvisende når spørsmålene handler om behov du kan få senere */
+  { id: 'utfordring', tittel: 'Dette kan bli en utfordring' },
   { id: 'usikker',    tittel: 'Dette var du usikker på' }
 ];
 const KP_BOKS_FORST = 3;
@@ -856,7 +879,7 @@ function kpResultatHtml() {
   const punkt = (f, i) => `
           <li${i >= KP_BOKS_FORST ? ' hidden data-flere-punkt' : ''}>
             <p class="kp-boks__punkt"><strong>${f.sporsmal.replace(/:$/, '')}</strong><span>${f.svar}</span></p>
-            ${kpLesMer(`<p>${f.tekst}</p>`)}
+            ${f.tekst ? kpLesMer(`<p>${f.tekst}</p>`) : ''}
           </li>`;
   const boks = g => {
     const liste = funn[g.id];
@@ -887,11 +910,10 @@ function kpResultatHtml() {
 }
 
 /* ═══ Handlingsplanen ═════════════════════════════════════════════
-   Fasadens utvidbare tabell, hb-table--expandable: én rad per tiltak
-   med avkrysning, om du kan søke tilskudd, og «Les mer» i en egen
-   kolonne til høyre. Hele raden kan trykkes, og fagteksten folder seg
-   ut i en rad under, uten den grønne tilskuddsboksen. Variant 2 på
-   forslag-lesmer.html, valgt 3. november.
+   Fasadens tabell med én rad per tiltak og en avkrysningsboks foran.
+   Tilbakemeldingen 18. november: uten kolonnene «Tilskudd» og «Les
+   mer». Tiltakene i masterfila er korte nok til å stå alene, og du
+   krysser bare av for dem du vil ha med i handlingsplanen.
    ─────────────────────────────────────────────────────────────────── */
 
 function kpHandlingsplanHtml() {
@@ -902,18 +924,9 @@ function kpHandlingsplanHtml() {
     <p class="hb-text--secondary">Svarene dine gir ingen tiltak å gå videre med.</p>`;
 
   const rad = t => `
-            <tr class="hb-table-row--expandable" data-plan-rad="${t.id}">
+            <tr data-plan-rad="${t.id}">
               <td><input class="hb-checkbox" id="tiltak-${t.id}" type="checkbox" name="handlingsplan" value="${t.id}" ${valgt.has(t.id) ? 'checked' : ''}><div class="hb-label"><label class="hb-label-tekst" for="tiltak-${t.id}"><span class="hb-screenreader-only">${t.tittel}</span></label></div></td>
               <td><label for="tiltak-${t.id}">${t.tittel}</label></td>
-              <td>
-                <button type="button" class="hb-button hb-button--link kp-lesmer" aria-expanded="false" aria-controls="tiltak-tekst-${t.id}" data-plan-mer="${t.id}">
-                  <span class="hb-button-text">Les mer</span><span class="kp-lesmer__pil" aria-hidden="true">${KP_PIL_NED}</span>
-                </button>
-              </td>
-            </tr>
-            <tr class="hb-table-row--expansion" id="tiltak-tekst-${t.id}">
-              <td></td>
-              <td colspan="2"><p>${t.tekst.replace(KP_SOK_HUSBANKEN, ' ').trim()}</p></td>
             </tr>`;
 
   return `
@@ -922,7 +935,6 @@ function kpHandlingsplanHtml() {
       Her kommer det frem forslag til enkle og større grep du kan gjøre i
       boligen. Kryss av for tiltakene du ønsker å gjennomføre.
     </p>
-    <p class="kp-hjelp__tekst">Trykk på «Les mer» for å få tips om mulige tiltak.</p>
 
     ${S.eieform === 'leier' ? `
     <div class="hb-callout hb-callout--info kp-planvarsel">
@@ -935,8 +947,8 @@ function kpHandlingsplanHtml() {
       ${KP_TILTAKSTYPER.filter(ty => forslag[ty.id].length).map(ty => `
       <h3 class="hb-h4 kp-plangruppe">${ty.tittel}</h3>
       <div class="hb-scrollbox">
-        <table class="hb-table--expandable kp-plantabell">
-          <thead class="hb-screenreader-only"><tr><th scope="col">Velg</th><th scope="col">Tiltak</th><th scope="col">Les mer</th></tr></thead>
+        <table class="hb-table kp-plantabell">
+          <thead class="hb-screenreader-only"><tr><th scope="col">Velg</th><th scope="col">Tiltak</th></tr></thead>
           <tbody>${forslag[ty.id].map(rad).join('')}</tbody>
         </table>
       </div>`).join('')}
@@ -1000,12 +1012,12 @@ function kpPlanUtskriftHtml(alle) {
   const valgt = new Set(S.handlingsplan || []);
   const tiltak = [...forslag.enkel, ...forslag.stor].filter(x => alle || valgt.has(x.id));
 
-  /* Tilbakemeldingen 30. oktober: uten avkrysning, uten «Enkelt tiltak»
-     og «Større tiltak», og uten teksten om tilskudd ved hvert tiltak */
+  /* Tilbakemeldingen 30. oktober: uten avkrysning og uten «Enkelt
+     tiltak» og «Større tiltak». Masterfila 18. november har bare korte
+     tiltak, så hvert tiltak er én linje. */
   const rad = x => `
       <li class="kp-pu__tiltak">
         <p class="kp-pu__tittel">${x.tittel}</p>
-        <p>${x.tekst.replace(KP_SOK_HUSBANKEN, ' ').trim()}</p>
       </li>`;
 
   return `
@@ -1186,7 +1198,8 @@ const KP_FORBEHOLD = 'Boligkompasset er en hjelp til å tenke gjennom boligen di
 /* Boligbytte nevnes forsiktig, som et avsnitt i oppsummeringen, og
    aldri som en advarsel midt i kartleggingen. Tilbakemeldingen 28.
    oktober: bare når kompasset peker mot «Omfattende grep», og du har
-   svart «Svært vanskelig» om nærmiljøet i steg 4. */
+   svart «Svært vanskelig» om nærmiljøet i steg 4. Tilbakemeldingen 18.
+   november: uten bastante formuleringer som «disse grepene må til». */
 function kpFlytteavsnittHtml(kurs) {
   const steg4 = KOMPASS_SPORSMAL.filter(sp => sp.etappe === 'naermiljo');
   const vanskelig = steg4.some(sp => sp.valg.some(v => v.flytting && v.v === S[sp.id]));
@@ -1195,10 +1208,9 @@ function kpFlytteavsnittHtml(kurs) {
         <div class="kp-flytte">
           <h3 class="kp-flytte__tittel">Hva passer best for deg på sikt?</h3>
           <p>
-            Den totale kartleggingen viser at du har en del utfordringer og at du
-            må gjøre større grep i boligen. Disse grepene må til for at boligen din
-            skal fungere godt for deg i fremtiden om du skulle få redusert
-            bevegelighet.
+            Den totale kartleggingen viser at du har en del utfordringer, og at
+            det kan være behov for større grep i boligen for at den skal fungere
+            godt for deg i fremtiden om du skulle få redusert bevegelighet.
           </p>
           <p class="hb-mb--none">
             Har du vurdert muligheten for om en mer tilrettelagt og sentrumsnær
@@ -1228,16 +1240,20 @@ function kpStegForStegHtml() {
     });
     const sum = telling.god + telling.midt + telling.tung;
     const kurs = kpBeregnKurs(e.id);
+    /* Tilbakemeldingen 18. november: navnet på steget står over
+       kortet, i halvfet og mørk tekst */
     return `
-    <li class="kp-etappekort__kort">
+    <li class="kp-etappekort__steg">
+      <h4 class="kp-etappekort__navn">${e.navn}</h4>
+      <div class="kp-etappekort__kort">
       <div class="kp-etappekort__rose">${kpKompassSvg(kurs, { liten: true })}</div>
-      <p class="kp-etappekort__navn">${e.navn}</p>
       <p class="kp-etappekort__kurs">${sum ? kpKursnavn(kurs.retning) : 'Ikke besvart'}</p>
       <span class="kp-oversikt__spor" role="img"
             aria-label="${e.navn}: ${KP_FARGEKODER.map(k => `${telling[k.id]} ${k.navn.toLowerCase()}`).join(', ')}.">
         ${sum ? KP_FARGEKODER.map(k => `
         <span class="kp-oversikt__seg kp-oversikt__seg--${k.id}" style="width:${(telling[k.id] / sum * 100).toFixed(1)}%"></span>`).join('') : ''}
       </span>
+      </div>
     </li>`;
   });
   return `
@@ -1643,11 +1659,10 @@ function kpNullstill() {
 /* ═══ Hendelser ═══════════════════════════════════════════════════ */
 
 function kpKlikk(ev) {
-  /* Handlingsplanen: et trykk i raden, utenom avkrysningen og «Les
-     mer», gjør det samme som «Les mer» */
+  /* Handlingsplanen: et trykk hvor som helst i raden krysser av */
   const planrad = ev.target.closest('[data-plan-rad]');
   if (planrad && !ev.target.closest('input, label, button, a')) {
-    planrad.querySelector('[data-plan-mer]').click();
+    planrad.querySelector('input').click();
     return;
   }
   const t = ev.target.closest('button, a');
@@ -1687,12 +1702,6 @@ function kpKlikk(ev) {
     const el = t.closest('.hb-hjelpetekst');
     const aapen = !el.classList.contains('hb-hjelpetekst--utvidet');
     el.classList.toggle('hb-hjelpetekst--utvidet', aapen);
-    t.setAttribute('aria-expanded', String(aapen));
-  }
-  else if (d.planMer) {
-    const rad = t.closest('[data-plan-rad]');
-    const aapen = !rad.classList.contains('hb-table-row--expanded');
-    rad.classList.toggle('hb-table-row--expanded', aapen);
     t.setAttribute('aria-expanded', String(aapen));
   }
   /* «Se flere» viser resten av punktene i boksen, og «Se færre» tar dem bort igjen */

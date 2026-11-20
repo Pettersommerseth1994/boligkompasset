@@ -1,9 +1,9 @@
 /* ──────────────────────────────────────────────────────────────────
    Boligkompasset, innholdet
 
-   Steg, spørsmål, hjelpetekster og svaralternativer er hentet fra
-   «MASTERFIL - Boligkompasset_3.xlsx»: fire faner, ett steg
-   per fane, og tolv spørsmål. Overskriften i A1 er stegets navn, og B1 er
+   Steg, spørsmål, hjelpetekster, svaralternativer, veiledning og
+   tiltak er hentet fra «MASTERFIL - Boligkompasset per 18-11-2026.xlsx»:
+   fire faner, ett steg per fane, og tolv spørsmål. Overskriften i A1 er stegets navn, og B1 er
    ingressen. Under står hvert spørsmål med hjelpeteksten og svarene.
 
    Poengene som flytter kompassnåla, og anbefalingene, er ikke en del
@@ -23,7 +23,8 @@
    klokken, Fungerer godt, Enkle grep, Større grep og Omfattende grep.
    Ingen av tekstene sier at du bør flytte. Det står, om det passer,
    som et eget avsnitt i oppsummeringen. NV nås ikke, for nåla stopper
-   på «Omfattende grep». */
+   på «Omfattende grep». Tilbakemeldingen 18. november: ikke bastant,
+   så «krever» er blitt «kan kreve». */
 const KOMPASS_RETNINGER = {
   N:  { navn: 'Fungerer godt',
         kort: 'Boligen passer deg godt',
@@ -39,16 +40,16 @@ const KOMPASS_RETNINGER = {
         tekst: 'Mye kan gjøres enkelt med én gang. Noe krever et større arbeid. Begynn med det enkle, og bruk tiden til å planlegge resten.' },
   S:  { navn: 'Større grep',
         kort: 'Boligen kan bli godt tilpasset',
-        tekst: 'Boligen din kan bli god å bo i også når du blir eldre, men det krever bygging. Bad, planløsning eller inngang kan måtte gjøres om. Det er lurt å begynne å planlegge tidlig.' },
+        tekst: 'Boligen din kan bli god å bo i også når du blir eldre, men det kan kreve bygging. Bad, planløsning eller inngang kan måtte gjøres om. Det er lurt å begynne å planlegge tidlig.' },
   SV: { navn: 'Større og omfattende grep',
-        kort: 'Det krever et stort arbeid',
-        tekst: 'Boligen kan tilpasses, men det krever et omfattende arbeid. Det er verdt å regne på løsningene og tenke gjennom hva som passer deg best.' },
+        kort: 'Det kan kreve et stort arbeid',
+        tekst: 'Boligen kan tilpasses, men det kan kreve et omfattende arbeid. Det er verdt å regne på løsningene og tenke gjennom hva som passer deg best.' },
   V:  { navn: 'Omfattende grep',
-        kort: 'Boligen krever mye arbeid',
-        tekst: 'Flere av utfordringene i og rundt boligen din krever omfattende grep. Det er lurt å tenke gjennom hva som er viktigst for deg, og planlegge i god tid.' },
+        kort: 'Boligen kan kreve mye arbeid',
+        tekst: 'Flere av utfordringene i og rundt boligen din kan kreve omfattende grep. Det er lurt å tenke gjennom hva som er viktigst for deg, og planlegge i god tid.' },
   NV: { navn: 'Omfattende grep',
-        kort: 'Boligen krever mye arbeid',
-        tekst: 'Flere av utfordringene i og rundt boligen din krever omfattende grep. Det er lurt å tenke gjennom hva som er viktigst for deg, og planlegge i god tid.' },
+        kort: 'Boligen kan kreve mye arbeid',
+        tekst: 'Flere av utfordringene i og rundt boligen din kan kreve omfattende grep. Det er lurt å tenke gjennom hva som er viktigst for deg, og planlegge i god tid.' },
   MIDT: { navn: 'Litt av hvert',
         kort: 'Noe fungerer, noe ikke',
         tekst: 'Svarene dine peker i flere retninger. Noe fungerer godt, annet kan bli en utfordring. Se gjennom oppsummeringen og tiltakene under.' }
@@ -76,13 +77,14 @@ const KOMPASS_ETAPPER = [
 
 
 /* ═══ Spørsmålene ══════════════════════════════════════════════════
-   Hentet fra «MASTERFIL - Boligkompasset_3.xlsx». Tolv spørsmål, ett
-   per side, nummerert som i arket: 1, 2, 3a … 12a. Kolonne C,
-   veiledningsteksten, brukes på resultatsiden. Kolonne D og E, enkle og
-   større tiltak, brukes i handlingsplanen. Ordlyden er som i arket,
-   med skrivefeil rettet. Merknadene til designerne om bildeeksempler
-   og illustrasjoner, og «IKKE AVKLART», er ikke tatt med i teksten
-   folk leser.
+   Hentet fra «MASTERFIL - Boligkompasset per 18-11-2026.xlsx». Tolv
+   spørsmål, ett per side, nummerert som i arket: 1a, 2a, 3a … 12a.
+   Kolonne C, veiledningsteksten, brukes på resultatsiden. Kolonne D og
+   E, enkle og større tiltak, er korte tiltak som står i handlingsplanen
+   slik de står i arket. Ordlyden er ord for ord som i arket. Bare tre
+   skrivefeil er rettet: «terrrenget», «ingangsdøren» og «vei frem
+   bygget», som er blitt «vei frem til bygget». Hjelpetekster på to rader
+   i arket er to avsnitt.
 
    «veiledning» er teksten i kolonne C, til resultatsiden. Den står
    under det svaret den hører til, og «gruppe» sier om svaret fungerer
@@ -91,15 +93,16 @@ const KOMPASS_ETAPPER = [
    rommene i 3a og vaskemaskinen på badet. Badekar, dusj og lite bad har
    ingen egen tekst: den står under oppfølgingsvalgene i 6a.
 
-   «tiltak» er kolonne D («enkel») og E («stor»), med tiltakskodene fra
-   lenkeraden under svaret («enkelKoder», «storKoder») og teksten for
-   blokk og borettslag («enkelBlokk», «storBlokk») der arket har den.
+   «tiltak» er kolonne D («enkel») og E («stor»), og radene «Blokk og
+   borettslag» («enkelBlokk», «storBlokk») der arket har dem.
    «tiltakUten» gjelder når det IKKE er krysset av, som veiledningen.
+   «kategori» er kolonne G, tilskuddskategorien tiltakene hører til.
+   Den brukes internt og vises ikke.
    «flytting» merker svarene i steg 4 som sammen med utfordringer i de
    andre stegene gir rådet «Vurder flytting til en mer egnet bolig».
 
    «popover» er teksten arket kaller Popover. Den står bak Fasadens
-   hjelpetekstknapp, på spørsmålet eller på et svaralternativ.
+   hjelpetekstknapp på et svaralternativ.
 
    Feltene som styrer kompasset, er lagt til her:
      n  hvor godt svaret taler for at boligen passer, fra -1 til 1
@@ -129,7 +132,7 @@ const KOMPASS_SPORSMAL = [
   {
     id: 'eieform',
     etappe: 'bolig',
-    kilde: 'Fane 1, delspørsmål 1.',
+    kilde: 'Fane 1, spørsmål 1a.',
     tittel: 'Eier eller leier du i dag?',
     hjelp: 'Om du eier boligen, har du som regel større mulighet til å gjøre endringer i boligen. I borettslag og sameier er det mulig at endringer må avklares med styret. Leier du, må endringer avklares med utleier.',
     ikkeKompass: true,
@@ -141,7 +144,7 @@ const KOMPASS_SPORSMAL = [
   {
     id: 'inngang',
     etappe: 'bolig',
-    kilde: 'Fane 1, delspørsmål 2.',
+    kilde: 'Fane 1, spørsmål 2a.',
     tittel: 'Hvordan bor du i dag?',
     hjelp: 'Noen boliger har egen inngang og adkomstvei, mens andre deler dette. For eksempel kan rekkehus og tomannsboliger ha egen inngang, selv om de deler adkomstvei eller parkering med andre. I borettslag og sameier er det mulig at endringer må avklares med styret.',
     ikkeKompass: true,
@@ -153,6 +156,9 @@ const KOMPASS_SPORSMAL = [
   },
 
   /* ─── Steg 2, inne i boligen din ────────────────────────────────── */
+  /* Hjelpeteksten er to avsnitt, slik masterfila og tilbakemeldingen
+     18. november har den. Teksten som sto bak hjelpetekstknappen, er nå
+     en del av det andre avsnittet. */
   {
     id: 'rom',
     stikkord: 'Rommene på inngangsplanet',
@@ -160,64 +166,53 @@ const KOMPASS_SPORSMAL = [
     etappe: 'inne',
     kilde: 'Fane 2, spørsmål 3a.',
     tittel: 'Hvilke rom eller boligfunksjoner har du i samme etasje som inngangsdøren din?',
-    hjelp: 'Med boligfunksjoner menes det her primærbehovene du har i løpet av et døgn, for eksempel en plass å sove, gå på toalett, lage deg mat og lignende. Vurder om alt du trenger ligger i samme etasje, om du i en periode skulle ha redusert bevegelighet.',
-    popover: 'Om for eksempel badet eller soverommet ligger i en annen etasje, må du bruke trapp i løpet av døgnet. Skulle dette vare i over en uke, vil du også få behov for vaskemaskin, fryser og noe oppbevaringsplass.',
+    hjelp: 'Med boligfunksjoner menes det her primærbehovene du har i løpet av et døgn, for eksempel en plass å sove, gå på toalett, lage deg mat og lignende.\n\n'
+      + 'Vurder om alt du trenger ligger i samme etasje, om du i en periode skulle ha redusert bevegelighet. Om for eksempel badet eller soverommet ligger i en annen etasje, må du bruke trapp i løpet av døgnet. Skulle dette vare i over en uke, vil du også få behov for vaskemaskin, fryser og noe oppbevaringsplass.',
     type: 'flervalg',
+    /* Arket: veiledningen og tiltakene gjelder når det IKKE krysses av.
+       I oppsummeringen står de rommene som mangler, samlet på én linje. */
+    utenEtikett: 'Ikke i samme etasje som inngangsdøren:',
     valg: [
       { v: 'stue',        tittel: 'Stue',
-        tiltakUten: {
-          enkel: 'Om du velger å fortsette å benytte stuen der den ligger i dag kan det være lurt å etablere rekkverk på begge sider i trappen for å redusere risikoen for fall. Det kan søkes om tilskudd til dette fra Husbanken. Du kan samtidig se på mulighet for bedre belysning, spesielt i trappen.',
-          enkelKoder: '5.a. og 5.c. og muligens 5.d.',
-          stor: 'Du kan få en stue på inngangsplanet ved å bygge om et eksisterende rom eller bygge på boligen slik at du får plass til en stue. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '2.a. eller 2.b.'
-        }, gruppe: 'utfordring',
+        tiltakUten: { enkel: 'Montere rekkverk og belysning i trappen', stor: 'Etablere stue på inngangsplanet' },
+        kategori: 'D: 5 Tryggere bolig / støtte fungering | E: 2 Samle nødvendige rom på inngangsplanet',
+        gruppe: 'utfordring',
         veiledningUten: 'Du mangler stue på inngangsplanet. Om du gjør grep for å oppnå dette, blir det enklere å bo hjemme om du skulle få redusert bevegelighet. Om dette er en midlertidig situasjon, kan du vurdere om det er andre rom på inngangsplanet som kan benyttes.' },
       { v: 'kjokken',     tittel: 'Kjøkken',
-        tiltakUten: {
-          stor: 'Du kan få et kjøkken på inngangsplanet ved å bygge om et eksisterende rom eller bygge på boligen slik at du får plass til et kjøkken. En løsning med skuffer i benkeseksjonen der du får plass til det du bruker mest er mer hensiktsmessig enn høye overskap. Da slipper du krakk og fallrisikoen reduseres. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '2.a. eller 2.b.'
-        }, gruppe: 'utfordring',
+        tiltakUten: { enkel: 'Montere rekkverk og belysning i trappen', stor: 'Etablere kjøkken på inngangsplanet' },
+        kategori: 'D: 5 Tryggere bolig / støtte fungering | E: 2 Samle nødvendige rom på inngangsplanet',
+        gruppe: 'utfordring',
         veiledningUten: 'Du mangler kjøkken på inngangsplanet. Om du får redusert bevegelighet vil det være enklere å lage mat dersom kjøkkenet ligger på samme plan som de rommene du bruker mest.' },
       { v: 'soverom',     tittel: 'Soverom',
-        tiltakUten: {
-          enkel: 'Om du velger å fortsette å benytte soverommet der det ligger i dag, kan det være lurt å etablere rekkverk på begge sider i trappen for å redusere risikoen for fall. Det kan søkes om tilskudd til dette fra Husbanken. Du kan samtidig vurdere behovet for bedre belysning, spesielt i trappen.',
-          enkelKoder: '5.a. og 5.c. og muligens 5.d.',
-          stor: 'Du kan få et soverom på inngangsplanet ved å bygge om et eksisterende rom eller bygge på boligen slik at du får plass til et soverom. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '2.a. eller 2.b.'
-        }, gruppe: 'utfordring',
+        tiltakUten: { enkel: 'Montere rekkverk og belysning i trappen', stor: 'Etablere soverom på inngangsplanet' },
+        kategori: 'D: 5 Tryggere bolig / støtte fungering | E: 2 Samle nødvendige rom på inngangsplanet',
+        gruppe: 'utfordring',
         veiledningUten: 'Du mangler soverom på inngangsplanet. Skulle du få redusert bevegelighet kan trapper bli vanskelig. Se om det er mulig å lage soverom på samme plan som de viktigste rommene dine. Om dette er en midlertidig situasjon, kan du vurdere om det er andre rom på inngangsplanet som kan benyttes.' },
       { v: 'bad',         tittel: 'Bad',
-        tiltakUten: {
-          enkel: 'Om du velger å fortsette å benytte badet der dette ligger i dag, kan det være lurt å etablere rekkverk på begge sider i trappen for å redusere risikoen for fall. Det kan søkes om tilskudd til dette fra Husbanken. Du kan samtidig se på mulighet for bedre belysning, spesielt i trappen.',
-          enkelKoder: '5.a. og 5.c. og muligens 5.d.',
-          stor: 'Du kan få et bad på inngangsplanet ved å bygge om et eksisterende rom eller bygge på boligen slik at du får plass til et bad. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '2.a. eller 2.b.'
-        }, gruppe: 'utfordring',
+        tiltakUten: { enkel: 'Montere rekkverk og belysning i trappen', stor: 'Etablere bad med toalett på inngangsplanet' },
+        kategori: 'D: 5 Tryggere bolig / støtte fungering | E: 2 Samle nødvendige rom på inngangsplanet',
+        gruppe: 'utfordring',
         veiledningUten: 'Du mangler bad på inngangsplanet. Får du redusert bevegelighet er det en fordel om dette rommet ligger på samme plan som rommene du oppholder deg mest i.' },
       { v: 'toalett',     tittel: 'Toalett',
-        tiltakUten: {
-          enkel: 'Om du velger å fortsette å benytte toalettet der det ligger i dag, kan det være lurt å etablere rekkverk på begge sider i trappen for å redusere risikoen for fall. Det kan søkes om tilskudd til dette fra Husbanken. Du kan samtidig se på mulighet for bedre belysning, spesielt i trappen.',
-          enkelKoder: '5.a. og 5.c. og muligens 5.d.',
-          stor: 'Du kan få et toalett på inngangsplanet ved å bygge om et eksisterende rom eller bygge på boligen slik at du får plass til et toalett. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '2.a. eller 2.b.'
-        }, gruppe: 'utfordring',
+        tiltakUten: { enkel: 'Montere rekkverk og belysning i trappen', stor: 'Installere toalett på inngangsplanet' },
+        kategori: 'D: 5 Tryggere bolig / støtte fungering | E: 2 Samle nødvendige rom på inngangsplanet',
+        gruppe: 'utfordring',
         veiledningUten: 'Du mangler toalett på inngangsplanet. Om du gjør grep for å oppnå dette, blir det enklere å klare seg selv hjemme.' },
       { v: 'vaskemaskin', tittel: 'Vaskemaskin',
-        tiltakUten: {
-          enkel: 'Om du velger å fortsette å benytte vaskemaskinen der denne er i dag, kan det være lurt å etablere rekkverk på begge sider i trappen for å redusere risikoen for fall. Det kan søkes om tilskudd til dette fra Husbanken. Du kan samtidig se på mulighet for bedre belysning, spesielt i trappen.',
-          enkelKoder: '5.a. og 5.c. og muligens 5.d.',
-          stor: 'Du kan flytte vaskemaskinen til inngangsplanet ved å bygge om et eksisterende rom eller bygge på boligen slik at du får plass til vaskemaskinen. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '2.a. eller 2.b.'
-        }, gruppe: 'utfordring',
-        veiledningUten: 'Du mangler vaskemaskin på inngangsplanet. Skulle du få redusert bevegelighet og problemer med trapper, bøying eller tunge løft, er det en fordel om vaskemaskinen flyttes til etasjen du oppholder deg mest.' },
+        tiltakUten: { enkel: 'Montere rekkverk og belysning i trappen', stor: 'Etablere vaskemaskin på inngangsplanet' },
+        kategori: 'D: 5 Tryggere bolig / støtte fungering | E: 2 Samle nødvendige rom på inngangsplanet',
+        gruppe: 'utfordring',
+        veiledningUten: 'Du mangler vaskemaskin på inngangsplanet. Skulle du få redusert bevegelighet og problemer med trapper, bøying eller tunge løft, er det en fordel om vaskemaskinen flyttes til etasjen du oppholder deg mest i.' },
       { v: 'fryser',      tittel: 'Fryser',
-        tiltakUten: {
-          enkel: 'Om du har kjøkkenet på inngangsplanet kan du vurdere å få et fryseskap eller bytte ut kjøleskapet med et todelt skap med kjøledel og frysedel. Velger du å fortsette å benytte fryseren der denne er i dag, kan det være lurt å etablere rekkverk på begge sider i trappen for å redusere risikoen for fall. Det kan søkes om tilskudd til dette fra Husbanken. Du kan samtidig se på mulighet for bedre belysning, spesielt i trappen.',
-          enkelKoder: '5.a. og 5.c. og muligens 5.d.'
-        }, gruppe: 'utfordring',
+        tiltakUten: { enkel: 'Bytt ut kjøleskapet med et todelt kjøleskap med frysedel' },
+        kategori: 'D: 2 Samle nødvendige rom på inngangsplanet | E: 2 Samle nødvendige rom på inngangsplanet',
+        gruppe: 'utfordring',
         veiledningUten: 'Du mangler fryser på inngangsplanet. Om du flytter denne til samme etasje som de viktigste rommene dine så kan det redusere behovet for å gå trapper.' },
-      { v: 'oppbevaring', tittel: 'Oppbevaringsplass', gruppe: 'utfordring',
-        veiledningUten: 'Du mangler oppbevaringsplass på inngangsplanet. Skulle du få redusert bevegelighet og ikke klare å bruke trappen eller loftsstige, må du vurdere andre måter for oppbevaring av det du trenger mest. Dette kan være til daglig gjøremål og sesongbasert. Et eksempel er å flytte klær og medisiner til hyller på inngangsplanet, som er lette å nå.' }
+      { v: 'oppbevaring', tittel: 'Oppbevaringsplass',
+        tiltakUten: { enkel: 'Montere hyller på inngangsplanet som er lette å nå' },
+        kategori: 'D: 2 Samle nødvendige rom på inngangsplanet | E: 2 Samle nødvendige rom på inngangsplanet',
+        gruppe: 'utfordring',
+        veiledningUten: 'Du mangler oppbevaringsplass på inngangsplanet. Skulle du få redusert bevegelighet og ikke klare å bruke trappen eller loftsstige, må du vurdere andre måter for oppbevaring av det du trenger mest. Dette kan være ting du trenger til daglige gjøremål, eller ting du bruker etter sesong. Et eksempel er å flytte klær og medisiner til hyller på inngangsplanet, som er lette å nå.' }
     ],
     /* Det som må finnes for å klare et døgn uten trapp: kjøkken,
        soverom, og bad eller toalett. Mangler noe av det, må det
@@ -236,24 +231,21 @@ const KOMPASS_SPORSMAL = [
     etappe: 'inne',
     kilde: 'Fane 2, spørsmål 4a.',
     tittel: 'Kommer du deg lett rundt inne i boligen?',
-    hjelp: 'Det er ikke sikkert du merker noe til trapper, terskler og smale dører i dag, men dette kan bli en utfordring hvis du får redusert bevegelighet eller trenger å bruke rullator eller rullestol. Se på boligen din og tenk gjennom hva du har av hindringer og nivåforskjeller.',
-    popover: 'Dette kan du enkelt teste ved å trille en fullpakket koffert med hjul gjennom alle rommene og se hvor det er vanskelig å komme frem.',
+    hjelp: 'Det er ikke sikkert du merker noe til trapper, terskler og smale dører i dag, men dette kan bli en utfordring hvis du får redusert bevegelighet eller trenger å bruke rullator eller rullestol. Se på boligen din og tenk gjennom hva du har av hindringer og nivåforskjeller.\n\n'
+      + 'Dette kan du enkelt teste ved å trille en fullpakket koffert med hjul gjennom alle rommene og se hvor det er vanskelig å komme frem.',
     valg: [
       { v: 'ja',     tittel: 'Ja', gruppe: 'bra',
+        kategori: 'D: 3 Lettere å bevege seg rundt i boligen | E: 3 Lettere å bevege seg rundt i boligen',
         veiledning: 'Du kommer deg lett rundt i boligen din i dag og det er et godt utgangspunkt. Tenk over om dette vil være like enkelt i fremtiden om du skulle få redusert bevegelighet.',     n: 1,    e: 0 },
       { v: 'delvis', tittel: 'Delvis',
-        tiltak: {
-          enkel: 'Du kan fjerne løse tepper og ommøblere for å unngå hindringer der du går, for å redusere risiko for fall. Du kan fjerne terskler og vurdere behovet for å gjøre noe mer med dører. Du kan samtidig se på mulighet for bedre belysning. Det kan søkes om tilskudd til dette fra Husbanken.',
-          enkelKoder: '3.a. og 5.a og 5.c. og muligens 5.d.',
-          stor: 'Du kan flytte eller sette inn bredere dører slik at det blir enklere å bevege seg rundt i boligen. For å få bedre tilgang og snuareal kan du utvide rom. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '3.b. og 3.c.'
-        }, gruppe: 'utfordring',
+        tiltak: { enkel: 'Fjerne dørterskler', stor: 'Fjerne trinn og utvide døråpninger eller flytte vegger der det er trangt' },
+        kategori: 'D: 3 Lettere å bevege seg rundt i boligen | E: 3 Lettere å bevege seg rundt i boligen',
+        gruppe: 'utfordring',
         veiledning: 'Du kommer deg delvis lett rundt i boligen din. Vurder om det er noen grep du kan gjøre nå, som gjør det enklere om du får redusert bevegelighet. Enkelte hindringer og nivåforskjeller kan bli krevende i fremtiden.', n: 0,    e: 1 },
       { v: 'nei',    tittel: 'Nei',
-        tiltak: {
-          stor: 'Du kan flytte eller sette inn bredere terskelfrie dører slik at det blir enklere å bevege seg rundt i boligen. For å få bedre tilgang og snuareal kan du utvide rom. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '3.a og 3.b. og 3.c.'
-        }, gruppe: 'utfordring',
+        tiltak: { enkel: 'Fjerne dørterskler', stor: 'Fjerne trinn og utvide døråpninger eller flytte vegger der det er trangt' },
+        kategori: 'D: 3 Lettere å bevege seg rundt i boligen | E: 3 Lettere å bevege seg rundt i boligen',
+        gruppe: 'utfordring',
         veiledning: 'Du har allerede funnet ut at du må gjøre noe for at boligen din skal bli enklere å bo i. Se oppsummering med forslag til tiltak du kan gjøre for at boligen din skal bli mer tilgjengelig.',    n: -0.7, e: 0.6 }
     ]
   },
@@ -266,31 +258,28 @@ const KOMPASS_SPORSMAL = [
     tittel: 'Hva inneholder badet ditt?',
     hjelp: 'Badet er et viktig rom for å kunne klare seg selv og bo hjemme så lenge som mulig. Tenk på hvilke funksjoner du har på badet ditt i dag.',
     type: 'flervalg',
+    /* Badekar og dusj har ingen egen veiledning. Arket legger teksten
+       under svarene i 6a. I oppsummeringen står de likevel sammen med
+       de andre svarene om badet, så det ikke ser ut som de mangler. */
     valg: [
       { v: 'toalett',     tittel: 'Toalett',
-        tiltak: {
-          enkel: 'Du kan ved behov montere støttehåndtak ved toalettet.',
-          enkelKoder: '5.c. og muligens 5.d.',
-          stor: 'Om du mangler plass rundt toalettet kan flytting av andre funksjoner eller flytte toalettet være en løsning. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '4.a og 4.c.'
-        }, gruppe: 'bra',
+        tiltak: { enkel: 'Montere støttehåndtak og legge sklisikring på badet' },
+        kategori: 'D: 4 Enklere å bruke badet | E: 4 Enklere å bruke badet',
+        gruppe: 'bra',
         veiledning: 'Du har toalett på badet ditt og det kan være praktisk da du har kort vei til alt du trenger på badet. Tenk over om plasseringen og plassen rundt toalettet vil være tilstrekkelig om du får behov for hjelpemidler i fremtiden.' },
       { v: 'vask',        tittel: 'Vask',
-        tiltak: {
-          stor: 'Vurder å installere en høydejusterbar vask og et speil som fungerer i sittende stilling. Om du mangler plass rundt vasken kan flytting av denne eller andre funksjoner være en løsning. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '4.a og 4.c.'
-        }, gruppe: 'bra',
+        kategori: 'D: 4 Enklere å bruke badet | E: 4 Enklere å bruke badet',
+        gruppe: 'bra',
         veiledning: 'Tenk over hvor godt vasken din fungerer i dag og om det vil fungere i fremtiden, om du skulle få behov for hjelpemidler. Høyde, plassering og fri plass foran kan få større betydning dersom bevegeligheten endrer seg.' },
-      { v: 'badekar',     tittel: 'Badekar' },
-      { v: 'dusj',        tittel: 'Dusj' },
+      { v: 'badekar',     tittel: 'Badekar', gruppe: 'bra' },
+      { v: 'dusj',        tittel: 'Dusj', gruppe: 'bra' },
       { v: 'vaskemaskin', tittel: 'Plass til vaskemaskin på badet',
-        tiltakUten: {
-          stor: 'Om du tenker å bygge om eller bygge ut badet, er det lurt å vurdere behov for plass til vaskemaskin. Tenk også over arbeidshøyde, her kan du også vurdere å bytte til en vaskemaskin som har vask og tørk i samme maskin.',
-          storKoder: '4.a og 4.c.'
-        }, gruppe: 'utfordring',
+        tiltakUten: { stor: 'Utvide badet, slik at vaskemaskinen får plass' },
+        kategori: 'D: 4 Enklere å bruke badet | E: 4 Enklere å bruke badet',
+        gruppe: 'utfordring',
         veiledningUten: 'Du har ikke plass til vaskemaskin på badet. Har du denne på samme etasje som inngangen din, så er det en fordel. Om ikke, så kan du vurdere om du har andre rom som egner seg eller vurder å utvide badet.' }
     ],
-    /* 4b: bare når det er svart, men ikke krysset av for toalett */
+    /* 5b: bare når det er svart, men ikke krysset av for toalett */
     betinget: {
       navn: 'toalett-plassering',
       naar: S => Array.isArray(S['bad-innhold']) && S['bad-innhold'].length > 0 && !kpHar(S, 'bad-innhold', 'toalett'),
@@ -298,29 +287,20 @@ const KOMPASS_SPORSMAL = [
       hjelp: 'Hvor toalettet ligger i forhold til bad og soverom kan få betydning dersom bevegeligheten din endrer seg. Tenk særlig på om du må gå langt, bruke trapper eller passere andre hindringer for å komme til toalettet.',
       valg: [
         { v: 'naborom',      tittel: 'På rommet ved siden av badet',
-        tiltak: {
-          enkel: 'Du kan fjerne terskler og vurdere behovet for å gjøre noe mer med dørene. Ved behov kan det monteres støttehåndtak ved toalettet. Du kan samtidig se på mulighet for bedre belysning. Det kan søkes om tilskudd til dette fra Husbanken.',
-          enkelKoder: '3.a. og 3.b. og 5.a og 5.c. og muligens 5.d.',
-          stor: 'Du kan fjerne veggen mellom badet og toalettet slik at du får bedre plass.',
-          storKoder: '4.a og 4.c.'
-        }, gruppe: 'utfordring',
-        veiledning: 'Du har toalettet rett ved siden av badet. Tenk over om det er lett å komme dit fra soverommet eller om du må passere terskler eller andre hindringer. Du kan vurdere å fjerne veggen mellom badet og toalettet slik at du får bedre plass.' },
+          tiltak: { enkel: 'Fjerne terskler', stor: 'Fjern veggen mellom badet og toalettet, slik at du får bedre plass' },
+          kategori: 'D: 3 Lettere å bevege seg rundt i boligen | E: 4 Enklere å bruke badet',
+          gruppe: 'utfordring',
+          veiledning: 'Du har toalettet rett ved siden av badet. Tenk over om det er lett å komme dit fra soverommet eller om du må passere terskler eller andre hindringer. Du kan vurdere å fjerne veggen mellom badet og toalettet slik at du får bedre plass.' },
         { v: 'samme-etasje', tittel: 'På samme etasje som badet',
-        tiltak: {
-          enkel: 'Du kan fjerne terskler og vurdere behovet for å gjøre noe mer med dørene. Ved behov kan det monteres støttehåndtak ved toalettet. Du kan samtidig se på mulighet for bedre belysning. Det kan søkes om tilskudd til dette fra Husbanken.',
-          enkelKoder: '3.a. og 3.b. og 5.a og 5.c. og muligens 5.d.',
-          stor: 'Om du tenker å bygge om eller bygge ut badet, er det lurt å vurdere behov for plass til toalett. Tenk over plassering og plass rundt toalettet.',
-          storKoder: '4.a og 4.c.'
-        }, gruppe: 'utfordring',
-        veiledning: 'Du har toalettet på samme etasje som badet. Tenk over om det er lett å komme dit fra soverommet eller om du må passere terskler eller andre hindringer. Vurder om det er mulig å få toalett på badet ditt.' },
+          tiltak: { enkel: 'Fjerne terskler' },
+          kategori: 'D: 3 Lettere å bevege seg rundt i boligen | E: 4 Enklere å bruke badet',
+          gruppe: 'utfordring',
+          veiledning: 'Du har toalettet på samme etasje som badet. Tenk over om det er lett å komme dit fra soverommet eller om du må passere terskler eller andre hindringer. Vurder om det er mulig å få toalett på badet ditt.' },
         { v: 'annen-etasje', tittel: 'I annen etasje enn badet',
-        tiltak: {
-          enkel: 'Om du velger å fortsette å benytte toalettet der det ligger i dag, kan det være lurt å etablere rekkverk på begge sider i trappen for å redusere risikoen for fall. Det kan søkes om tilskudd til dette fra Husbanken. Du kan samtidig se på mulighet for bedre belysning, spesielt i trappen.',
-          enkelKoder: '5.a og 5.c. og muligens 5.d.',
-          stor: 'Om du tenker å bygge om eller bygge ut badet, er det lurt å vurdere behov for plass til toalett. Tenk over plassering og plass rundt toalettet.',
-          storKoder: '4.a og 4.c.'
-        }, gruppe: 'utfordring',
-        veiledning: 'Du har ikke toalett og bad på samme etasje. Trapper kan gjøre hverdagen mer krevende ved redusert bevegelighet, spesielt på natten kan dette utgjøre en risiko. Vurder om det er mulig å få toalett på badet ditt.' }
+          tiltak: { enkel: 'Montere rekkverk og belysning i trappen', stor: 'Bygg om badet slik at du får plass til toalett' },
+          kategori: 'D: 5 Tryggere bolig / støtte fungering | E: 4 Enklere å bruke badet',
+          gruppe: 'utfordring',
+          veiledning: 'Du har ikke toalett og bad på samme etasje. Trapper kan gjøre hverdagen mer krevende ved redusert bevegelighet, spesielt på natten kan dette utgjøre en risiko. Vurder om det er mulig å få toalett på badet ditt.' }
       ]
     },
     poeng: (v, S) => {
@@ -341,72 +321,59 @@ const KOMPASS_SPORSMAL = [
     kilde: 'Fane 2, spørsmål 6a. Fem av alternativene vises bare etter svaret på 5a eller 6a3.',
     tittel: 'Hvor enkelt er det for deg å bruke badet ditt om du får redusert bevegelighet?',
     hjelp: 'Et bad bør ha nok plass til at du kan bevege deg fritt og bruke badet på en trygg måte. Tenk på om det er god plass rundt toalettet, vasken og dusjen. Se også på om du lett kommer deg inn og ut av dusjen/badekaret. Tenk over om badet kan brukes dersom du får problemer med å bevege deg, trenger hjelpemidler eller hjelp fra andre.',
-    undertekst: 'Kryss av for det som passer.',
     type: 'flervalg',
-    /* Flervalg. «utelukker» tar bort kryss som ikke kan stå samtidig:
-       døren til det lille badet slår enten innover eller utover.
-       Tilbakemeldingen 29. oktober: «stort nok» og «lite» utelukker ikke
-       lenger hverandre. */
+    /* Flervalg. «utelukker» tar bort kryss som ikke kan stå samtidig.
+       Masterfila 18. november: man kan ikke krysse av for både «badet er
+       stort nok» og «badet er lite». Døren til det lille badet slår
+       enten innover eller utover. «Badet er lite» har ingen egen
+       veiledning, den står under døren. I oppsummeringen står svaret
+       likevel sammen med de andre svarene om badet. */
     valg: [
-      { v: 'terskel',      tittel: 'Kan bli vanskelig, baderomsdøren har terskel',
-        tiltak: {
-          enkel: 'Du kan fjerne dørterskelen. Det kan søkes om tilskudd til dette fra Husbanken.',
-          enkelKoder: '3.a. og 5.a og 5.c. og muligens 5.d.',
-          stor: 'Du kan vurdere å flytte eller sette inn bredere terskelfri dør for lettere tilgang til badet. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '3.b.'
-        }, gruppe: 'utfordring',
+      { v: 'terskel',      tittel: 'Kan bli vanskelig, baderomsdøren har terskel eller trinn',
+        tiltak: { enkel: 'Fjern terskelen til badet', stor: 'Fjern nivåforskjell eller trinn inn til badet' },
+        kategori: 'D: 4 Enklere å bruke badet | E: 4 Enklere å bruke badet',
+        gruppe: 'utfordring',
         veiledning: 'Baderomsdøren din har en terskel. Vurder om denne enkelt kan fjernes eller om det bør gjøres større grep, om du for eksempel har trinn inn til badet. Om du gjør noe med dette nå, vil det bli enklere senere om du får dårlig balanse eller bruk for hjelpemidler. Dette vil også redusere risikoen for å snuble.' },
       { v: 'stort',        tittel: 'Enkelt, badet er stort nok',
-        tiltak: {
-          stor: 'Om du tenker å bygge om eller bygge ut badet, er det lurt å vurdere behov for plassering av vask, toalett og dusj. Vurder gjerne en bredere terskelfri dør.',
-          storKoder: '3.b. og 4.a. og 4.b. og 4.c.'
-        }, gruppe: 'bra',
+        tiltak: { enkel: 'Montere støttehåndtak og legge sklisikring på badet' },
+        kategori: 'D: 4 Enklere å bruke badet | E: 4 Enklere å bruke badet',
+        gruppe: 'bra',
         veiledning: 'Badet ditt har god plass og dette gir deg fleksibilitet dersom behovene endrer seg. Vurder om du har god nok plass til å bevege deg mellom toalett, vask og dusj. Dette vil gjøre det enklere om du skulle trenge hjelpemidler i fremtiden.',
-        popover: 'Større enn 4,5 kvm og plass til alle baderomsfunksjoner, for eksempel toalett, vask, dusj.' },
-      { v: 'lite',         tittel: 'Kan bli vanskelig, badet er lite',
-        popover: 'Mindre enn 4,5 kvm og har ikke plass til alle baderomsfunksjoner, for eksempel kan toalett være på eget rom.' },
+        popover: 'Større enn 4,5 kvm og plass til alle baderomsfunksjoner, for eksempel toalett, vask, dusj.', utelukker: ['lite'] },
+      { v: 'lite',         tittel: 'Kan bli vanskelig, badet er lite', gruppe: 'utfordring',
+        popover: 'Mindre enn 4,5 kvm og har ikke plass til alle baderomsfunksjoner, for eksempel kan toalett være på eget rom.', utelukker: ['stort'] },
       { v: 'dor-innover',  tittel: 'Baderomsdøren slår innover i rommet',
-        tiltak: {
-          enkel: 'Du kan vurdere behovet for å hengsle om eventuelt snu karm og dør slik at døren vender utover.',
-          stor: 'For å få et større baderom kan du bygge om et eksisterende rom eller bygge på boligen. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '2.a. eller 2.b.'
-        }, gruppe: 'utfordring',
+        tiltak: { enkel: 'Snu baderomsdøren slik at den slår utover', stor: 'Utvide badet for å få bedre plass' },
+        kategori: 'D: 4 Enklere å bruke badet | E: 4 Enklere å bruke badet',
+        gruppe: 'utfordring',
         veiledning: 'Du har et lite bad og en dør som slår innover. Dette kan fungere fint i dag, men om du trenger hjelpemidler i fremtiden kan det bli for lite plass. Det kan også være vanskelig om du skulle trenge hjelp fra andre. Om du faller rett innenfor døren, kan det være vanskelig for andre å komme til for å hjelpe.', utelukker: ['dor-utover'],
         under: 'lite', vis: S => kpHar(S, 'bad-bruk', 'lite') },
       { v: 'dor-utover',   tittel: 'Baderomsdøren slår utover i rommet',
-        tiltak: {
-          stor: 'For å få et større baderom kan du bygge om et eksisterende rom eller bygge på boligen. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '2.a. eller 2.b.'
-        }, gruppe: 'utfordring',
+        tiltak: { enkel: 'Montere støttehåndtak og legge sklisikring på badet', stor: 'Utvide badet for å få bedre plass' },
+        kategori: 'D: 4 Enklere å bruke badet | E: 4 Enklere å bruke badet',
+        gruppe: 'utfordring',
         veiledning: 'Du har et lite bad og en dør som slår utover. Dette kan fungere fint i dag, men om du trenger hjelpemidler i fremtiden kan det bli for lite plass. Det kan også være vanskelig om du skulle trenge hjelp fra andre.', utelukker: ['dor-innover'],
         under: 'lite', vis: S => kpHar(S, 'bad-bruk', 'lite') },
       { v: 'dusj-kant',    tittel: 'Kan bli vanskelig, dusjkabinett eller dusjsone har en høydeforskjell',
-        tiltak: {
-          enkel: 'Du kan ved behov montere støttehåndtak i eller ved dusjen. Det kan søkes om tilskudd til dette fra Husbanken. Vurder sklisikring i og utenfor dusjen for å redusere risikoen for fall.',
-          enkelKoder: '5.c. og muligens 5.d.',
-          stor: 'For å unngå høydeforskjell kan det etableres en trinnfri dusjsone. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '4.b.'
-        }, gruppe: 'utfordring',
+        tiltak: { enkel: 'Montere støttehåndtak og legge sklisikring på badet', stor: 'Bytt til en trinnfri dusjløsning med plass til dusjkrakk' },
+        kategori: 'D: 4 Enklere å bruke badet | E: 4 Enklere å bruke badet',
+        gruppe: 'utfordring',
         veiledning: 'Dusjen din har en kant som kan gjøre den vanskelig å bruke, om du skulle få redusert bevegelighet. En høydeforskjell kan øke risikoen for fall, og det kan bli vanskelig å bruke hjelpemidler. Vurder om du har mulighet for en trinnfri dusjløsning.',
         vis: S => kpHar(S, 'bad-innhold', 'dusj') },
       { v: 'dusj-stol',    tittel: 'Kan bli vanskelig, dusjen har ikke plass til dusjstol/-krakk',
-        tiltak: {
-          enkel: 'Se om det er mulig å gjøre noe med dusjvegger eller -dører slik at du får plass til en dusjkrakk.',
-          stor: 'For å få bedre plass i dusjen kan det etableres en trinnfri dusjsone. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '4.b.'
-        }, gruppe: 'utfordring',
-        veiledning: 'Du mangler sitteplass i dusjen og dette kan utgjøre en risiko, spesielt dersom balansen din eller utholdenheten din blir redusert. Vurder om du kan erstatte dusjen din med en større, som har plass til dusjkrakk. God plass i dusjen gjør det også enklere om du skulle trenge hjelp fra andre.',
+        tiltak: { stor: 'Bytt til en trinnfri dusjløsning med plass til dusjkrakk' },
+        kategori: 'D: 4 Enklere å bruke badet | E: 4 Enklere å bruke badet',
+        gruppe: 'utfordring',
+        veiledning: 'Du mangler sitteplass i dusjen og dette kan utgjøre en risiko, spesielt dersom balansen din eller utholdenheten din blir redusert. Vurder om du kan erstatte dusjen din med en større, som har plass til dusjkrakk eller klappsete. God plass i dusjen gjør det også enklere om du skulle trenge hjelp fra andre.',
         vis: S => kpHar(S, 'bad-innhold', 'dusj') },
       { v: 'badekar',      tittel: 'Kan bli vanskelig, badekaret har en høy kant',
-        tiltak: {
-          enkel: 'Du kan ved behov montere støttehåndtak ved badekaret. Det kan søkes om tilskudd til dette fra Husbanken. Vurder sklisikring i og utenfor badekaret. Se også på behovet for en krakk som har rekkverk for å redusere risikoen for fall.',
-          enkelKoder: '5.c. og muligens 5.d.',
-          stor: 'Erstatt badekaret med en trinnfri dusjsone med plass til dusjstol. Dette vil redusere risiko for fall. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '4.b.'
-        }, gruppe: 'utfordring',
-        veiledning: 'Badekaret ditt kan fungere godt nå, selv om det har en høy kant. Dette kan endre seg om du får dårlig balanse eller redusert bevegelighet, da kan det bli vanskelig å bruke. Ved høy kant på badekaret øker også risikoen for fall, når du går inn og ut av dette. Vurder om du også har plass til en trinnfri dusj eller bytte ut badekaret med en trinnfri dusjløsning.',
+        tiltak: { enkel: 'Montere støttehåndtak og legge sklisikring på badet', stor: 'Bytt ut badekaret med en trinnfri dusjløsning med plass til dusjkrakk' },
+        kategori: 'D: 4 Enklere å bruke badet | E: 4 Enklere å bruke badet',
+        gruppe: 'utfordring',
+        veiledning: 'Badekaret ditt kan fungere godt nå, selv om det har en høy kant. Dette kan endre seg om du får dårlig balanse eller redusert bevegelighet, da kan det bli vanskelig å bruke. Ved høy kant på badekaret øker også risikoen for fall, når du går inn og ut av dette. Vurder om du også har plass til en trinnfri dusj, eller om du kan bytte ut badekaret med en trinnfri dusjløsning.',
         vis: S => kpHar(S, 'bad-innhold', 'badekar') },
       { v: 'usikker',      tittel: 'Usikker', gruppe: 'usikker',
+        kategori: 'D: 4 Enklere å bruke badet | E: 4 Enklere å bruke badet',
         veiledning: 'Vi forstår at du er usikker på hvordan badet vil fungere hvis behovene endrer seg. Snakk med noen eller bruk litt tid på å tenke over hvordan du kan bruke badet ditt om du får problemer med å gå uten hjelpemidler, eller du får dårlig balanse. Gå gjerne tilbake til kartleggingen og se om du nå klarer å svare på spørsmål 6. Dette for at du skal få mer konkrete forslag til tiltak du kan gjøre for å få et bedre og tilgjengelig bad.', alene: true }
     ],
     /* Hvert hinder drar nåla nedover. Terskel, dør og plass til krakk
@@ -426,6 +393,8 @@ const KOMPASS_SPORSMAL = [
   },
 
   /* ─── Steg 3, veien inn til boligen din ─────────────────────────── */
+  /* «enkelBlokk» og «storBlokk» er radene «Blokk og borettslag» i
+     arket. De gjelder når du deler det tiltaket handler om med andre. */
   {
     id: 'adkomst-frem',
     stikkord: 'Veien fram til døra',
@@ -433,32 +402,31 @@ const KOMPASS_SPORSMAL = [
     etappe: 'adkomst',
     kilde: 'Fane 3, spørsmål 7a.',
     tittel: 'Kommer du deg lett fram til boligen din fra offentlig vei?',
-    hjelp: 'Hvor lett adkomsten til boligen din er, avhenger av om du går til fots eller kommer i bil. Veien kan være bratt, lang, glatt om vinteren eller så kan det være andre forhold som gjør adkomsten vanskelig. Tenk over strekningen fra der bilen, bussen eller drosjen slipper deg av, og fram til inngangsdøra.',
+    hjelp: 'Hvor lett adkomsten til boligen din er, avhenger av om du går til fots eller kommer i bil. Veien kan være bratt, lang, glatt om vinteren eller så kan det være andre forhold som gjør adkomsten vanskelig. Tenk over strekningen fra der bilen, bussen eller drosjen slipper deg av, og fram til inngangsdøren. Vurder om dette vil være like lett om du skulle få redusert bevegelighet.',
     valg: [
-      { v: 'ja',     tittel: 'Ja',
-        tiltak: {
-          stor: 'Adkomsten din fungerer godt i dag. Om dette ikke vil være tilfellet om du får redusert bevegelighet så vil det være mulig å etablere rekkverk. Det kan også være en løsning å justere terrenget for å sikre trinnfri adkomst til boligen din. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '1.a. og 5.f.',
-          storBlokk: 'Adkomsten din fungerer godt i dag. Om dette ikke vil være tilfellet om du får redusert bevegelighet så vil det være mulig å etablere rekkverk. Det kan også være en løsning å justere terrenget for å sikre trinnfri adkomst til boligen din. Du kan for eksempel ta kontakt med styret for å høre om det er mulig å gjøre nødvendige tiltak.'
-        }, gruppe: 'bra',
+      { v: 'ja',     tittel: 'Ja', gruppe: 'bra',
+        kategori: 'D: 5 Tryggere bolig / støtte fungering | E: 1 Trinnfri adkomst',
         veiledning: 'Du kommer deg lett frem til boligen din. Tenk over om dette vil være like lett i fremtiden om du får redusert bevegelighet.',     n: 1,    e: 0 },
       { v: 'delvis', tittel: 'Delvis',
         tiltak: {
-          enkel: 'Du kan vurdere rekkverk for å redusere risiko for fall. Du kan samtidig se på mulighet for bedre belysning. Det kan søkes om tilskudd til dette fra Husbanken.',
-          enkelKoder: '1.a.? og 5.f.',
-          enkelBlokk: 'Det kan vurderes rekkverk for å redusere risiko for fall. Det kan samtidig ses på mulighet for bedre belysning. Du kan for eksempel ta kontakt med styret for å høre om det er mulig å gjøre nødvendige tiltak.',
-          stor: 'Du kan justere terrenget for å sikre trinnfri adkomst til boligen din. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '1.a.',
-          storBlokk: 'Du kan justere terrenget for å sikre trinnfri adkomst til boligen din. Du kan for eksempel ta kontakt med styret for å høre om det er mulig å gjøre nødvendige tiltak.'
-        }, gruppe: 'utfordring',
-        veiledning: 'Du opplyser at du opplever at deler av adkomsten din kan være utfordrende. Tenk over om dette er noe du kan gjøre noe med for eksempel fjerne trinn eller endre på terrenget.', n: -0.3, e: 0.8 },
+          enkel: 'Montere rekkverk og belysning langs veien',
+          stor: 'Fjern trinn og jevn ut terrenget langs veien',
+          enkelBlokk: 'Ta opp montering av rekkverk og belysning langs veien med styret',
+          storBlokk: 'Ta opp med styret muligheten for å fjerne trinn og jevne ut terrenget langs veien'
+        },
+        kategori: 'D: 1 Trinnfri adkomst | E: 1 Trinnfri adkomst',
+        gruppe: 'utfordring',
+        veiledning: 'Du opplever at deler av adkomsten din kan være utfordrende. Tenk over om dette er noe du kan gjøre noe med for eksempel fjerne trinn eller endre på terrenget.', n: -0.3, e: 0.8 },
       { v: 'nei',    tittel: 'Nei',
         tiltak: {
-          stor: 'Du kan etablere rekkverk og vurdere bedre belysning. Det kan også være en løsning å justere terrenget for å sikre trinnfri adkomst til boligen din. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '1.a. og 5.a. og 5.f.',
-          storBlokk: 'Du kan etablere rekkverk og vurdere bedre belysning. Det kan også være en løsning å justere terrenget for å sikre trinnfri adkomst til boligen din. Du kan for eksempel ta kontakt med styret for å høre om det er mulig å gjøre nødvendige tiltak.'
-        }, gruppe: 'utfordring',
-        veiledning: 'Du har allerede funnet ut at du må gjøre noe med adkomsten til boligen din for at du skal kunne bo lengre hjemme. Se oppsummering med forslag til tiltak du kan gjøre for at adkomsten din skal bli mer tilgjengelig.',    n: -0.9, e: -0.4 }
+          enkel: 'Montere rekkverk og belysning langs veien',
+          stor: 'Fjern trinn og jevn ut terrenget langs veien',
+          enkelBlokk: 'Ta opp montering av rekkverk og belysning langs veien med styret',
+          storBlokk: 'Ta opp med styret muligheten for en trinnfri vei frem til bygget'
+        },
+        kategori: 'D: 1 Trinnfri adkomst | E: 1 Trinnfri adkomst',
+        gruppe: 'utfordring',
+        veiledning: 'Du har allerede funnet ut at du må gjøre noe med adkomsten til boligen din for at du skal kunne bo lenger hjemme. Se oppsummering med forslag til tiltak du kan gjøre for at adkomsten din skal bli mer tilgjengelig.',    n: -0.9, e: -0.4 }
     ]
   },
   {
@@ -469,53 +437,51 @@ const KOMPASS_SPORSMAL = [
     kilde: 'Fane 3, spørsmål 8a. Flervalg.',
     tittel: 'Hvor lett er det å komme seg inn i boligen din?',
     hjelp: 'Eneboliger har som regel bare en hovedinngang, mens en leilighet i blokk ofte har to innganger før du er inne i selve leiligheten. I sistnevnte bygg kan det være heis, mens andre kun har trapper. Tenk over om det er bratt terreng, terskler, trapper eller andre hindringer som kan være et problem om du får redusert bevegelighet.',
-    undertekst: 'Kryss av for det som passer.',
     type: 'flervalg',
     valg: [
       { v: 'ingen-trinn', tittel: 'Lett, det er ingen trinn eller høye terskler', gruppe: 'bra',
+        kategori: 'D: 5 Tryggere bolig / støtte fungering | E: 1 Trinnfri adkomst',
         veiledning: 'Det er et godt utgangspunkt at du ikke har trinn eller terskler når du skal komme deg inn i boligen din. Dette er en fordel om du skulle få redusert bevegelighet.' },
       { v: 'heis',        tittel: 'Lett, bygget har heis', gruppe: 'bra',
+        kategori: 'D: 1 Trinnfri adkomst | E: 1 Trinnfri adkomst',
         veiledning: 'Det er et godt utgangspunkt at du har heis. Dette er en fordel om du skulle få redusert bevegelighet. Tenk også over om du kommer deg trinnfritt til og fra heisen, og om denne er enkel å bruke.' },
       { v: 'dor-lett',    tittel: 'Lett, døren er bred og lett å åpne', gruppe: 'bra',
+        kategori: 'D: 5 Tryggere bolig / støtte fungering | E: 1 Trinnfri adkomst',
         veiledning: 'Det er et godt utgangspunkt at døren din er bred og lett å åpne. Dette er en fordel om du skulle trenge hjelpemidler eller få redusert styrke. Vurder også om det er god plass foran og innenfor døren.',
         popover: 'Vurder om døren er så bred at man kommer gjennom med for eksempel en rullator eller rullestol.' },
       { v: 'trapp',       tittel: 'Kan bli vanskelig, jeg må opp en trapp',
         tiltak: {
-          enkel: 'Det kan være lurt å etablere rekkverk på begge sider i trappen for å redusere risikoen for fall. Det kan søkes om tilskudd til dette fra Husbanken. Du kan samtidig se på mulighet for bedre belysning, spesielt i trappen.',
-          enkelKoder: '5.a. og 5.c. og muligens 5.d.',
-          enkelBlokk: 'Det kan være lurt å etablere rekkverk på begge sider i trappen for å redusere risikoen for fall. Det kan samtidig ses på mulighet for bedre belysning, spesielt i trappen. Du kan for eksempel ta kontakt med styret for å høre om det er mulig å gjøre nødvendige tiltak.',
-          stor: 'En mulig løsning kan være å justere terrenget eller bygge en varig trinnfri adkomst. Det kan søkes om tilskudd til dette fra Husbanken. Du kan også vurdere behovet for trappeheis eller heis.',
-          storKoder: '1.a. og 1.c. og 6.a. og 6.b.',
-          storBlokk: 'En mulig løsning kan være å justere terrenget eller bygge en varig trinnfri adkomst. Du kan også vurdere behovet for trappeheis eller heis. Du kan for eksempel ta kontakt med styret for å høre om det er mulig å gjøre nødvendige tiltak.'
-        }, gruppe: 'utfordring',
-        veiledning: 'Du har allerede funnet ut at du må gjøre noe med trappen til boligen din for at du skal kunne bo lengre hjemme. Se oppsummering med forslag til tiltak du kan gjøre for å tilpasse inngangspartiet ditt, slik at det blir mer tilgjengelig.' },
+          enkel: 'Montere rekkverk og belysning',
+          stor: 'Lag trinnfri inngang ved å heve terrenget eller montere en rampe',
+          enkelBlokk: 'Ta opp montering av rekkverk og belysning med styret',
+          storBlokk: 'Ta opp med styret muligheten for å heve terrenget eller montere en rampe'
+        },
+        kategori: 'D: 1 Trinnfri adkomst | E: 1 Trinnfri adkomst',
+        gruppe: 'utfordring',
+        veiledning: 'Du har allerede funnet ut at du må gjøre noe med trappen til boligen din for at du skal kunne bo lenger hjemme. Se oppsummering med forslag til tiltak du kan gjøre for å tilpasse inngangspartiet ditt, slik at det blir mer tilgjengelig.' },
       { v: 'terskler',    tittel: 'Kan bli vanskelig, det er høye terskler eller trinn',
         tiltak: {
-          enkel: 'Det kan være lurt å fjerne terskel. Det kan søkes om tilskudd til dette fra Husbanken.',
-          enkelKoder: '3.a.',
-          enkelBlokk: 'Det kan være lurt å fjerne terskel. Du kan for eksempel ta kontakt med styret for å høre om det er mulig å gjøre nødvendige tiltak.',
-          stor: 'En mulig løsning kan være å justere terrenget eller bygge en varig trinnfri adkomst. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '1.a. og 1.c.',
-          storBlokk: 'En mulig løsning kan være å justere terrenget eller bygge en varig trinnfri adkomst. Du kan for eksempel ta kontakt med styret for å høre om det er mulig å gjøre nødvendige tiltak.'
-        }, gruppe: 'utfordring',
+          stor: 'Fjern trinn og lag et trinnfritt inngangsparti',
+          storBlokk: 'Ta opp med styret muligheten for å lage et trinnfritt inngangsparti til bygget'
+        },
+        kategori: 'D: 1 Trinnfri adkomst | E: 1 Trinnfri adkomst',
+        gruppe: 'utfordring',
         veiledning: 'Du har allerede funnet ut at du må gjøre noe med terskler eller trinn inn til boligen din. Se oppsummering med forslag til tiltak du kan gjøre for å tilpasse inngangen din.' },
       { v: 'dor-tung',    tittel: 'Kan bli vanskelig, døren er tung å åpne',
         tiltak: {
-          /* «Bedre dørhåndtak» er tatt ut som tiltak, tilbakemeldingen
-             30. oktober. Det større tiltaket, en lettere dør, står. */
-          stor: 'Du kan sette inn en terskelfri dør som er lettere og bredere slik at den blir enklere å åpne. Du kan vurdere behovet for automatisk døråpner. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '3.b. og 6.a.',
-          storBlokk: 'Det kan settes inn en terskelfri dør som er lettere og bredere slik at den blir enklere å åpne. Det kan også vurderes automatisk døråpner. Du kan for eksempel ta kontakt med styret for å høre om det er mulig å gjøre nødvendige tiltak.'
-        }, gruppe: 'utfordring',
+          stor: 'Bytt til en ny inngangsdør som er lettere å åpne',
+          storBlokk: 'Ta opp med styret muligheten for å bytte til en ny inngangsdør, som er lettere å åpne'
+        },
+        kategori: 'E: 1 Trinnfri adkomst',
+        gruppe: 'utfordring',
         veiledning: 'Du har allerede funnet ut at du må gjøre noe med døren din, som er vanskelig å åpne. Vurder om du kan gjøre noe med døren eller om det er behov for en ny dør.' },
       { v: 'terreng',     tittel: 'Kan bli vanskelig, det er bratt eller ujevnt terreng foran inngangen',
         tiltak: {
-          enkel: 'Om underlaget er ujevnt kan du jevne ut terrenget eller legge en treplatt.',
-          enkelBlokk: 'Om underlaget er ujevnt kan terrenget jevnes ut eller det kan legges en treplatt. Du kan for eksempel ta kontakt med styret for å høre om det er mulig å gjøre nødvendige tiltak.',
-          stor: 'Om underlaget er bratt kan du justere terrenget eller bygge en varig trinnfri adkomst. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '1.a. og 1.c.',
-          storBlokk: 'Om underlaget er bratt kan terrenget justeres eller det kan bygges en varig trinnfri adkomst. Du kan for eksempel ta kontakt med styret for å høre om det er mulig å gjøre nødvendige tiltak.'
-        }, gruppe: 'utfordring',
+          stor: 'Jevn ut terrengforskjeller eller legg et flatt dekke foran inngangsdøren',
+          storBlokk: 'Ta opp med styret muligheten for å jevne ut terrengforskjeller eller legge et flatt dekke foran inngangsdøren'
+        },
+        kategori: 'D: 1 Trinnfri adkomst | E: 1 Trinnfri adkomst',
+        gruppe: 'utfordring',
         veiledning: 'Du har allerede funnet ut at du må gjøre noe med terrenget rett utenfor inngangen din. Vurder å jevne ut terrengforskjeller eller andre tiltak som gir deg et flatt underlag. Når du vurderer tiltak her, er det lurt å ha fokus på å gjøre dette så trinnfritt som mulig.' }
     ],
     /* Bare det som er lett, taler for boligen. Hver hindring drar nåla
@@ -538,24 +504,23 @@ const KOMPASS_SPORSMAL = [
     etappe: 'adkomst',
     kilde: 'Fane 3, spørsmål 9a.',
     tittel: 'Har du lagringsplass i nærheten av inngangsdøren?',
-    hjelp: 'Vurder om det finnes lagringsplass nær inngangsdøren. Dette kan være en bod, entre, et overbygd område eller plass inne i boligen der hjelpemidler og annet utstyr kan oppbevares tørt og lett tilgjengelig.',
-    popover: 'Tenk på om du har plass til å lagre for eksempel sykkel, rullator, rullestol eller handlevogn.',
+    hjelp: 'Vurder om det finnes lagringsplass nær inngangsdøren. Dette kan være en bod, entre, et overbygd område eller plass inne i boligen der hjelpemidler og annet utstyr kan oppbevares tørt og lett tilgjengelig.\n\n'
+      + 'Tenk på om du har plass til å lagre for eksempel sykkel, rullator, rullestol eller handlevogn.',
     valg: [
       { v: 'ja',     tittel: 'Ja', gruppe: 'bra',
+        kategori: 'D: 3 Lettere å bevege seg rundt i boligen | E: 1 Trinnfri adkomst',
         veiledning: 'Du har opplyst at du har lagringsplass i nærheten av inngangsdøren din. Dette kan gjøre det enklere å lagre hjelpemidler om du skulle få behov for dette. Tenk over om denne plassen også er brukbar i fremtiden, for eksempel om det er terskler, trinn eller tung dør.',     n: 0.8,  e: 0 },
       { v: 'delvis', tittel: 'Delvis',
-        tiltak: {
-          stor: 'Du kan forbedre inngangspartiet slik at du får nødvendig lagringsplass. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '1.b.',
-          storBlokk: 'Inngangspartiet kan forbedres for å oppnå nødvendig lagringsplass. Du kan for eksempel ta kontakt med styret for å høre om det er mulig å gjøre nødvendige tiltak.'
-        }, gruppe: 'utfordring',
+        kategori: 'D: 3 Lettere å bevege seg rundt i boligen | E: 2 Samle nødvendige rom på inngangsplanet',
+        gruppe: 'utfordring',
         veiledning: 'Du opplyser at du delvis har plass til lagring i nærheten av inngangsdøren din. Vurder om du har plass til å lagre hjelpemidler eller gjøre noen grep for å få plass til dette. Tenk også over om plassen er brukbar i fremtiden, for eksempel om det er terskler, trinn eller tung dør.', n: 0,    e: 1 },
       { v: 'nei',    tittel: 'Nei',
         tiltak: {
-          stor: 'Du kan forbedre inngangspartiet slik at du får nødvendig lagringsplass. Det kan søkes om tilskudd til dette fra Husbanken.',
-          storKoder: '1.b.',
-          storBlokk: 'Inngangspartiet kan forbedres for å oppnå nødvendig lagringsplass. Du kan for eksempel ta kontakt med styret for å høre om det er mulig å gjøre nødvendige tiltak.'
-        }, gruppe: 'utfordring',
+          stor: 'Bygg en bod for hjelpemidler i nærheten av inngangsdøren',
+          storBlokk: 'Ta opp med styret muligheten for lagringsplass for hjelpemidler i nærheten av inngangsdøren'
+        },
+        kategori: 'D: 2 Samle nødvendige rom på inngangsplanet | E: 2 Samle nødvendige rom på inngangsplanet',
+        gruppe: 'utfordring',
         veiledning: 'Du har allerede funnet ut at du må gjøre noe med lagringsplassen i nærheten av inngangen din. Manglende lagringsplass kan bli upraktisk dersom du senere skulle få behov for hjelpemidler eller annet utstyr du trenger for å kunne bli boende.',    n: -0.5, e: 0.8 }
     ]
   },
@@ -567,9 +532,8 @@ const KOMPASS_SPORSMAL = [
     grep: 'Dette kan ikke bygges om. Det teller hvis du en dag vurderer å flytte',
     etappe: 'naermiljo',
     kilde: 'Fane 4, spørsmål 10a.',
-    /* Tittel og svar fra tilbakemeldingen 28. oktober. Hjelpeteksten
-       er den fra iterasjon 25. Kodene bak svarene er de samme som før,
-       så lagrede svar gjelder fortsatt. */
+    /* Kodene bak svarene er de samme som før, så lagrede svar gjelder
+       fortsatt */
     tittel: 'Kommer du deg lett frem til tilbudene du trenger om du får redusert bevegelighet?',
     hjelp: 'Eksempler på tilbud som er viktige for de fleste er matbutikk, apotek, lege, offentlige tjenester og andre steder du er avhengig av i hverdagen. Vurder om du fortsatt vil kunne komme deg dit eller få tilgang til de tilbudene du ønsker, dersom bevegeligheten din blir redusert. I vurderingen kan du gjerne ta hensyn til gangavstand, transportmuligheter, tilgjengelighet, leveringsmuligheter eller digitale alternativer.',
     valg: [
@@ -580,7 +544,7 @@ const KOMPASS_SPORSMAL = [
       { v: 'sterkt',    tittel: 'Svært vanskelig', flytting: true, gruppe: 'utfordring',
         veiledning: 'Du har svært begrenset tilgang til tilbudene om du skulle få redusert bevegelighet. Dette kan gjøre det vanskelig å bli boende uten å være avhengig av hjelp fra andre.', n: -1,   e: 0 },
       { v: 'usikker',   tittel: 'Usikker', gruppe: 'usikker',
-        veiledning: 'Vi forstår at du er usikker på hvor tilgjengelige tilbudene vil være om behovene dine endrer seg. Snakk med noen eller bruk litt tid på å tenke over gåavstand, transport- og leveringsmuligheter om du får problemer med å gå uten hjelpemidler. Gå gjerne tilbake til kartleggingen og se om du nå klarer å svare på spørsmål 10.',                  n: 0,    e: 0 }
+        veiledning: 'Vi forstår at du er usikker på hvor tilgjengelige tilbudene vil være om behovene dine endrer seg. Snakk med noen eller bruk litt tid på å tenke over gangavstand, transport- og leveringsmuligheter om du får problemer med å gå uten hjelpemidler. Gå gjerne tilbake til kartleggingen og se om du nå klarer å svare på spørsmål 10.',                  n: 0,    e: 0 }
     ]
   },
   {
@@ -599,7 +563,7 @@ const KOMPASS_SPORSMAL = [
       { v: 'svaert',    tittel: 'Svært vanskelig', flytting: true, gruppe: 'utfordring',
         veiledning: 'Det kan bli svært vanskelig å delta på aktivitetene du ønsker, om du får redusert bevegelighet. Det å ikke kunne delta på aktiviteter og møte andre mennesker kan i stor grad påvirke trivsel, helse og livskvalitet.', n: -1,   e: 0 },
       { v: 'usikker',   tittel: 'Usikker', gruppe: 'usikker',
-        veiledning: 'Vi forstår at du er usikker på hvor lett det vil være for deg å delta på aktivitetene du ønsker om behovene dine endrer seg. Snakk med noen eller bruk litt tid på å tenke over gåavstand og transportmuligheter om du får problemer med å gå uten hjelpemidler. Gå gjerne tilbake til kartleggingen og se om du nå klarer å svare på spørsmål 11.',         n: 0,    e: 0 }
+        veiledning: 'Vi forstår at du er usikker på hvor lett det vil være for deg å delta på aktivitetene du ønsker om behovene dine endrer seg. Snakk med noen eller bruk litt tid på å tenke over gangavstand og transportmuligheter om du får problemer med å gå uten hjelpemidler. Gå gjerne tilbake til kartleggingen og se om du nå klarer å svare på spørsmål 11.',         n: 0,    e: 0 }
     ]
   },
   {
@@ -909,63 +873,6 @@ const KOMPASS_ANBEFALINGER = [
    Ordlyden er hentet fra arket «Eksempler på tiltak» i
    arbeidsdokumentet.
    ─────────────────────────────────────────────────────────────────── */
-
-/* Korte overskrifter på tiltakene, så handlingsplanen kan skummes.
-   Den faglige teksten fra kolonne D og E står under, bak «Les mer».
-   Møtet 27. oktober. Nøkkelen er spørsmål/svar/enkel eller stor.
-   Like tiltak fra flere svar får samme overskrift og står én gang. */
-const KOMPASS_TILTAK_TITLER = {
-  'rom/stue/enkel': 'Rekkverk og bedre lys i trappen inne',
-  'rom/soverom/enkel': 'Rekkverk og bedre lys i trappen inne',
-  'rom/bad/enkel': 'Rekkverk og bedre lys i trappen inne',
-  'rom/toalett/enkel': 'Rekkverk og bedre lys i trappen inne',
-  'rom/vaskemaskin/enkel': 'Rekkverk og bedre lys i trappen inne',
-  'bad-innhold/annen-etasje/enkel': 'Rekkverk og bedre lys i trappen inne',
-  'rom/stue/stor': 'Stue på inngangsplanet',
-  'rom/kjokken/stor': 'Kjøkken på inngangsplanet',
-  'rom/soverom/stor': 'Soverom på inngangsplanet',
-  'rom/bad/stor': 'Bad på inngangsplanet',
-  'rom/toalett/stor': 'Toalett på inngangsplanet',
-  'rom/vaskemaskin/stor': 'Vaskemaskin på inngangsplanet',
-  'rom/fryser/enkel': 'Fryser på inngangsplanet',
-  'bevegelse/delvis/enkel': 'Færre hindringer og terskler inne',
-  'bevegelse/delvis/stor': 'Bredere dører og mer plass inne',
-  'bevegelse/nei/stor': 'Bredere dører uten terskel, og mer plass inne',
-  'bad-innhold/toalett/enkel': 'Støttehåndtak ved toalettet',
-  'bad-innhold/toalett/stor': 'Mer plass rundt toalettet',
-  'bad-innhold/vask/stor': 'Vask og speil du kan bruke sittende',
-  'bad-innhold/vaskemaskin/stor': 'Plass til vaskemaskin på badet',
-  'bad-innhold/naborom/enkel': 'Uten terskler, og støttehåndtak ved toalettet',
-  'bad-innhold/samme-etasje/enkel': 'Uten terskler, og støttehåndtak ved toalettet',
-  'bad-innhold/naborom/stor': 'Bad og toalett i samme rom',
-  'bad-innhold/samme-etasje/stor': 'Plass til toalett på badet',
-  'bad-innhold/annen-etasje/stor': 'Plass til toalett på badet',
-  'bad-bruk/terskel/enkel': 'Fjerne terskelen til badet',
-  'bad-bruk/terskel/stor': 'Bredere baderomsdør uten terskel',
-  'bad-bruk/stort/stor': 'God plassering av vask, toalett og dusj',
-  'bad-bruk/dor-innover/enkel': 'Baderomsdør som slår utover',
-  'bad-bruk/dor-innover/stor': 'Større bad',
-  'bad-bruk/dor-utover/stor': 'Større bad',
-  'bad-bruk/dusj-kant/enkel': 'Støttehåndtak og sklisikring i dusjen',
-  'bad-bruk/dusj-kant/stor': 'Trinnfri dusjsone',
-  'bad-bruk/dusj-stol/enkel': 'Plass til dusjkrakk',
-  'bad-bruk/dusj-stol/stor': 'Trinnfri dusjsone med god plass',
-  'bad-bruk/badekar/enkel': 'Støttehåndtak og sklisikring ved badekaret',
-  'bad-bruk/badekar/stor': 'Trinnfri dusjsone i stedet for badekar',
-  'adkomst-frem/ja/stor': 'Rekkverk og trinnfri vei inn, ved behov',
-  'adkomst-frem/delvis/enkel': 'Rekkverk og bedre lys på veien inn',
-  'adkomst-frem/delvis/stor': 'Trinnfri vei inn',
-  'adkomst-frem/nei/stor': 'Rekkverk, lys og trinnfri vei inn',
-  'adkomst-inngang/trapp/enkel': 'Rekkverk og bedre lys i trappen ved inngangen',
-  'adkomst-inngang/trapp/stor': 'Trinnfri inngang, trappeheis eller heis',
-  'adkomst-inngang/terskler/enkel': 'Fjerne terskelen ved inngangen',
-  'adkomst-inngang/terskler/stor': 'Varig trinnfri inngang',
-  'adkomst-inngang/dor-tung/stor': 'Lettere og bredere inngangsdør',
-  'adkomst-inngang/terreng/enkel': 'Jevnere underlag ved inngangen',
-  'adkomst-inngang/terreng/stor': 'Slakere terreng eller trinnfri inngang',
-  'adkomst-lagring/delvis/stor': 'Lagringsplass ved inngangen',
-  'adkomst-lagring/nei/stor': 'Lagringsplass ved inngangen'
-};
 
 const KOMPASS_TILTAK = {
   '1a': 'Justere terrenget ved parkeringsplass, gangveien og/eller inngangspartiet',

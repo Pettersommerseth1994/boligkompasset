@@ -350,7 +350,7 @@ const KP_VERSJONER = [
     ]
   },
   {
-    nr: 31,
+    nr: 31, commit: '5ec48f0', mappe: 'iterasjoner/31/',
     navn: 'Utskrift, PDF og e-post', dato: '9. november 2026',
     endringer: [
       'Handlingsplanen: «Skriv ut» og «Last ned PDF» er to knapper. «Last ned PDF» laster ned en PDF-fil, uten utskriftsdialogen.',
@@ -359,6 +359,24 @@ const KP_VERSJONER = [
       'Tabellen i handlingsplanen er uten overskriftene «Tiltak» og «Tilskudd», og uten «Ja» i tilskuddskolonnen.',
       'Spørsmål med flervalg har teksten «Du kan velge flere alternativer.» over svarene.',
       'Forsiden: «Svarene lagres bare lokalt i nettleseren på denne enheten.»'
+    ]
+  },
+  {
+    nr: 32,
+    navn: 'Masterfila 18. november', dato: '20. november 2026',
+    endringer: [
+      'Alle tekstene er ord for ord som i «MASTERFIL - Boligkompasset per 18-11-2026»: spørsmål, hjelpetekster, svar, popovere, veiledning og tiltak. verktoy/sjekk-masterfil.py sjekker det.',
+      'Tiltakene i handlingsplanen er de korte tiltakene fra kolonne D og E, også for blokk og borettslag. Tilskuddskategorien i kolonne G ligger i dataene, men vises ikke.',
+      'Handlingsplanen: uten «Les mer». Du krysser av for tiltakene du vil ha med, og hele raden kan trykkes. Utskriften har bare tiltakene.',
+      'Spørsmål 3, 4 og 9: hjelpeteksten er to avsnitt, uten hjelpetekstknapp. Spørsmål 7 har ny hjelpetekst.',
+      'Spørsmål 6: «Badet er stort nok» og «badet er lite» kan ikke krysses av samtidig. Det første svaret heter «… har terskel eller trinn».',
+      'Alle flervalg har «Kryss av for det som passer.» i halvfet over svarene, også i papirutgaven.',
+      'Hjelpeteksten står i en grå boks, så den skiller seg fra svarene.',
+      '«Dette fungerer ikke i dag» heter «Dette kan bli en utfordring».',
+      'Boksene viser alt du har krysset av for. Dusj, badekar og lite bad står sammen med de andre svarene om badet, og rommene du har på inngangsplanet står under det som fungerer.',
+      'Det du ikke har krysset av for, står som «Ikke …» i stedet for «Mangler …».',
+      'Steg for steg: navnet på steget står over kortet, i halvfet og mørk tekst.',
+      'Mindre bastant: «Disse grepene må til» er tatt bort, og kompassretningene sier «kan kreve» i stedet for «krever».'
     ]
   }
 ];
