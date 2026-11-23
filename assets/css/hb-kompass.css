@@ -240,10 +240,11 @@
 .kp-framdrift--rolig .hb-progress-stepper-list-item.hb-is-active::after { animation: none; transform: none; }
 /* Stegene du er ferdig med, er mørkt grønne, og steget du står i er
    lysere grønt, så det skiller seg ut. Stegene som kommer, er grå.
-   Møtet 27. oktober. */
+   Møtet 27. oktober. Uten ring rundt steget du står i, tilbakemeldingen
+   23. november. */
 .fasaden .kp-framdrift .hb-progress-stepper-list-item.hb-is-valid .hb-icon { background: var(--hb-green-700); color: #fff; }
 .kp-framdrift--rolig .hb-progress-stepper-list-item.hb-is-active .hb-icon--encapsulated { background: var(--hb-green-500); color: var(--hb-green-900); }
-.fasaden .kp-framdrift .hb-progress-stepper-list-item.hb-is-active .hb-icon--encapsulated { animation-name: kpGrontSteg; box-shadow: 0 0 0 3px var(--hb-green-200); }
+.fasaden .kp-framdrift .hb-progress-stepper-list-item.hb-is-active .hb-icon--encapsulated { animation-name: kpGrontSteg; }
 .fasaden .kp-framdrift .hb-progress-stepper-list-item.hb-is-valid:not(:first-child)::after,
 .fasaden .kp-framdrift .hb-progress-stepper-list-item.hb-is-active::after { background: var(--hb-green-700); }
 @keyframes kpGrontSteg {
@@ -277,6 +278,9 @@
    Tilbakemeldingen 18. november. */
 .kp-hjelp--boks { background: var(--hb-slate-100); border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); }
 .fasaden .kp-hjelp--boks p { margin: 0; }
+/* Hjelpeteksten i oppfølgingen, som 5b, har samme mørke farge som de
+   andre hjelpetekstene. Fasadens grå ga bare 4,65 : 1 mot boksen. */
+.fasaden .kp-hjelp--boks .hb-felt-beskrivelse { color: var(--fg-default); }
 .fasaden .kp-hjelp--boks p + p { margin-top: var(--space-3); }
 
 .kp-sporsmal__under { color: var(--fg-default); margin: 0 0 var(--space-3); max-width: 56ch; }

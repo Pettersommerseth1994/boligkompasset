@@ -376,7 +376,9 @@ const KP_VERSJONER = [
       'Boksene viser alt du har krysset av for. Dusj, badekar og lite bad står sammen med de andre svarene om badet, og rommene du har på inngangsplanet står under det som fungerer.',
       'Det du ikke har krysset av for, står som «Ikke …» i stedet for «Mangler …».',
       'Steg for steg: navnet på steget står over kortet, i halvfet og mørk tekst.',
-      'Mindre bastant: «Disse grepene må til» er tatt bort, og kompassretningene sier «kan kreve» i stedet for «krever».'
+      'Mindre bastant: «Disse grepene må til» er tatt bort, og kompassretningene sier «kan kreve» i stedet for «krever».',
+      'Stegindikatoren: uten den lysegrønne ringen rundt steget du står i.',
+      'Hjelpeteksten i oppfølgingen «Hvor ligger toalettet?» har samme mørke farge som de andre hjelpetekstene, 8,66 : 1 i kontrast mot boksen.'
     ]
   }
 ];
